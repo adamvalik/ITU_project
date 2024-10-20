@@ -11,8 +11,8 @@
       <button @click="goTo('tutorial')" class="menu-button bg-blue-500 hover:bg-blue-700">
         Tutorial
       </button>
-      <button @click="goTo('sandbox')" class="menu-button bg-yellow-500 hover:bg-yellow-700">
-        Sandbox Mode
+      <button @click="goTo('MapCreator')" class="menu-button bg-yellow-500 hover:bg-yellow-700">
+        Create Map
       </button>
       <button @click="goTo('settings')" class="menu-button bg-gray-500 hover:bg-gray-700">
         Settings

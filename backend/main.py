@@ -15,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chooseTanks.router)
 app.include_router(mapCreator.router)
 app.include_router(players.router)
 app.include_router(tanks.router)

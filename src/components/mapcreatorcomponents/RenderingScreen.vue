@@ -45,7 +45,7 @@ export default {
   border: 5px solid #000000; /* Thick border */
   text-align: left;
   position: relative;
-  width: 200px; /* Set a fixed width */
+  width: 220px; /* Set a fixed width */
   height: 100px; /* Set a fixed height */
 }
 

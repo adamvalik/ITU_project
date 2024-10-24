@@ -11,10 +11,17 @@ const cursorType = ref(''); // Default cursor type
 const eraserActive = ref(false); // Track if eraser is being used
 const isLoading = ref(false); // Add this reactive state to track loading
 const brushSize = 25; // Eraser brush size
+const brushColor = ref('#2e7d32'); // Make brushColor reactive
 
 const updateTheme = (theme) => {
   activeTheme.value = theme;
-
+  if (theme === 'forest') {
+    brushColor.value = '#2e7d32';
+  } else if (theme === 'beach') {
+    brushColor.value = '#c68e17';
+  } else {
+    brushColor.value = '#02f1fb';
+  }
   // Clear the canvas before recoloring
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
 
@@ -81,7 +88,7 @@ const draw = (event) => {
 
   ctx.lineWidth = cursorType.value === 'eraser' ? brushSize : 2;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = cursorType.value === 'eraser' ? '#f5f5dc' : '#000000';
+  ctx.strokeStyle = cursorType.value === 'eraser' ? '#f5f5dc' : brushColor.value;
 
   if (cursorType.value === 'eraser') {
     ctx.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
@@ -121,14 +128,7 @@ const updateMapArea = (greenCoordinates) => {
   ctx.beginPath();
 
   // Set color based on active theme
-  let activeThemer = activeTheme.value;
-  if (activeThemer === 'forest') {
-    ctx.strokeStyle = '#2e7d32'; // Green color
-  } else if (activeThemer === 'beach') {
-    ctx.strokeStyle = '#c68e17'; // Yellow color
-  } else {
-    ctx.strokeStyle = '#02f1fb'; // Blue color
-  }
+  ctx.strokeStyle = brushColor.value;
   ctx.lineWidth = 2;
 
   greenCoordinates.forEach(([x, y]) => {

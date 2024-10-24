@@ -36,12 +36,9 @@ def compute_green_area(path, bottom_y):
     start = path[i]
     end = path[i + 1]
     interpolated_points = interpolate_points(start, end)
-    print(f"Interpolated points between {start} and {end}: {interpolated_points}")  # Debug print
     for x, y in interpolated_points:
       for j in range(int(y), bottom_y):
         green_coordinates.append((x, j))
-        print(f"Adding green coordinate: ({x}, {j})")  # Debug print
 
-  print(f"Final green coordinates: {green_coordinates}")  # Debug print
   return green_coordinates
 

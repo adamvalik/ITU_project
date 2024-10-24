@@ -25,10 +25,10 @@ const props = defineProps({
                 <div class="text-6xl font-black">
                     {{ props.playerName }}
                 </div>
-                <img src="../assets/player1tank.png">
+                <img src="../../assets/player1tank.png">
             </div>
             <div v-else class="flex justify-center items-center mb-14">
-                <img src="../assets/player2tank.png">
+                <img src="../../assets/player2tank.png">
                 <div class="text-6xl font-black">
                     {{ props.playerName }}
                 </div>

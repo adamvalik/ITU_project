@@ -31,14 +31,6 @@ def interpolate_points(start, end):
   return [tuple(point) for point in points]
 
 def compute_green_area(path, bottom_y):
-
-  first_point = path[0]
-  last_point = path[-1]
-
-  path = path[::10]
-  path.insert(0, first_point)
-  path.append(last_point)
-
   green_coordinates = []
   for i in range(len(path) - 1):
     start = path[i]

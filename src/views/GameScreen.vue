@@ -118,6 +118,11 @@
         :width="canvasWidth" 
         :height="canvasHeight" 
         class="border border-gray-700 m-auto"
+        @mousemove="onMouseMove"
+        @click="onMouseClick"
+        @mouseleave="onMouseLeave"
+        @mouseup="onMouseUp"
+        @mousedown="onMouseDown"
       ></canvas>
 
   </template>
@@ -140,6 +145,20 @@
           name: "DJ Khaled",
           health: 100,
         },
+        mousePosition: {
+          x: 0,
+          y: 0,
+        },
+        isHovering: false,
+        aimCircleRadius: 200,
+        maxShotPower: 100,
+        minShotPower: 1,
+        minShotDistance: 50,
+        stopLine: false,
+        lineStopX: 200,
+        lineStopY: 400,
+        isDragging: false,
+
         wind: 0,
         missile: null,
         angle: 45,
@@ -190,6 +209,7 @@
         // const canvas = this.$refs.canvas;
         // const ctx = canvas.getContext('2d');
 
+        ctx.fillStyle = 'black'; // White color
         ctx.fillRect(10, 50, 200, 40);
 
         ctx.fillRect(1070, 50, 200, 40);
@@ -307,18 +327,19 @@
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-        
-        //Draw player names
-        this.drawPlayerNames(ctx);
-
-        //Draw player health
-        this.drawPlayerHealth(ctx);
 
         // Draw the terrain
         this.drawTerrain(ctx);
   
         // Draw player 1's tank
         this.drawTank(ctx, this.player1);
+
+        //Draw player names
+        this.drawPlayerNames(ctx);
+
+        //Draw player health
+        this.drawPlayerHealth(ctx);
+
       },
       drawTerrain(ctx) {
         ctx.beginPath();
@@ -331,9 +352,94 @@
         ctx.fillStyle = "saddlebrown";
         ctx.fill();
       },
+
+      onMouseDown(event) {
+        const rect = this.$refs.gameCanvas.getBoundingClientRect();
+        this.mousePosition.x = event.clientX - rect.left;
+        this.mousePosition.y = event.clientY - rect.top;
+
+        // Check if the click is within the aim circle
+        if (this.isHovering) {
+          this.isDragging = true; // Start dragging
+          this.lineStopX = this.mousePosition.x; // Initialize line stop positions
+          this.lineStopY = this.mousePosition.y;
+        }
+      },
+
+      onMouseUp() {
+        this.isDragging = false; // Stop dragging
+      },
+
+      onMouseMove(event) {
+          const rect = this.$refs.gameCanvas.getBoundingClientRect();
+          this.mousePosition.x = event.clientX - rect.left;
+          this.mousePosition.y = event.clientY - rect.top;
+
+          const dx = this.mousePosition.x - this.player1.x;
+          const dy = this.mousePosition.y - this.player1.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (this.isDragging) {
+
+            
+            // Cap the power line's length to the circle radius
+            const clampedDistance = Math.min(distance, this.aimCircleRadius);
+            this.power = Math.round((clampedDistance / this.aimCircleRadius) * this.maxShotPower);
+            
+            // Update the line end positions
+            const angle = Math.atan2(dy, dx);
+            this.lineStopX = this.player1.x + clampedDistance * Math.cos(angle);
+            this.lineStopY = this.player1.y + clampedDistance * Math.sin(angle);
+            this.angle = -(angle * 180) / Math.PI;
+          }
+
+          // const dx = this.mousePosition.x - this.player1.x;
+          // const dy = this.mousePosition.y - this.player1.y;
+          // const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Show the aiming UI if the mouse is within the aiming circle range
+          this.isHovering = distance >= 1 && distance <= this.aimCircleRadius;
+
+          if (this.isHovering) {
+            // Calculate the angle between the tank and the mouse
+            // if(!this.stopLine){
+            //   this.angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+            // }
+            this.drawAimCircle(this.player1);
+          }
+        
+
+      },
+
+      onMouseClick(event) {
+        console.log("Clicked insideee the aim circle!"); // Debug message
+        const rect = this.$refs.gameCanvas.getBoundingClientRect();
+        this.mousePosition.x = event.clientX - rect.left;
+        this.mousePosition.y = event.clientY - rect.top;
+
+        const dx = this.mousePosition.x - this.player1.x;
+        const dy = this.mousePosition.y - this.player1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Show the aiming UI if the mouse is within the aiming circle range
+        this.isHovering = distance >= 1 && distance <= this.aimCircleRadius;
+
+        if (this.isHovering) {
+          this.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
+          this.stopLine = true;
+          this.stopLineX = this.mousePosition.x;
+          this.stopLineY = this.mousePosition.y;
+          this.drawAimCircle(this.player1);
+        }
+      },
+      
+      
       drawTank(ctx, player) {
         ctx.save();
-        ctx.translate(player.x, this.terrain[Math.floor(player.x)] - player.size / 2);
+
+        this.player1.y = this.terrain[Math.floor(player.x)] - player.size / 2;
+
+        ctx.translate(player.x, this.player1.y - player.size / 2);
+        
   
         // Draw the tank body
         ctx.fillStyle = this.player1.tankColor;
@@ -347,6 +453,37 @@
         ctx.fillRect(0, -5, turretLength, 10);
   
         ctx.restore();
+      },
+
+      drawAimCircle(player){
+
+        // Get the canvas context
+        const canvas = this.$refs.gameCanvas;
+        const ctx = canvas.getContext('2d');
+        this.renderGame();
+        ctx.save();
+
+        const x = player.x;
+        const y = player.y;
+
+        ctx.beginPath();
+        ctx.arc(x, y, this.aimCircleRadius, 0, 2 * Math.PI);
+        // Fill the circle with a semi-transparent color
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+        ctx.fill();  // Fill first to apply transparency correctly
+
+        // Stroke the border of the circle
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+
+        // Draw the power/shot line
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(this.lineStopX, this.lineStopY); // Use the updated stop positions
+        ctx.strokeStyle = "red";
+        ctx.stroke();
+        ctx.restore();
+
       },
     },
   };

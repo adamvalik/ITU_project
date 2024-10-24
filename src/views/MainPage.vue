@@ -2,8 +2,8 @@
 
 <template>
   <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
-    
-    <!-- clouds -->
+
+    <!-- Multiple Clouds Moving Across the Background -->
     <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
 
     <div>
@@ -12,7 +12,7 @@
         <p class="absolute -bottom-4 -right-6 text-xl">1v1</p>
       </h1>
     </div>
-    
+
     <!-- Language Flags -->
     <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
     <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" />
@@ -24,8 +24,8 @@
       </button>
       <router-link to="/game" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         TUTORIAL
-      </router-link>
-      <router-link to="/createMap" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+      </RouterLink>
+      <RouterLink to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
       </router-link>
       <router-link to="/shop" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
@@ -138,7 +138,7 @@ export default {
     // },
     // Play background music
     playMusic() {
-      this.$emit('playMusic'); 
+      this.$emit('playMusic');
     },
     updateMusicVolume(volume) {
       this.$emit('updateMusicVolume', volume);

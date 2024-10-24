@@ -1,11 +1,13 @@
 from fastapi import APIRouter
+from main import players
 
 router = APIRouter()
 
-@router.get("/users/")
-async def read_users():
-    return [{"name": "Alice"}, {"name": "Bob"}]
+@router.post("/createplayer/player")
+async def create():
+  players.append("player")
+    
 
 @router.get("/users/{user_id}")
 async def read_user(user_id: int):
-    return {"name": "Alice", "user_id": user_id}
+  return players[0].name

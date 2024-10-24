@@ -10,7 +10,8 @@
       </div>
 
       <!-- Player 1 Tank Type -->
-      <tank-selector @tank-selected="updateTankSelection(1, $event)" @color-selected="updateColorSelection(1, $event)" />
+      <!-- Conditionally render the TankSelector once data has been fetched -->
+      <tank-selector v-if="!loading" @tank-selected="updateTankSelection(1, $event)" @color-selected="updateColorSelection(1, $event)" :defaultColor="player1.color" :defaultTankType="player1.tankType" />
 
     </div>
 
@@ -24,52 +25,78 @@
       </div>
 
       <!-- Player 2 Tank Type -->
-      <tank-selector @tank-selected="updateTankSelection(2, $event)" @color-selected="updateColorSelection(2, $event)" :is-flipped="true" :default-color="'#0D6BBD'" />
+      <!-- Conditionally render the TankSelector once data has been fetched -->
+      <tank-selector v-if="!loading" @tank-selected="updateTankSelection(2, $event)" @color-selected="updateColorSelection(2, $event)" :is-flipped="true" :defaultColor="player2.color" :defaultTankType="player2.tankType" />
     </div>
 
     <!-- Footer Buttons -->
     <div class="absolute bottom-4 left-0 right-0 flex justify-between px-8">
       <!-- Back to Main Page Button -->
-      <button @click="goBack" class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-200">
+      <router-link to="/" @click="deleteData" class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-200">
         Back to Main Page
-      </button>
+      </router-link>
 
       <!-- Proceed to Game Button -->
-      <button @click="goToMapEditor" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
+      <router-link to="/chooseMap" @click="submitData" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
         Choose Map
-      </button>
+      </router-link>
     </div>
   </div>
 </template>
-  
-  <script>
-  import TankSelector from '@/components/TankSelector.vue';
 
-  export default {
-    components: {
-      TankSelector
-    },
-    data() {
-      return {
-        player1: {
-          name: '',
-          tank: '',
-          color: '#ff0000',
-        },
-        player2: {
-          name: '',
-          tank: '',
-          color: '#0000ff',
-        }
-      };
-    },
-    methods: {
+<script>
+import TankSelector from '@/components/TankSelector.vue';
+import axios from 'axios';
+
+export default {
+  components: {
+    TankSelector
+  },
+  data() {
+    return {
+      loading: true, 
+      player1: {
+        name: null,
+        tankType: 0,
+        color: '#06B559',
+        armour: 0,
+        power: 0,
+        speed: 0,
+        skillPoints: 0, 
+        money: 1000,
+        fuel: 250,
+        health: 100,
+        weapon1: 0,
+        weapon2: 0,
+        weapon3: 0,
+      },
+      player2: {
+        name: null,
+        tankType: 1,
+        color: '#0D6BBD',
+        armour: 0,
+        power: 0,
+        speed: 0,
+        skillPoints: 0,
+        money: 1000,
+        fuel: 250,
+        health: 100,
+        weapon1: 0,
+        weapon2: 0,
+        weapon3: 0,
+      }
+    };
+  },
+  async mounted() {
+    await this.fetchData();
+  },
+  methods: {
     // Update tank selection for a player
     updateTankSelection(player, selectedTank) {
       if (player === 1) {
-        this.player1.tank = selectedTank;
+        this.player1.tankType = selectedTank;
       } else {
-        this.player2.tank = selectedTank;
+        this.player2.tankType = selectedTank;
       }
     },
 
@@ -82,20 +109,61 @@
       }
     },
 
-    // Proceed to the map editor
+    async fetchData() {
+      try {
+        const response = await axios.get('http://localhost:8000/players');
+        console.log('Fetched players:', response.data);
+        const players = response.data;
 
-    ///// TODO: jeste se spravne neemitujou barvy
-    goToMapEditor() {
-      console.log('Player 1 Tank:', this.player1.tank);
-      console.log('Player 1 Color:', this.player1.color);
-      console.log('Player 2 Tank:', this.player2.tank);
-      console.log('Player 2 Color:', this.player2.color);
+        if (players[0]) {
+          console.log('Player 1 color:', players[0].color);
+          this.player1 = players[0];
+        }
+        if (players[1]) {
+          console.log('Player 2 color:', players[1].color);
+          this.player2 = players[1];
+        }
+        
+        this.loading = false; // Set loading to false after fetching data
+
+      } catch (error) {
+        console.error('Error fetching players:', error);
+        this.loading = false; // Set loading to false even if there's an error
+      }
+    },
+
+    async submitData() {
+      // Ensure default names if not provided
+      if (!this.player1.name) {
+        this.player1.name = "Player 1";
+      }
+      if (!this.player2.name) {
+        this.player2.name = "Player 2";
+      }
+
+      console.log("Player 1 data:", this.player1);  // Log the data being sent
+      console.log("Player 2 data:", this.player2);  // Log the data being sent
+
+      try {
+        await axios.post('http://localhost:8000/players/0', this.player1);
+        await axios.post('http://localhost:8000/players/1', this.player2);
+      } catch (error) {
+        console.error('Error submitting player data:', error);
+      }
+    },
+
+    async deleteData() {
+      try {
+        await axios.delete('http://localhost:8000/players');
+      } catch (error) {
+        console.error('Error deleting player data:', error);
+      }
     }
+
   }
 }
-  </script>
-  
-  <style scoped>
+</script>
+
+<style scoped>
   /* You can add additional styling if needed */
-  </style>
-  
+</style>

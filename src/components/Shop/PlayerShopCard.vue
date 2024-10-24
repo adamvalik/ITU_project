@@ -23,7 +23,7 @@ const svg = ref(null)
 // Function to fetch player data
 async function fetchPlayerData(playerId) {
   try {
-    const response = await axios.get(`http://localhost:8000/player/${playerId}`);
+    const response = await axios.get(`http://localhost:8000/players/${playerId}`);
     player.value = response.data; // Set player data
   } catch (error) {
     console.error('Error fetching player data:', error);
@@ -32,7 +32,7 @@ async function fetchPlayerData(playerId) {
 
 async function fetchTankData(playerId){
       try {
-        const response = await axios.get(`http://localhost:8000/player/${playerId}/tank`);
+        const response = await axios.get(`http://localhost:8000/players/${playerId}/tank`);
         svg.value = response.data; // Set the SVG data
       } catch (error) {
         console.error('Error fetching tank data:', error);
@@ -46,7 +46,10 @@ onMounted(() => {
   fetchTankData(props.player_id);
 });
 
-
+function updatePoints(usedPoints, name) {
+  console.log(usedPoints)
+  console.log(name)
+}
 
 </script>
 <template>
@@ -67,7 +70,7 @@ onMounted(() => {
 
             <div v-if="player">
                 <WeaponShop class="mb-14" :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" ></WeaponShop>
-                <SkillShop  :armor="player.armor" :power="player.power" :speed="player.speed" :skillPoints="player.skillPoints"></SkillShop>
+                <SkillShop  :armor="player.armor" :power="player.power" :speed="player.speed" :skillPoints="player.skillPoints" @updatePoints="updatePoints"></SkillShop>
                 
             </div>
             <div v-else>Loading player data...</div>

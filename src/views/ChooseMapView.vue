@@ -76,7 +76,7 @@
       goToGame() {
         if (this.selectedMap) {
           this.$router.push({
-            path: '/game',
+            path: '/shop',
             query: { selectedMap: this.selectedMap.name }
           });
         }

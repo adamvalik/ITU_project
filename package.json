@@ -8,7 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@rive-app/canvas": "^2.21.5",
+    "@rive-app/canvas": "^2.21.6",
     "core-js": "^3.8.3",
     "vue": "^3.5.11",
     "vue-router": "^4.4.5"

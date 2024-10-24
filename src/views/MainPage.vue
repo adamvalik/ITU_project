@@ -94,7 +94,7 @@ export default {
       isGameModesVisible: false,  // Controls whether the game modes modal is visible
       soundEffectsVolume: 50,     // Default value for sound effects slider
       musicVolume: 0,            // Default value for music slider
-      buttonSoundSrc: "../assets/anotherOne.mp3",  // Path to button click sound
+      buttonSoundSrc: "/assets/another-one.mp3",  // Path to button click sound
       // Array of cloud properties for dynamic rendering
       clouds: [
         { src: '/assets/cloud.png', class: 'cloud', style: 'top: 70px; animation-duration: 20s;' },

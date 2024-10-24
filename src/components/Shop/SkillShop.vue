@@ -1,5 +1,5 @@
 <script setup>
-import {ref, defineProps} from 'vue'
+import {ref, defineProps, defineEmits} from 'vue'
 import SkillShopItem from './SkillShopItem.vue';
 const props = defineProps({
     armor:{
@@ -21,10 +21,11 @@ const props = defineProps({
 })
 
 const skillPoints = ref(props.skillPoints)
+const emit = defineEmits(['updatePoints']);
 
-
-function updatePoints(usedPoints) {
+function updatePoints(usedPoints, name) {
   skillPoints.value += usedPoints;
+  emit('updatePoints', usedPoints, name);
 }
 </script>
 <template>

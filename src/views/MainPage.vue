@@ -38,12 +38,56 @@
 
     <!-- Game Modes Modal -->
     <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
-      <router-link @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+      <router-link @click.stop to="/chooseTanks" class="h-200 text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
         Classic mode
       </router-link>
-      <router-link @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+      <div 
+        v-if="!customModeSetting"
+        @click.stop
+        @mouseenter="customModeSetting = true"
+        class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
+      >
         Custom mode
-      </router-link>
+      </div>
+      <div 
+        v-else 
+        @click.stop 
+        class="h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center justify-center hover:bg-gray-100 transition duration-300"
+      >
+        <!-- Title -->
+        <p class="text-3xl font-bold mb-4">Custom mode</p>
+
+        <!-- Timer Checkbox -->
+        <div class="flex items-center p-2 space-x-3">
+          <label for="timer" class="text-xl font-semibold">Timer</label>
+          <input 
+            id="timer" 
+            type="checkbox" 
+            class="form-checkbox h-6 w-6 text-blue-600" 
+            v-model="timer" 
+          />
+        </div>
+
+        <!-- Wins Input -->
+        <div class="flex items-center p-2 space-x-3">
+          <label for="wins" class="text-xl font-semibold">Wins</label>
+          <input 
+            id="wins" 
+            type="number" 
+            class="form-input border rounded-lg p-2 w-20 text-center" 
+            v-model="wins" 
+          />
+        </div>
+
+        <!-- Go Button -->
+        <router-link 
+          to="/chooseTanks" 
+          class="font-bold border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 text-xl py-2 px-6 rounded-2xl mt-4 transition duration-300"
+        >
+          GO!
+        </router-link>
+      </div>
+
     </div>
 
     <!-- Modal Window -->
@@ -68,6 +112,8 @@ export default {
   },
   data() {
     return {
+      timer: false,               // Timer setting for custom mode
+      customModeSetting: false,
       isSettingsVisible: false,   // Controls whether the modal is visible
       isGameModesVisible: false,  // Controls whether the game modes modal is visible
       // soundEffectsVolume: 50,     // Default value for sound effects slider
@@ -118,6 +164,7 @@ export default {
     },
     // Hide the game modes modal
     hideGameModes() {
+      this.customModeSetting = false;
       this.isGameModesVisible = false;
     },
     // Get cloud style dynamically based on the index

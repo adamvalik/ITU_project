@@ -12,6 +12,7 @@
       <!-- Player 1 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(1, $event)" @color-selected="updateColorSelection(1, $event)" :defaultColor="player1.color" :defaultTankType="player1.tankType" />
+      <skill-shop v-if="!loading" :armor="player1.armor" :power="player1.power" :speed="player1.speed" :skillPoints="player1.skillPoints" />
 
     </div>
 
@@ -27,6 +28,8 @@
       <!-- Player 2 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(2, $event)" @color-selected="updateColorSelection(2, $event)" :is-flipped="true" :defaultColor="player2.color" :defaultTankType="player2.tankType" />
+      <skill-shop v-if="!loading" :armor="player2.armor" :power="player2.power" :speed="player2.speed" :skillPoints="player2.skillPoints" />
+
     </div>
 
     <!-- Footer Buttons -->
@@ -45,12 +48,14 @@
 </template>
 
 <script>
+import SkillShop from '@/components/Shop/SkillShop.vue';
 import TankSelector from '@/components/TankSelector.vue';
 import axios from 'axios';
 
 export default {
   components: {
-    TankSelector
+    TankSelector,
+    SkillShop
   },
   data() {
     return {
@@ -62,7 +67,7 @@ export default {
         armour: 0,
         power: 0,
         speed: 0,
-        skillPoints: 0, 
+        skillPoints: 6, 
         money: 1000,
         fuel: 250,
         health: 100,
@@ -77,7 +82,7 @@ export default {
         armour: 0,
         power: 0,
         speed: 0,
-        skillPoints: 0,
+        skillPoints: 6,
         money: 1000,
         fuel: 250,
         health: 100,

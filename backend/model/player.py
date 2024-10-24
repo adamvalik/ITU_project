@@ -4,16 +4,16 @@ class Player(BaseModel):
   name: str
   tankType: int
   color: str
-  armour: int = 0
-  power: int = 0
-  speed: int = 0
-  skillPoints: int = 0 
-  money: int = 1000
-  fuel: int = 250
-  health: int = 100
-  weapon1: int = 0
-  weapon2: int = 0
-  weapon3: int = 0
+  armour: int
+  power: int
+  speed: int
+  skillPoints: int
+  money: int
+  fuel: int
+  health: int 
+  weapon1: int
+  weapon2: int
+  weapon3: int
   
   
 # class Game(BaseModel):

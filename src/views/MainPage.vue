@@ -2,7 +2,7 @@
 
 <template>
   <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
-    
+
     <!-- Multiple Clouds Moving Across the Background -->
     <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
 
@@ -21,7 +21,7 @@
       <RouterLink to="/tutorial" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         TUTORIAL
       </RouterLink>
-      <RouterLink to="/createMap" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+      <RouterLink to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
       </RouterLink>
       <RouterLink to="/shop" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
@@ -50,10 +50,10 @@
         <!-- Sound Effects Slider -->
         <div class="mb-4">
           <label class="font-semibold text-lg">Sound Effects: {{ soundEffectsVolume }}%</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
+          <input
+            type="range"
+            min="0"
+            max="100"
             v-model="soundEffectsVolume"
             class="w-full mt-2"
           >
@@ -62,10 +62,10 @@
         <!-- Music Volume Slider -->
         <div class="mb-4">
           <label class="font-semibold text-lg">Music Volume: {{ musicVolume }}%</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
+          <input
+            type="range"
+            min="0"
+            max="100"
             v-model="musicVolume"
             class="w-full mt-2"
           >

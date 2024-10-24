@@ -24,8 +24,8 @@
       </button>
       <router-link to="/game" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         TUTORIAL
-      </RouterLink>
-      <RouterLink to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+      </router-link>
+      <router-link to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
       </router-link>
       <router-link to="/shop" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
@@ -45,19 +45,17 @@
         v-if="!customModeSetting"
         @click.stop
         @mouseenter="customModeSetting = true"
-        class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
+        class="h-200 text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
       >
         Custom mode
       </div>
       <div 
         v-else 
         @click.stop 
-        class="h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center justify-center hover:bg-gray-100 transition duration-300"
+        class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center justify-center hover:bg-gray-100 transition duration-300"
       >
-        <!-- Title -->
-        <p class="text-3xl font-bold mb-4">Custom mode</p>
+        <p class="text-3xl font-bold mb-2">Custom mode</p>
 
-        <!-- Timer Checkbox -->
         <div class="flex items-center p-2 space-x-3">
           <label for="timer" class="text-xl font-semibold">Timer</label>
           <input 
@@ -68,7 +66,6 @@
           />
         </div>
 
-        <!-- Wins Input -->
         <div class="flex items-center p-2 space-x-3">
           <label for="wins" class="text-xl font-semibold">Wins</label>
           <input 
@@ -82,7 +79,7 @@
         <!-- Go Button -->
         <router-link 
           to="/chooseTanks" 
-          class="font-bold border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 text-xl py-2 px-6 rounded-2xl mt-4 transition duration-300"
+          class="absolute bottom-1 right-1 font-bold border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 text-xl py-2 px-6 rounded-2xl mt-4 transition duration-300"
         >
           GO!
         </router-link>

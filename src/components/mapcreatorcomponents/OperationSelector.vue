@@ -25,19 +25,28 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 // eslint-disable-next-line no-undef
 const props = defineProps({
   activeTheme: String
 });
 
-const activeButton = ref('pen');
+const activeButton = ref('');
+const emit = defineEmits(['cursor-change']);
 
 const setActiveButton = (button) => {
-  console.log(`Active button set to: ${button}`); // Debug log
-  activeButton.value = button;
+  if (activeButton.value === button) {
+    activeButton.value = ''; // Unclick the button if it's already active
+  } else {
+    activeButton.value = button; // Set the button as active
+  }
+  console.log(`Active button set to: ${activeButton.value}`); // Debug log
 };
+
+watch(activeButton, (newVal) => {
+  emit('cursor-change', newVal);
+});
 
 const obstructionIcon = computed(() => {
   switch (props.activeTheme) {
@@ -103,22 +112,5 @@ const obstructionIcon = computed(() => {
 .icon-button:not(.active) {
   border-color: #e2e8f0; /* Lighter border color for inactive buttons */
 }
-/* Custom cursor styles */
-.pen-cursor {
-  cursor: url('../../public/assets/pen_icon.svg'), auto;
-}
 
-.eraser-cursor {
-  cursor: url('../../public/assets/eraser_mouse.svg'), auto;
-}
-
-.eraser-cursor::after {
-  content: '';
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  pointer-events: none;
-}
 </style>

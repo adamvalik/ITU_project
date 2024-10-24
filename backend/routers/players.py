@@ -42,3 +42,8 @@ async def get_tank(player_id: int):
 
 if __name__ == "__main__":
   print(players)
+
+@router.get("/player/{player_id}")
+async def get_player(player_id: int):
+  player = players[player_id]
+  return player

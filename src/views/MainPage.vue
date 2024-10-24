@@ -1,88 +1,90 @@
 <template>
-  <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
-    
-    <!-- Multiple Clouds Moving Across the Background -->
-    <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
+  <div>
+    <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
+      
+      <!-- Multiple Clouds Moving Across the Background -->
+      <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
 
-    <!-- Game Title -->
-    <h1 class="text-7xl font-bold mb-8 z-10">TANKS</h1>
+      <!-- Game Title -->
+      <h1 class="text-7xl font-bold mb-8 z-10">TANKS</h1>
 
-    <!-- Language Flags -->
-    <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
-    <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" />
+      <!-- Language Flags -->
+      <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
+      <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" />
 
-    <!-- Menu Buttons -->
-    <div class="flex flex-col justify-center gap-3 z-10">
-      <button @click="showGameModes" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        START GAME
-      </button>
-      <RouterLink to="/tutorial" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        TUTORIAL
-      </RouterLink>
-      <RouterLink to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        CREATE MAP
-      </RouterLink>
-      <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        SETTINGS
-      </button>
-    </div>
-
-    <!-- Game Modes Modal -->
-    <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
-      <RouterLink @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
-        Classic mode
-      </RouterLink>
-      <RouterLink @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
-        Custom mode
-      </RouterLink>
-    </div>
-
-    <!-- Modal Window -->
-    <div v-if="isSettingsVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
-        <h2 class="text-2xl font-bold mb-4">Settings</h2>
-
-        <!-- Sound Effects Slider -->
-        <div class="mb-4">
-          <label class="font-semibold text-lg">Sound Effects: {{ soundEffectsVolume }}%</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            v-model="soundEffectsVolume"
-            class="w-full mt-2"
-          >
-        </div>
-
-        <!-- Music Volume Slider -->
-        <div class="mb-4">
-          <label class="font-semibold text-lg">Music Volume: {{ musicVolume }}%</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            v-model="musicVolume"
-            class="w-full mt-2"
-          >
-        </div>
-
-        <!-- Close button -->
-        <button @click="hideSettings" class="mt-8 px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
-          Close
+      <!-- Menu Buttons -->
+      <div class="flex flex-col justify-center gap-3 z-10">
+        <button @click="showGameModes" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+          START GAME
+        </button>
+        <RouterLink to="/tutorial" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+          TUTORIAL
+        </RouterLink>
+        <RouterLink to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+          CREATE MAP
+        </RouterLink>
+        <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+          SETTINGS
         </button>
       </div>
+
+      <!-- Game Modes Modal -->
+      <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
+        <RouterLink @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+          Classic mode
+        </RouterLink>
+        <RouterLink @click.stop to="/chooseTanks" class="h-200 text-2xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+          Custom mode
+        </RouterLink>
+      </div>
+
+      <!-- Modal Window -->
+      <div v-if="isSettingsVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
+          <h2 class="text-2xl font-bold mb-4">Settings</h2>
+
+          <!-- Sound Effects Slider -->
+          <div class="mb-4">
+            <label class="font-semibold text-lg">Sound Effects: {{ soundEffectsVolume }}%</label>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              v-model="soundEffectsVolume"
+              class="w-full mt-2"
+            >
+          </div>
+
+          <!-- Music Volume Slider -->
+          <div class="mb-4">
+            <label class="font-semibold text-lg">Music Volume: {{ musicVolume }}%</label>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              v-model="musicVolume"
+              class="w-full mt-2"
+            >
+          </div>
+
+          <!-- Close button -->
+          <button @click="hideSettings" class="mt-8 px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
+            Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Audio Element for Button Click Sound -->
+      <audio ref="buttonSound" :src="buttonSoundSrc" preload="auto"></audio>
+
+      <!-- Audio Element (Invisible) -->
+      <audio ref="backgroundMusic" autoplay loop>
+        <source src="../assets/music.mp3" type="audio/mpeg">
+      </audio>
     </div>
 
-    <!-- Audio Element for Button Click Sound -->
-    <audio ref="buttonSound" :src="buttonSoundSrc" preload="auto"></audio>
-
-    <!-- Audio Element (Invisible) -->
-    <audio ref="backgroundMusic" autoplay loop>
-      <source src="../assets/music.mp3" type="audio/mpeg">
-    </audio>
+    <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
   </div>
-
-  <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
 </template>
 
 <script>

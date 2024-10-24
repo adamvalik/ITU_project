@@ -93,12 +93,10 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-beige flex flex-col justify-center items-center relative custom-cursor">
-    <h1 class="text-4xl text-black font-bold mb-4">Map Creator</h1>
-    <p class="text-black mb-4">Welcome to the Map Creator. Here you can create and customize your own maps.</p>
     <ThemeSelector :activeTheme="activeTheme" @theme-change="updateTheme"
                    class="absolute top-0 left-1/2 transform -translate-x-1/2 mt-4"/>
     <OperationSelector :activeTheme="activeTheme" @cursor-change="updateCursor" class="absolute top-1/4 right-0 mr-4"/>
-    <canvas ref="canvasRef" width="1200" height="700" class="border-2 border-black mt-4"></canvas>
+    <canvas ref="canvasRef" width="900" height="500" class="border-2 border-black mt-4"></canvas>
     <!-- Glowing eraser brush circle -->
     <div class="brush-circle"></div>
   </div>
@@ -114,8 +112,8 @@ onMounted(() => {
   width: 25px; /* Match the brush size */
   height: 25px;
   border-radius: 50%;
-  background-color: rgba(14, 88, 248, 0.3); /* Red color with transparency */
-  box-shadow: 0 0 10px rgba(118, 216, 250, 0.7); /* Glowing red shadow */
+  background-color: rgba(34, 85, 193, 0.3); /* Red color with transparency */
+  box-shadow: 0 0 10px rgba(90, 189, 202, 0.7); /* Glowing red shadow */
   pointer-events: none; /* Ensure the circle doesn’t interfere with events */
   display: none; /* Hidden until the eraser is active */
 }

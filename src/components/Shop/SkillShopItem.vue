@@ -32,14 +32,14 @@ const emit = defineEmits(['updatePoints']); // Define custom event
 function upgradeSkill() {
   if (currentLevel.value < maxLevel && props.availablePoints > 0) {
     currentLevel.value += 1;
-    emit('updatePoints', -1);
+    emit('updatePoints', -1, props.name);
   }
 }
 
 function downgradeSkill() {
   if (currentLevel.value > 0) {
     currentLevel.value -= 1;
-    emit('updatePoints', 1);
+    emit('updatePoints', 1, props.name);
 
   }
 }
@@ -80,7 +80,7 @@ const effectiveLevel = computed(() => {
 
       <!-- Upgrade/ Downgrade Buttons -->
       <div
-  class="w-12 h-12 rounded-3xl border-4 bg-green-500 border-green-600 ml-8 flex justify-center items-center cursor-pointer
+        class="w-12 h-12 rounded-3xl border-4 bg-green-500 border-green-600 ml-8 flex justify-center items-center cursor-pointer
          hover:bg-green-600 hover:border-green-700 
          active:bg-green-700 active:border-green-800"
   @click="upgradeSkill"

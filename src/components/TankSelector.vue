@@ -33,132 +33,120 @@
   </div>
 </template>
   
-  <script>
-  export default {
-    props: {
-      isFlipped: {
-        type: Boolean,
-        default: false,
-      }, 
-      defaultColor: {
-        type: String,
-        default: '#06B559',
-      }
+<script>
+import axios from 'axios';
+
+export default {
+  props: {
+    isFlipped: {
+      type: Boolean,
+      default: false,
+    }, 
+    defaultColor: {
+      type: String,
+      default: '#123456',
     },
-    data() {
-      return {
-        currentTankIndex: 0, // Track the current tank type (0-4)
-        tanks: [
-          "/assets/tank1.svg", // Path to the first tank SVG
-          "/assets/tank2.svg", // Path to the second tank SVG
-          "/assets/tank3.svg", // Path to the third tank SVG
-          "/assets/tank4.svg", // Path to the fourth tank SVG
-          "/assets/tank5.svg", // Path to the fifth tank SVG
-        ],
-        targetColor: this.defaultColor, // Color to change (initially set to red)
-        specificColorToChange: this.defaultColor, // The specific color in the SVG that you want to change
-        colorOptions: [
-        { name: "Green", hex: "#06B559" },
-          { name: "Red", hex: "#BF1313" },
-          { name: "Blue", hex: "#0D6BBD" },
-        ],
-        customColor: null, // Custom color picker value
-      };
-    },
-    watch: {
-      // Watch for changes in the custom color picker
-      customColor(newColor) {
-        this.changeColor(newColor); // Apply the color change when the custom color changes
-      }
-    },
-    computed: {
-    gradientStyle() {
-      return this.customColor
-        ? { backgroundColor: this.customColor } // Use selected color
-        : { background: `linear-gradient(217deg, rgb(255,0,0), rgb(255,0,0,0) 70%),
-                         linear-gradient(127deg, rgb(0,255,0), rgb(0,255,0,0) 70%),
-                         linear-gradient(336deg, rgb(0,0,255), rgb(0,0,255,0) 70%)` }; 
+    defaultTankType: {
+      type: Number,
+      default: 0,
     }
   },
-    methods: {
-      // Swap between tanks
-      swapTank(direction) {
-        if (direction === "left") {
-          this.currentTankIndex =
-            this.currentTankIndex === 0
-              ? this.tanks.length - 1
-              : this.currentTankIndex - 1;
-        } else if (direction === "right") {
-          this.currentTankIndex =
-            this.currentTankIndex === this.tanks.length - 1
-              ? 0
-              : this.currentTankIndex + 1;
-        }
+  mounted() {
+    this.tankType = this.defaultTankType;
+    // if defaultColor is not one of the colorOptions, set customColor to defaultColor
+    if (!this.colorOptions.some((color) => color.hex === this.defaultColor)) {
+      this.customColor = this.defaultColor;
+    }
+    this.changeColor(this.defaultColor);
+    this.emitSelectedTank(); 
+    this.emitSelectedColor();
+  },
+  data() {
+    return {
+      tankType: 0,
+      selectedColor: this.defaultColor, 
+      colorOptions: [
+        { hex: "#06B559" },
+        { hex: "#0D6BBD" },
+        { hex: "#BF1313" },
+      ],
+      customColor: null,
+    };
+  },
+  watch: {
+    customColor(newColor) {
+      this.changeColor(newColor);
+    }
+  },
+  computed: {
+    gradientStyle() {
+      return this.customColor
+        ? { backgroundColor: this.customColor }
+        : { background: `linear-gradient(217deg, rgb(255,0,0), rgb(255,0,0,0) 70%),
+                        linear-gradient(127deg, rgb(0,255,0), rgb(0,255,0,0) 70%),
+                        linear-gradient(336deg, rgb(0,0,255), rgb(0,0,255,0) 70%)` }; 
+    }
+  },
+  methods: {
+    swapTank(direction) {
+      if (direction === "left") {
+        this.tankType = (this.tankType + 4) % 5;
+      } else if (direction === "right") {
+        this.tankType = (this.tankType + 1) % 5;
+      }
 
-        this.emitSelectedTank(); // Emit the selected tank
-
-        // After swapping the tank, reload the SVG and apply the current color
-        this.loadTank();
-      },
-
-        // Emit the selected tank
-      emitSelectedTank() {
-        const selectedTank = this.tanks[this.currentTankIndex];
-        this.$emit('tank-selected', selectedTank); // Emit event to parent
-      },
-  
-      // Change the color of the specific part of the SVG
-      changeColor(newColor) {
-        this.specificColorToChange = this.targetColor; // Update the specific color to be changed
-        this.targetColor = newColor; // Update the color to be applied
-        this.applyColorChange();
-      },
-
-      // Emit the selected color
-      emitSelectedColor() {
-        if (this.customColor) {
-          this.$emit('color-selected', this.customColor); // Emit event to parent
-        } else {
-          this.$emit('color-selected', this.targetColor); // Emit event to parent
-        }
-      },
-  
-      // Load the current tank SVG file
-      async loadTank() {
-        this.specificColorToChange = '#06B559'
-        const response = await fetch(this.tanks[this.currentTankIndex]);
-        const svgText = await response.text();
-        this.$refs.svgContainer.innerHTML = svgText; // Insert the SVG into the container
-        this.applyColorChange(); // Apply the selected color
-      },
-  
-      // Apply the color change to elements that initially have the specific color
-      applyColorChange() {
-        const elements = this.$refs.svgContainer.querySelectorAll(`[fill="${this.specificColorToChange}"]`);
-        elements.forEach((element) => {
-          element.setAttribute("fill", this.targetColor); // Change the color only if it matches the specific color
-        });
-      },
+      this.emitSelectedTank();
+      this.loadTank();
     },
-    mounted() {
-      this.loadTank(); // Load the first tank when the component is mounted
-      this.emitSelectedTank(); 
+
+    changeColor(newColor) {
+      this.color = newColor;
+
       this.emitSelectedColor();
+      this.loadTank();
     },
-  };
-  </script>
+
+    async loadTank() {
+      console.log("loadTank: this.selectedColor", this.selectedColor, ", this.tankType", this.tankType);
+      try {
+        const response = await axios.get(`http://localhost:8000/selector/${this.tankType}`);
+        
+        this.$refs.svgContainer.innerHTML = response.data;
+
+        // wait until the next DOM update cycle
+        await this.$nextTick();
+
+        // apply color to tank
+        const elements = this.$refs.svgContainer.querySelectorAll(`[fill="#123456"]`);
+        elements.forEach((element) => {
+          element.setAttribute("fill", this.color); 
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    emitSelectedTank() {
+      this.$emit('tank-selected', this.tankType);
+    },
+    
+    emitSelectedColor() {
+      this.$emit('color-selected', this.color);
+    },
+  },
+};
+</script>
   
-  <style scoped>
-  .tank-container {
-    background-color: white;
-    overflow: hidden;
-  }
+<style scoped>
+.tank-container {
+  background-color: white;
+  overflow: hidden;
+}
 
-  .flip-x {
-    transform: scaleX(-1);
-  }
+.flip-x {
+  transform: scaleX(-1);
+}
 
-/* Style for the custom color input */
 input[type="color"] {
   -webkit-appearance: none;
   appearance: none;

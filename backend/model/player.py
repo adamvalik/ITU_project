@@ -4,7 +4,7 @@ class Player(BaseModel):
   name: str
   tankType: int
   color: str
-  armour: int
+  armor: int
   power: int
   speed: int
   skillPoints: int
@@ -28,7 +28,4 @@ class Player(BaseModel):
 # class Settings(BaseModel):
 #   soundEffectsVolume: int
 
-players = [
-  Player(name="Aliceeeeeeee", tankType=4, color="#FF0000", armor=1, power=3, speed=1, money=1000, fuel=100, health=100, skillPoints=3, weapon1=3, weapon2=2, weapon3=1),
-  Player(name="Bob", tankType=2, color="#00FF00", armor=0, power=3, speed=0, money=1000, fuel=100, health=100, skillPoints=3, weapon1=5, weapon2=4, weapon3=8),
-]
+players = []

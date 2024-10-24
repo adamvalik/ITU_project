@@ -124,10 +124,25 @@
         @mouseup="onMouseUp"
         @mousedown="onMouseDown"
       ></canvas>
+      <img :src="'assets/svgtank1.svg'" alt="Tank" id="tankImage" style="display: none;"/>
+
+
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tank -->
+      <rect x="30" y="50" width="40" height="10" fill="lightgreen" />
+      <rect x="40" y="45" width="20" height="5" fill="green" />
+      <circle cx="35" cy="62" r="3" fill="black" />
+      <circle cx="65" cy="62" r="3" fill="black" />
+
+      <!-- Arc for shell trajectory -->
+      <path d="M 50 50 A 30 30 0 0 1 80 20" fill="none" stroke="blue" stroke-width="2" />
+      </svg>
+
 
   </template>
   
   <script>
+  import axios from 'axios';
   export default {
     name: "GameScreen",
     data() {
@@ -433,26 +448,52 @@
       },
       
       
-      drawTank(ctx, player) {
+      async drawTank(ctx, player) {
         ctx.save();
 
         this.player1.y = this.terrain[Math.floor(player.x)] - player.size / 2;
 
-        ctx.translate(player.x, this.player1.y - player.size / 2);
-        
-  
-        // Draw the tank body
-        ctx.fillStyle = this.player1.tankColor;
-        ctx.fillRect(-player.size / 2, -player.size / 4, player.size, player.size / 2);
-  
-        // Draw the tank turret
-        const turretLength = player.size * 0.7;
-        ctx.translate(0, -player.size / 7);
-        ctx.rotate((-this.angle * Math.PI) / 180);
-        ctx.fillStyle = this.player1.tankColor;
-        ctx.fillRect(0, -5, turretLength, 10);
-  
-        ctx.restore();
+        // ctx.translate(player.x, this.player1.y - player.size / 2)
+
+        // Fetch the SVG from the FastAPI endpoint
+        const response = await axios.get(`/player/0/tank`, {
+          responseType: 'blob'
+        });
+
+        const blob = await response.data;
+        const url = URL.createObjectURL(blob);
+
+        // Create an image from the fetched SVG
+        const img = new Image();
+        img.src = url;
+
+        // Define the desired size for the tank
+        const tankWidth = 50; // Adjust the width to suit your needs
+        const tankHeight = 50; // Adjust the height to suit your needs
+
+        // Once the image is loaded, draw it on the canvas
+        img.onload = () => {
+          ctx.drawImage(img, player.x - tankWidth / 2, this.player1.y - tankHeight / 2, tankWidth, tankHeight);
+
+          // Draw the gun (turret)
+          ctx.translate(player.x, this.player1.y - tankHeight / 2); // Adjust for tank position
+          ctx.rotate((-this.angle * Math.PI) / 180); // Rotate based on angle
+          ctx.restore();
+        };
+        // // Load the tank image
+        // const img = document.getElementById('tankImage');
+
+        // // Define the desired size for the tank
+        // const tankWidth = img.width / 2; // Change this value to adjust the width
+        // const tankHeight = img.height / 2; // Change this value to adjust the height
+
+        // // Draw the tank image at the player's position with the specified size
+        // ctx.drawImage(img, player.x - tankWidth / 2, this.player1.y - tankHeight / 2, tankWidth, tankHeight); // Center the tank image
+
+        // // Draw the gun (turret)
+        // ctx.translate(player.x, this.player1.y - img.height / 2); // Adjust for tank position
+        // ctx.rotate((-this.angle * Math.PI) / 180); // Rotate based on angle
+        // ctx.restore();
       },
 
       drawAimCircle(player){

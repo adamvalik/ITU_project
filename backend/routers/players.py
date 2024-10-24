@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import Response
-from svg_templates import SVG_TEMPLATES
+from model.svgTemplates import SVG_TEMPLATES
 from main import players
 
 router = APIRouter()

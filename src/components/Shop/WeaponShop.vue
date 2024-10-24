@@ -1,11 +1,12 @@
 <script setup>
 import {ref} from 'vue';
 import WeaponShopItem from './WeaponShopItem.vue';
-const cash = ref(20125);
+const cash = ref(600);
 const spentCash = ref(0); 
 const showSpent = ref(false); 
 
 function updateCash(price) {
+ 
   cash.value -= price;
 
   spentCash.value = price;

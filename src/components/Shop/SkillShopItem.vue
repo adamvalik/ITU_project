@@ -89,13 +89,13 @@ const effectiveLevel = computed(() => {
     </div>
 
     <div
-  class="w-12 h-12 rounded-3xl border-4 bg-red-500 border-red-600 ml-2 flex justify-center items-center cursor-pointer
+      class="w-12 h-12 rounded-3xl border-4 bg-red-500 border-red-600 ml-2 flex justify-center items-center cursor-pointer
          hover:bg-red-600 hover:border-red-700 
          active:bg-red-700 active:border-red-800"
         @click="downgradeSkill"
->
-  <p class="text-white font-black text-2xl">-</p>
-</div>
+    >
+        <p class="text-white font-black text-2xl">-</p>
+      </div>
 
     </div>
   </div>

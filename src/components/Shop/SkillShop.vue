@@ -1,7 +1,27 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, defineProps} from 'vue'
 import SkillShopItem from './SkillShopItem.vue';
-const skillPoints = ref(3)
+const props = defineProps({
+    armor:{
+      type: Number,
+      default: 0
+    },
+    power:{
+      type: Number,
+      default: 0
+    },
+    speed:{
+      type: Number,
+      default: 0
+    },
+    skillPoints:{
+      type: Number,
+      default: 0
+    },
+})
+
+const skillPoints = ref(props.skillPoints)
+
 
 function updatePoints(usedPoints) {
   skillPoints.value += usedPoints;
@@ -13,9 +33,9 @@ function updatePoints(usedPoints) {
             FREE SKILL POINTS: <span class="text-5xl ml-4 " > {{skillPoints}} </span>
         </div>
         <div>
-        <SkillShopItem name="Armor" :image="require('@/assets/armor-icon.png')" :level="3" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
-        <SkillShopItem name="Power" :image="require('@/assets/power-icon.png')" :level="2" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
-        <SkillShopItem name="Speed" :image="require('@/assets/speed-icon.png')" :level="1" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Armor" :image="require('@/assets/armor-icon.png')" :level="props.armor" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Power" :image="require('@/assets/power-icon.png')" :level="props.power" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Speed" :image="require('@/assets/speed-icon.png')" :level="props.speed" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
         </div>
 </div>
 </template>

@@ -12,7 +12,12 @@
       <!-- Player 1 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(1, $event)" @color-selected="updateColorSelection(1, $event)" :defaultColor="player1.color" :defaultTankType="player1.tankType" />
-      
+      <div>
+        <label class="font-semibold">Free Skill Points:</label><span class="font-semibold">{{ player1.skillPoints }}</span>
+        <skill-selector v-if="!loading" :currentLevel="player1.armor" :freePoints="player1.skillPoints" @update-skill="updateSkillLevel(1, 'armor', $event)" @update-free-points="updateFreePoints(1, $event)" />
+        <skill-selector v-if="!loading" :currentLevel="player1.power" :freePoints="player1.skillPoints" @update-skill="updateSkillLevel(1, 'power', $event)" @update-free-points="updateFreePoints(1, $event)" />
+        <skill-selector v-if="!loading" :currentLevel="player1.speed" :freePoints="player1.skillPoints" @update-skill="updateSkillLevel(1, 'speed', $event)" @update-free-points="updateFreePoints(1, $event)" />
+      </div>
     </div>
 
     <!-- Right Side (Player 2) -->
@@ -27,7 +32,12 @@
       <!-- Player 2 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(2, $event)" @color-selected="updateColorSelection(2, $event)" :is-flipped="true" :defaultColor="player2.color" :defaultTankType="player2.tankType" />
-      
+      <div>
+        <label class="font-semibold">Free Skill Points:</label><span class="font-semibold">{{ player2.skillPoints }}</span>
+        <skill-selector v-if="!loading" :currentLevel="player2.armor" :freePoints="player2.skillPoints" @update-skill="updateSkillLevel(2, 'armor', $event)" @update-free-points="updateFreePoints(2, $event)" />
+        <skill-selector v-if="!loading" :currentLevel="player2.power" :freePoints="player2.skillPoints" @update-skill="updateSkillLevel(2, 'power', $event)" @update-free-points="updateFreePoints(2, $event)" />
+        <skill-selector v-if="!loading" :currentLevel="player2.speed" :freePoints="player2.skillPoints" @update-skill="updateSkillLevel(2, 'speed', $event)" @update-free-points="updateFreePoints(2, $event)" />
+      </div>
     </div>
 
     <!-- Footer Buttons -->
@@ -46,12 +56,14 @@
 </template>
 
 <script>
+import SkillSelector from '@/components/Selectors/SkillSelector.vue';
 import TankSelector from '@/components/Selectors/TankSelector.vue';
 import axios from 'axios';
 
 export default {
   components: {
     TankSelector,
+    SkillSelector
   },
   data() {
     return {
@@ -92,7 +104,6 @@ export default {
     await this.fetchData();
   },
   methods: {
-    // Update tank selection for a player
     updateTankSelection(player, selectedTank) {
       if (player === 1) {
         this.player1.tankType = selectedTank;
@@ -101,7 +112,6 @@ export default {
       }
     },
 
-    // Update color selection for a player
     updateColorSelection(player, selectedColor) {
       if (player === 1) {
         this.player1.color = selectedColor;
@@ -110,25 +120,31 @@ export default {
       }
     },
 
-    updatePoints(player, usedPoints, name) {
-      console.log(player, usedPoints, name);
-      name = name.toLowerCase();
+    updateSkillLevel(player, skill, level) {
       if (player === 1) {
-        if (name === "armor") {
-          this.player1.armor -= usedPoints;
-        } else if (name === "power") {
-          this.player1.power -= usedPoints;
-        } else if (name === "speed") {
-          this.player1.speed -= usedPoints;
+        if (skill === 'armor') {
+          this.player1.armor = level;
+        } else if (skill === 'power') {
+          this.player1.power = level;
+        } else if (skill === 'speed') {
+          this.player1.speed = level;
         }
       } else {
-        if (name === "armor") {
-          this.player2.armor -= usedPoints;
-        } else if (name === "power") {
-          this.player2.power -= usedPoints;
-        } else if (name === "speed") {
-          this.player2.speed -= usedPoints;
+        if (skill === 'armor') {
+          this.player2.armor = level;
+        } else if (skill === 'power') {
+          this.player2.power = level;
+        } else if (skill === 'speed') {
+          this.player2.speed = level;
         }
+      }
+    },
+
+    updateFreePoints(player, points) {
+      if (player === 1) {
+        this.player1.skillPoints = points;
+      } else {
+        this.player2.skillPoints = points;
       }
     },
 
@@ -139,24 +155,21 @@ export default {
         const players = response.data;
 
         if (players[0]) {
-          console.log('Player 1 color:', players[0].color);
           this.player1 = players[0];
         }
         if (players[1]) {
-          console.log('Player 2 color:', players[1].color);
           this.player2 = players[1];
         }
         
-        this.loading = false; // Set loading to false after fetching data
-
+        this.loading = false;
       } catch (error) {
-        console.error('Error fetching players:', error);
-        this.loading = false; // Set loading to false even if there's an error
+        console.error(error);
+        this.loading = false;
       }
     },
 
     async submitData() {
-      // Ensure default names if not provided
+      // default names
       if (!this.player1.name) {
         this.player1.name = "Player 1";
       }
@@ -164,14 +177,11 @@ export default {
         this.player2.name = "Player 2";
       }
 
-      console.log("Player 1 data:", this.player1);  // Log the data being sent
-      console.log("Player 2 data:", this.player2);  // Log the data being sent
-
       try {
         await axios.post('http://localhost:8000/players/0', this.player1);
         await axios.post('http://localhost:8000/players/1', this.player2);
       } catch (error) {
-        console.error('Error submitting player data:', error);
+        console.error(error);
       }
     },
 
@@ -179,14 +189,10 @@ export default {
       try {
         await axios.delete('http://localhost:8000/players');
       } catch (error) {
-        console.error('Error deleting player data:', error);
+        console.error(error);
       }
     }
 
   }
 }
 </script>
-
-<style scoped>
-  /* You can add additional styling if needed */
-</style>

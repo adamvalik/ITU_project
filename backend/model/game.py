@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
 class Game(BaseModel):
-  pass
+  mode: str = "classic"
+  timer: bool = False
+  wins: int = 0
 
 game = Game()

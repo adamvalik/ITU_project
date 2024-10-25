@@ -5,6 +5,7 @@ from routers import players
 from routers import tanks
 from routers import mapCreator
 from routers import settings
+from routers import game
 
 app = FastAPI()
 
@@ -20,6 +21,7 @@ app.include_router(mapCreator.router)
 app.include_router(players.router)
 app.include_router(tanks.router)
 app.include_router(settings.router)
+app.include_router(game.router)
 
 # muzes nastavit spolecny prerix pro vsechny routy v routeru
 #app.include_router(user_router, prefix="/api/v1")

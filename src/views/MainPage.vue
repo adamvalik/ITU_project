@@ -1,5 +1,3 @@
-
-
 <template>
   <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
 
@@ -40,9 +38,6 @@
       <router-link to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
       </router-link>
-      <router-link to="/shop" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        SHOP (temp link)
-      </router-link>
       <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         SETTINGS
       </button>
@@ -50,7 +45,7 @@
 
     <!-- Game Modes Modal -->
     <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
-      <router-link @click.stop to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+      <router-link @click.stop="submitClassicMode" to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
         Classic mode
       </router-link>
       <div 
@@ -58,6 +53,7 @@
         @click.stop
         @mouseenter="customModeSetting = true"
         class="text-3xl font-bold bg-white rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
+        key="mode1"
       >
         Custom mode
       </div>
@@ -65,6 +61,7 @@
         v-else 
         @click.stop 
         class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col gap-2 items-center justify-center hover:bg-gray-100"
+        key="mode2"
       >
         <p class="absolute top-4 left-1/4 text-3xl font-bold">Custom mode</p>
 
@@ -86,7 +83,7 @@
             @click="decreaseWins" 
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
           >
-            &#9664; <!-- Left Arrow -->
+            &#9664;
           </button>
 
           <!-- Display Number of Wins -->
@@ -99,19 +96,19 @@
             @click="increaseWins" 
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
           >
-            &#9654; <!-- Right Arrow -->
+            &#9654;
           </button>
         </div>
 
         <!-- Go Button -->
         <router-link 
           to="/chooseTanks" 
+          @click="submitCustomMode"
           class="absolute bottom-1 right-1 font-bold border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 text-xl py-2 px-6 rounded-2xl mt-4 transition duration-300"
         >
           GO!
         </router-link>
       </div>
-
     </div>
 
     <!-- Modal Window -->
@@ -188,7 +185,7 @@ export default {
     emitMute() {
       this.$emit('toggleMute', this.isMuted);
     },
-    
+
     decreaseWins() {
       if (this.wins > 1) {
         this.wins--;
@@ -210,6 +207,22 @@ export default {
       this.customModeSetting = false;
       this.isGameModesVisible = false;
     },
+
+    async submitClassicMode() {
+      try {
+        await axios.post('http://localhost:8000/game/mode?mode=classic');
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async submitCustomMode() {
+      try {
+        await axios.post(`http://localhost:8000/game/mode?mode=custom&timer=${this.timer}&wins=${this.wins}`);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
     getCloudStyle(index) {
       const baseStyle = this.clouds[index].style;
       const zIndex = index % 2 === 0 ? 1 : 40;  // Set z-index based on even or odd index
@@ -237,4 +250,5 @@ export default {
     transform: translateX(120vw); /* Move to the right, off-screen */
   }
 }
+
 </style>

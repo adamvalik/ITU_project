@@ -1,6 +1,6 @@
 <template>
   <background-music ref="backgroundMusic"/>
-  <router-view @playMusic="playMusic" @updateMusicVolume="updateMusicVolume"/>
+  <router-view @playMusic="playMusic" @updateMusicVolume="updateMusicVolume" @toggleMute="toggleMute" />
 </template>
 
 <script>
@@ -15,6 +15,9 @@ export default {
     },
     updateMusicVolume(volume) {
       this.$refs.backgroundMusic.updateVolume(volume);
+    },
+    toggleMute(isMuted) {
+      this.$refs.backgroundMusic.toggleMute(isMuted);
     }
   }
 };

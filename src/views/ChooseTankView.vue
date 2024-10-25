@@ -12,8 +12,7 @@
       <!-- Player 1 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(1, $event)" @color-selected="updateColorSelection(1, $event)" :defaultColor="player1.color" :defaultTankType="player1.tankType" />
-      <skill-shop v-if="!loading" :armor="player1.armor" :power="player1.power" :speed="player1.speed" :skillPoints="player1.skillPoints" />
-
+      
     </div>
 
     <!-- Right Side (Player 2) -->
@@ -28,8 +27,7 @@
       <!-- Player 2 Tank Type -->
       <!-- Conditionally render the TankSelector once data has been fetched -->
       <tank-selector v-if="!loading" @tank-selected="updateTankSelection(2, $event)" @color-selected="updateColorSelection(2, $event)" :is-flipped="true" :defaultColor="player2.color" :defaultTankType="player2.tankType" />
-      <skill-shop v-if="!loading" :armor="player2.armor" :power="player2.power" :speed="player2.speed" :skillPoints="player2.skillPoints" />
-
+      
     </div>
 
     <!-- Footer Buttons -->
@@ -48,14 +46,12 @@
 </template>
 
 <script>
-import SkillShop from '@/components/Shop/SkillShop.vue';
-import TankSelector from '@/components/TankSelector.vue';
+import TankSelector from '@/components/Selectors/TankSelector.vue';
 import axios from 'axios';
 
 export default {
   components: {
     TankSelector,
-    SkillShop
   },
   data() {
     return {
@@ -64,7 +60,7 @@ export default {
         name: null,
         tankType: 0,
         color: '#06B559',
-        armour: 0,
+        armor: 0,
         power: 0,
         speed: 0,
         skillPoints: 6, 
@@ -79,7 +75,7 @@ export default {
         name: null,
         tankType: 1,
         color: '#0D6BBD',
-        armour: 0,
+        armor: 0,
         power: 0,
         speed: 0,
         skillPoints: 6,
@@ -111,6 +107,28 @@ export default {
         this.player1.color = selectedColor;
       } else {
         this.player2.color = selectedColor;
+      }
+    },
+
+    updatePoints(player, usedPoints, name) {
+      console.log(player, usedPoints, name);
+      name = name.toLowerCase();
+      if (player === 1) {
+        if (name === "armor") {
+          this.player1.armor -= usedPoints;
+        } else if (name === "power") {
+          this.player1.power -= usedPoints;
+        } else if (name === "speed") {
+          this.player1.speed -= usedPoints;
+        }
+      } else {
+        if (name === "armor") {
+          this.player2.armor -= usedPoints;
+        } else if (name === "power") {
+          this.player2.power -= usedPoints;
+        } else if (name === "speed") {
+          this.player2.speed -= usedPoints;
+        }
       }
     },
 

@@ -3,6 +3,18 @@
 <template>
   <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
 
+     <!-- Mute Button Icon in the Corner -->
+     <button 
+      @click="toggleMute" 
+      class="absolute top-4 right-4 bg-sky-300 rounded-full p-2 shadow-lg z-50 hover:bg-sky-400 transition"
+    >
+      <img 
+        :src="isMuted ? '/assets/mute.png' : '/assets/unmute.png'" 
+        alt="Mute Toggle" 
+        class="w-6 h-6"
+      />
+    </button>
+
     <!-- Multiple Clouds Moving Across the Background -->
     <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
 
@@ -14,8 +26,8 @@
     </div>
 
     <!-- Language Flags -->
-    <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
-    <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" />
+    <!-- <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
+    <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" /> -->
 
     <!-- Menu Buttons -->
     <div class="flex flex-col justify-center gap-3 z-10">
@@ -38,42 +50,57 @@
 
     <!-- Game Modes Modal -->
     <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
-      <router-link @click.stop to="/chooseTanks" class="h-200 text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+      <router-link @click.stop to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
         Classic mode
       </router-link>
       <div 
         v-if="!customModeSetting"
         @click.stop
         @mouseenter="customModeSetting = true"
-        class="h-200 text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
+        class="text-3xl font-bold bg-white rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
       >
         Custom mode
       </div>
       <div 
         v-else 
         @click.stop 
-        class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center justify-center hover:bg-gray-100 transition duration-300"
+        class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col gap-2 items-center justify-center hover:bg-gray-100"
       >
-        <p class="text-3xl font-bold mb-2">Custom mode</p>
+        <p class="absolute top-4 left-1/4 text-3xl font-bold">Custom mode</p>
 
-        <div class="flex items-center p-2 space-x-3">
-          <label for="timer" class="text-xl font-semibold">Timer</label>
+        <div class="flex self-start items-center px-4 mt-10 gap-8">
+          <label for="timer" class="text-xl font-semibold pr-10">Timer</label>
           <input 
             id="timer" 
             type="checkbox" 
-            class="form-checkbox h-6 w-6 text-blue-600" 
+            class="form-checkbox h-6 w-6 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-200 focus:ring-opacity-50 hover:border-blue-500" 
             v-model="timer" 
           />
         </div>
 
-        <div class="flex items-center p-2 space-x-3">
-          <label for="wins" class="text-xl font-semibold">Wins</label>
-          <input 
-            id="wins" 
-            type="number" 
-            class="form-input border rounded-lg p-2 w-20 text-center" 
-            v-model="wins" 
-          />
+        <div class="flex self-start items-center px-4 mb-4 gap-2">
+          <label for="wins" class="text-xl font-semibold pr-8">Wins</label>
+          
+          <!-- Left Button to Decrease -->
+          <button 
+            @click="decreaseWins" 
+            class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
+          >
+            &#9664; <!-- Left Arrow -->
+          </button>
+
+          <!-- Display Number of Wins -->
+          <div class="text-2xl font-bold w-8 text-center">
+            {{ wins }}
+          </div>
+
+          <!-- Right Button to Increase -->
+          <button 
+            @click="increaseWins" 
+            class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
+          >
+            &#9654; <!-- Right Arrow -->
+          </button>
         </div>
 
         <!-- Go Button -->
@@ -101,6 +128,7 @@
 
 <script>
 import Settings from '../components/Settings/Settings.vue';
+import axios from 'axios';
 
 export default {
   name: 'MainPage',
@@ -109,10 +137,12 @@ export default {
   },
   data() {
     return {
+      wins: 5,
       timer: false,               // Timer setting for custom mode
       customModeSetting: false,
       isSettingsVisible: false,   // Controls whether the modal is visible
       isGameModesVisible: false,  // Controls whether the game modes modal is visible
+      isMuted: true,             // Controls whether the background music is muted
       // soundEffectsVolume: 50,     // Default value for sound effects slider
       // buttonSoundSrc: "/assets/another-one.mp3",  // Path to button click sound
       // Array of cloud properties for dynamic rendering
@@ -130,41 +160,56 @@ export default {
       ],
     };
   },
+  async mounted() {
+    // set initial music volume to 50%
+    try {
+      await axios.post(`http://localhost:8000/settings/musicVolume?volume=50`);
+    } catch (error) {
+      console.error(error);
+    }
+    // emit the initial mute state
+    this.emitMute(); 
+  },
   methods: {
-    // Play button sound effect
-    // playButtonSound() {
-    //   this.$refs.buttonSound.currentTime = 0; // Reset sound to start
-    //   this.$refs.buttonSound.play();
-    // },
-    // Play background music
+    // background music
     playMusic() {
+      if (!this.isMuted) 
       this.$emit('playMusic');
     },
     updateMusicVolume(volume) {
+      this.isMuted = volume === 0;
+      this.emitMute();
       this.$emit('updateMusicVolume', volume);
     },
-
-
-
-
-    // Show the settings modal
+    toggleMute() {
+      this.isMuted = !this.isMuted;
+      this.emitMute();
+    },
+    emitMute() {
+      this.$emit('toggleMute', this.isMuted);
+    },
+    
+    decreaseWins() {
+      if (this.wins > 1) {
+        this.wins--;
+      }
+    },    
+    increaseWins() {
+      this.wins++;
+    },
     showSettings() {
       this.isSettingsVisible = true;
     },
-    // Hide the settings modal
     hideSettings() {
       this.isSettingsVisible = false;
     },
-    // Show the game modes modal
     showGameModes() {
       this.isGameModesVisible = true;
     },
-    // Hide the game modes modal
     hideGameModes() {
       this.customModeSetting = false;
       this.isGameModesVisible = false;
     },
-    // Get cloud style dynamically based on the index
     getCloudStyle(index) {
       const baseStyle = this.clouds[index].style;
       const zIndex = index % 2 === 0 ? 1 : 40;  // Set z-index based on even or odd index

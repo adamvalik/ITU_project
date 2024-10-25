@@ -1,7 +1,7 @@
 SVG_TEMPLATES = {
 0: '''
 <svg width="221" height="99" viewBox="0 0 221 99" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="barrel-group" transform="rotate(-60.908672 110.073 18.2837)">>
+<g id="barrel-group" transform="rotate(-60.908672 110.073 18.2837)">
 <rect x="110.073" y="18.2837" width="77.44" height="12.32" fill="#06B559"/>
 <rect x="110.073" y="18.2837" width="77.44" height="12.32" fill="black" fill-opacity="0.25"/>
 <rect x="186.754" y="14.251" width="28.864" height="18.304" rx="3.52" fill="#06B559"/>

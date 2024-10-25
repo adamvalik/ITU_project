@@ -20,6 +20,9 @@ export default {
       this.currentVolume = newVolume;
       this.$refs.backgroundMusic.volume = this.currentVolume; // Update the audio element's volume
     },
+    toggleMute(isMuted) {
+      this.$refs.backgroundMusic.muted = isMuted;
+    }
   },
   mounted() {
     this.$refs.backgroundMusic.volume = this.currentVolume; // Set initial volume

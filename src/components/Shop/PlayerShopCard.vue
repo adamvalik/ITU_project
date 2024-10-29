@@ -1,5 +1,5 @@
 <script setup>
-import {defineProps, ref, onMounted} from 'vue';
+import {defineProps, ref, onMounted, defineExpose} from 'vue';
 import axios from 'axios';
 import WeaponShop from './WeaponShop.vue';
 import SkillShop from './SkillShop.vue';
@@ -47,8 +47,48 @@ onMounted(() => {
 });
 
 function updatePoints(usedPoints, name) {
-  console.log(usedPoints)
-  console.log(name)
+  if(name === "Armor"){
+    player.value.armor -= usedPoints;
+    
+  } else if(name === "Power"){
+    player.value.power -= usedPoints;
+    
+  } else if(name === "Speed"){
+    player.value.speed -= usedPoints;
+  
+  }
+  player.value.skillPoints += usedPoints;
+}
+
+function updateCash(cash, name, quantity) {
+  player.value.money = cash;
+  if(name === "Striker"){
+    player.value.weapon1 = quantity;
+ 
+  } else if(name === "Devastator"){
+    player.value.weapon2 = quantity;
+    
+  } else if(name === "Phantom"){
+    player.value.weapon3 = quantity;
+    
+  }
+}
+
+defineExpose({
+  savePlayer
+});
+
+function savePlayer() {
+  console.log("Money",player.value.money);
+  console.log("W1:",player.value.weapon1);
+  console.log("W2:",player.value.weapon2);
+  console.log("W3:",player.value.weapon3);
+  console.log("Armor:",player.value.armor);
+  console.log("Power:",player.value.power);
+  console.log("Speed:",player.value.speed);
+  console.log("Free Pts:",player.value.skillPoints);
+
+
 }
 
 </script>
@@ -69,11 +109,11 @@ function updatePoints(usedPoints, name) {
           </div>
 
             <div v-if="player">
-                <WeaponShop class="mb-14" :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" ></WeaponShop>
+                <WeaponShop class="mb-14" :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" @updateCash="updateCash"></WeaponShop>
                 <SkillShop  :armor="player.armor" :power="player.power" :speed="player.speed" :skillPoints="player.skillPoints" @updatePoints="updatePoints"></SkillShop>
                 
             </div>
-            <div v-else>Loading player data...</div>
+            <div @click="savePlayer" v-else>Loading player data...</div>
         </div>
 </template>
 

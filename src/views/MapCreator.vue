@@ -3,7 +3,7 @@ import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue'
 import OperationSelector from '../components/mapcreatorcomponents/OperationSelector.vue';
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 const activeTheme = ref('forest'); // Default theme
@@ -12,15 +12,19 @@ const eraserActive = ref(false); // Track if eraser is being used
 const isLoading = ref(false); // Add this reactive state to track loading
 const brushSize = 25; // Eraser brush size
 const brushColor = ref('#2e7d32'); // Make brushColor reactive
+const obstructionIconPath = ref('/assets/tree_icon.svg'); // Default obstruction icon
 
 const updateTheme = (theme) => {
   activeTheme.value = theme;
   if (theme === 'forest') {
     brushColor.value = '#2e7d32';
+    obstructionIconPath.value = '/assets/tree_icon.svg';
   } else if (theme === 'beach') {
     brushColor.value = '#c68e17';
+    obstructionIconPath.value = '/assets/cactus_icon.svg';
   } else {
     brushColor.value = '#02f1fb';
+    obstructionIconPath.value = '/assets/snowman_icon.svg';
   }
   // Clear the canvas before recoloring
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
@@ -59,6 +63,7 @@ let ctx = null;
 let drawing = false;
 let drawnPath = [];
 const storedGreenCoordinates = ref([]);  // Array to store all green areas
+const imageArray = ref([]);  // Array to store all images
 
 const startDrawing = (event) => {
   drawing = true;
@@ -77,7 +82,7 @@ const stopDrawing = async () => {
 };
 
 const draw = (event) => {
-  if (!drawing || cursorType.value === '') return;
+  if (!drawing || cursorType.value === '' || cursorType.value === 'obstruction') return;
 
   const rect = canvasRef.value.getBoundingClientRect();
   const x = event.clientX - rect.left;
@@ -131,6 +136,14 @@ const updateMapArea = (greenCoordinates) => {
   ctx.strokeStyle = brushColor.value;
   ctx.lineWidth = 2;
 
+  imageArray.value.forEach(({ x, y, desiredWidth, desiredHeight }) => {
+    const img = new Image();
+    img.src = obstructionIconPath.value;
+    img.onload = () => {
+      ctx.drawImage(img, x - desiredWidth / 2, y - desiredHeight / 2, desiredWidth, desiredHeight);
+    };
+  });
+
   greenCoordinates.forEach(([x, y]) => {
     ctx.lineTo(x, y);
   });
@@ -153,18 +166,89 @@ const hideBrushCircle = () => {
 
 onMounted(() => {
   const canvas = canvasRef.value;
-  ctx = canvas.getContext('2d');
-  canvas.addEventListener('mousedown', startDrawing);
-  canvas.addEventListener('mouseup', stopDrawing);
-  canvas.addEventListener('mousemove', (event) => {
+  ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  document.addEventListener('mousedown', startDrawing);
+  document.addEventListener('mouseup', stopDrawing);
+  document.addEventListener('mousemove', (event) => {
     draw(event);
     updateBrushCircle(event); // Update circle position while moving
   });
-  canvas.addEventListener('mouseleave', () => {
-    stopDrawing();
-    hideBrushCircle(); // Hide circle when mouse leaves canvas
-  });
+  canvas.addEventListener('mouseleave', hideBrushCircle); // Hide circle when mouse leaves canvas
 });
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', startDrawing);
+  document.removeEventListener('mouseup', stopDrawing);
+  document.removeEventListener('mousemove', draw);
+});
+
+const onDrop = (event) => {
+  event.preventDefault();
+  console.log('onDrop event triggered');
+
+  // Get the drop coordinates
+  const rect = canvasRef.value.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  console.log(`Drop coordinates: x=${x}, y=${y}`);
+
+  // Get the dragged image URL
+  const imgUrl = obstructionIconPath.value;
+  console.log(`Image URL: ${imgUrl}`);
+
+  // Create a new image element to draw on the canvas
+  const img = new Image();
+  img.src = imgUrl;
+  img.crossOrigin = 'anonymous'; // Enable CORS for the image
+  img.onload = () => {
+    const desiredWidth = 29; // Set the desired width
+    const desiredHeight = 37; // Set the desired height
+    console.log('Image loaded, starting animation');
+    animateImage(img, x, y, desiredWidth, desiredHeight);
+  };
+};
+
+const animateImage = (img, startX, startY, width, height) => {
+  let y = startY;
+  const gravity = 1; // Gravity effect
+
+  const step = () => {
+    ctx.clearRect(startX - width / 2, y - height / 2, width, height); // Clear previous image position
+
+    // Check for collision with any non-transparent color
+    const imageData = ctx.getImageData(startX, y + height / 2, width, 1).data;
+    console.log('Image data:', imageData);
+    let collision = false;
+
+    // Check if all pixels in the row are transparent
+    for (let i = 3; i < imageData.length; i += 4) { // Iterate over alpha values
+      console.log('Alpha value:', imageData[i]);
+      console.log("r value:", imageData[i-3]);
+      console.log("g value:", imageData[i-2]);
+      console.log("b value:", imageData[i-1]);
+      if (imageData[i] > 30) { // Check for non-transparent pixel
+        console.log('Collision detected');
+        collision = true;
+        break;
+      }
+    }
+
+    if (!collision) {
+      y += gravity; // Apply gravity
+      ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at new position
+      requestAnimationFrame(step); // Continue animation
+    } else {
+      ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
+      imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
+      storedGreenCoordinates.value.forEach(greenCoordinates => {
+        updateMapArea(greenCoordinates);
+      });
+    }
+  };
+
+  step(); // Start the animation
+};
 
 </script>
 
@@ -173,7 +257,10 @@ onMounted(() => {
     <div class="canvas-container">
       <ThemeSelector :activeTheme="activeTheme" @theme-change="updateTheme" class="theme-selector"/>
       <OperationSelector :activeTheme="activeTheme" @cursor-change="updateCursor" class="operation-selector"/>
-      <canvas ref="canvasRef" width="900" height="500" class="border-2 border-black mt-4"></canvas>
+      <canvas ref="canvasRef" width="900" height="500" class="border-2 border-black mt-4"
+              @dragover.prevent
+              @drop="onDrop"
+      ></canvas>
     </div>
     <div class="brush-circle"></div>
     <RenderingScreen :visible="isLoading" message="Rendering..." />

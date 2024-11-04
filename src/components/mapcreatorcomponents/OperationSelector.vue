@@ -15,9 +15,11 @@
       <img src="/assets/eraser_icon.svg" alt="Eraser Icon" />
     </button>
     <button
-        class="icon-button obstruction"
-        :class="{ active: activeButton === 'obstruction' }"
-        @click="setActiveButton('obstruction')"
+      class="icon-button obstruction"
+      :class="{ active: activeButton === 'obstruction' }"
+      @click="setActiveButton('obstruction')"
+      draggable="true"
+      @dragstart="onDragStart"
     >
       <img :src="obstructionIcon" alt="Obstruction Icon" />
     </button>
@@ -34,6 +36,11 @@ const props = defineProps({
 
 const activeButton = ref('');
 const emit = defineEmits(['cursor-change']);
+
+const onDragStart = (event) => {
+  console.log("Drag start event"); // Debug log
+  event.dataTransfer.setData('text/plain', obstructionIcon.value); // Pass the icon URL or ID
+};
 
 const setActiveButton = (button) => {
   if (activeButton.value === button) {

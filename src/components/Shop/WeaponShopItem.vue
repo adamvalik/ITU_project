@@ -17,17 +17,27 @@ const props = defineProps({
     name:{
         type: String,
         default : "Weapon name"
+    },
+    cash:{
+        type: Number,
+        default : 0
     }
 })
 
 const quantity = ref(props.quantity);
 
+
 const emit = defineEmits(['updateCash']); // Define custom event
 
 function buyItem() {
+  if(props.price > props.cash){
+    console.log("nelze", props.cash);
+    emit('updateCash', props.price, props.name, quantity.value);
+    return;
+  }
   quantity.value += 1; // Example logic to decrease quantity
  
-  emit('updateCash', props.price);
+  emit('updateCash', props.price, props.name, quantity.value);
 }
 </script>
 <template>

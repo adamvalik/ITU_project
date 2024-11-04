@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, defineEmits } from 'vue';
 import WeaponShopItem from './WeaponShopItem.vue';
 
 const props = defineProps({
@@ -21,30 +21,37 @@ const props = defineProps({
   },
 });
 
-const cash = ref(props.cash);
 const spentCash = ref(0);
 const showSpent = ref(false);
 const shakeCash = ref(false); // New state for shaking cash display
 
-function updateCash(price) {
-  // Check if price is greater than the available cash
-  if (price > cash.value) {
-    shakeCash.value = true; // Trigger shake animation
+
+const emit = defineEmits(['updateCash']); 
+
+function updateCash(price, name, quantity) {
+  
+  if (price > props.cash) {
+    shakeCash.value = true;
     setTimeout(() => {
-      shakeCash.value = false; // Reset after shaking
-    }, 800); // Duration matches the shake animation
-    return; // Exit the function if cash is insufficient
+      shakeCash.value = false; 
+    }, 800); 
+    
+    return; 
   }
 
-  // Update cash and spent cash
-  cash.value -= price;
+
+  
   spentCash.value = price;
   showSpent.value = true;
 
+  emit('updateCash', props.cash - price, name, quantity);
+
   setTimeout(() => {
     showSpent.value = false;
-  }, 1000); // Duration for spent cash display
+  }, 1000); 
 }
+
+
 </script>
 
 <template>
@@ -70,9 +77,9 @@ function updateCash(price) {
 
     <!-- Weapon Shop Items -->
     <div class="flex">
-      <WeaponShopItem :image="require('@/assets/weapon1.png')" price="200" :quantity="props.weapon1" name="Striker" class="m-3" @updateCash="updateCash"></WeaponShopItem>
-      <WeaponShopItem :image="require('@/assets/weapon2.png')" price="400" :quantity="props.weapon2" name="Devastator" class="m-3" @updateCash="updateCash"></WeaponShopItem>
-      <WeaponShopItem :image="require('@/assets/weapon3.png')" price="600" :quantity="props.weapon3" name="Phantom" class="m-3" @updateCash="updateCash"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon1.png')" price="200" :quantity="props.weapon1" :cash="props.cash" name="Striker" class="m-3" @updateCash="updateCash"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon2.png')" price="400" :quantity="props.weapon2" :cash="props.cash" name="Devastator" class="m-3" @updateCash="updateCash"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon3.png')" price="600" :quantity="props.weapon3" :cash="props.cash" name="Phantom" class="m-3" @updateCash="updateCash"></WeaponShopItem>
     </div>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
     <div class="game-screen text-center mt-10">
       <h1 class="text-2xl font-bold mb-4">Tanks</h1>
-      <label class="block"><span class="font-bold">Wind: <span class="text-2xl">{{ wind }}</span> </span>  (positive for right, negative for left)</label>
+      <!-- <label class="block"><span class="font-bold">Wind: <span class="text-2xl">{{ wind }}</span> </span>  (positive for right, negative for left)</label> -->
       <div class="controls mt-4 flex justify-center items-center gap-4">
         <div>
           <label class="block font-bold">Angle: {{ angle }}°</label>
@@ -113,6 +113,7 @@
       </div>
 
     </div>
+    <div>
       <canvas 
         ref="gameCanvas" 
         :width="canvasWidth" 
@@ -124,25 +125,18 @@
         @mouseup="onMouseUp"
         @mousedown="onMouseDown"
       ></canvas>
-      <img :src="'assets/svgtank1.svg'" alt="Tank" id="tankImage" style="display: none;"/>
+    </div>
+    <div v-if="gameOver" class="absolute inset-0 flex flex-col space-y-2 items-center justify-center bg-black bg-opacity-50">
+        <h1 class="text-4xl font-bold">Game Over!</h1>
+        <button @click="backToMenu" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl mt-4 justify-center items-center">
+          Back to Menu
+        </button>
 
-
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <!-- Tank -->
-      <rect x="30" y="50" width="40" height="10" fill="lightgreen" />
-      <rect x="40" y="45" width="20" height="5" fill="green" />
-      <circle cx="35" cy="62" r="3" fill="black" />
-      <circle cx="65" cy="62" r="3" fill="black" />
-
-      <!-- Arc for shell trajectory -->
-      <path d="M 50 50 A 30 30 0 0 1 80 20" fill="none" stroke="blue" stroke-width="2" />
-      </svg>
-
-
+    </div>
   </template>
   
   <script>
-  import axios from 'axios';
+  //import axios from 'axios';
   export default {
     name: "GameScreen",
     data() {
@@ -173,6 +167,7 @@
         lineStopX: 200,
         lineStopY: 400,
         isDragging: false,
+        imgTank: null,
 
         wind: 0,
         missile: null,
@@ -180,7 +175,7 @@
         power: 50,
         gameOver: false,
         fireHelpVisible: false,
-        time: 10,
+        time: 40,
         money: 4000,
         fuel: 100,
         fuelMax: 250,
@@ -193,6 +188,7 @@
       this.startTimer();
       this.generateTerrain();
       this.renderGame();
+      window.addEventListener('keydown', this.onKeyPressed);
     },
     methods: {
       showFireHelp() {
@@ -200,6 +196,10 @@
       },
       hideFireHelp() {
         this.fireHelpVisible = false;
+      },
+
+      backToMenu() {
+        this.$router.push('/');
       },
 
       drawPlayerNames(ctx) {
@@ -211,7 +211,6 @@
 
         ctx.font = "28px Montserrat";
         ctx.fillStyle = "black";
-        // ctx.textAlign = "left";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.player1.name, player1X, 30);
@@ -221,8 +220,6 @@
 
       drawPlayerHealth(ctx){
         ctx.save();
-        // const canvas = this.$refs.canvas;
-        // const ctx = canvas.getContext('2d');
 
         ctx.fillStyle = 'black'; // White color
         ctx.fillRect(10, 50, 200, 40);
@@ -250,6 +247,19 @@
         ctx.restore();
       },
 
+      drawWind(ctx){
+        ctx.save();
+        
+        ctx.fillStyle = 'black'; // Text color
+        ctx.font = 'bold 20px Montserrat';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Wind: ', 600, 20);
+        ctx.fillText(this.wind, 639, 20);
+        
+        ctx.restore();
+      },
+
       startTimer() {
         setInterval(() => {
           if (this.time > 0) {
@@ -273,9 +283,9 @@
       fireMissile() {
         const startX = this.player1.x + 15;
         const startY = this.player1.y - 15; //this.terrain[Math.floor(player.x)] - player.size / 2
-        const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 5 + this.wind * 4;
-        const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 5;
-        const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 5 + this.wind * 8;
+        const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 4;
+        const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 10;
+        const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 8;
         const endY = this.canvasHeight;
   
         this.missile = {
@@ -302,7 +312,6 @@
         if (this.missile.t >= 1 || this.checkTerrainCollision(x, y)) {
           this.explodeTerrain(x, y);
           this.missile = null;
-          this.gameOver = true;
           return;
         }
   
@@ -335,7 +344,7 @@
           }
         }
         this.renderGame();
-        this.wind = 0;//Math.floor(Math.random() * 100 - 50); 
+        this.wind = 0;// Math.floor(Math.random() * 100 - 50); 
 
       },
       renderGame() {
@@ -344,16 +353,22 @@
         ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
         // Draw the terrain
-        this.drawTerrain(ctx);
+        // this.drawTerrain(ctx);
   
         // Draw player 1's tank
-        this.drawTank(ctx, this.player1);
+        // this.drawTank(ctx, this.player1);
 
-        //Draw player names
-        this.drawPlayerNames(ctx);
+        // //Draw wind
+        // this.drawWind(ctx);
 
-        //Draw player health
-        this.drawPlayerHealth(ctx);
+        // //Draw player names
+        // this.drawPlayerNames(ctx);
+
+        // //Draw player health
+        // this.drawPlayerHealth(ctx);
+
+        // Draw the aiming circle
+        this.drawAimCircle(this.player1);
 
       },
       drawTerrain(ctx) {
@@ -366,6 +381,24 @@
         ctx.closePath();
         ctx.fillStyle = "saddlebrown";
         ctx.fill();
+      },
+
+      onKeyPressed(event){
+        if(event.key === 'ArrowRight'){
+
+          if(this.fuel > 0 && this.player1.x <  this.canvasWidth - 5){
+            this.fuel -= 5;
+            this.player1.x += 5;
+            this.lineStopX += 5;
+          }
+        } else if(event.key === 'ArrowLeft'){
+          if(this.fuel > 0 && this.player1.x > 5){
+            this.fuel -= 5;
+            this.player1.x -= 5;
+            this.lineStopX -= 5;
+          }
+        }
+        this.renderGame();
       },
 
       onMouseDown(event) {
@@ -394,8 +427,6 @@
           const dy = this.mousePosition.y - this.player1.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (this.isDragging) {
-
-            
             // Cap the power line's length to the circle radius
             const clampedDistance = Math.min(distance, this.aimCircleRadius);
             this.power = Math.round((clampedDistance / this.aimCircleRadius) * this.maxShotPower);
@@ -415,14 +446,12 @@
           this.isHovering = distance >= 1 && distance <= this.aimCircleRadius;
 
           if (this.isHovering) {
-            // Calculate the angle between the tank and the mouse
-            // if(!this.stopLine){
-            //   this.angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-            // }
+            //Calculate the angle between the tank and the mouse
+            if(!this.stopLine && this.isDragging){
+              this.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
+            }
             this.drawAimCircle(this.player1);
           }
-        
-
       },
 
       onMouseClick(event) {
@@ -440,6 +469,7 @@
 
         if (this.isHovering) {
           this.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
+          this.power = Math.round((distance / this.aimCircleRadius) * this.maxShotPower);
           this.stopLine = true;
           this.stopLineX = this.mousePosition.x;
           this.stopLineY = this.mousePosition.y;
@@ -448,52 +478,24 @@
       },
       
       
-      async drawTank(ctx, player) {
+      drawTank(ctx, player) {
+
         ctx.save();
-
         this.player1.y = this.terrain[Math.floor(player.x)] - player.size / 2;
-
-        // ctx.translate(player.x, this.player1.y - player.size / 2)
-
-        // Fetch the SVG from the FastAPI endpoint
-        const response = await axios.get(`/player/0/tank`, {
-          responseType: 'blob'
-        });
-
-        const blob = await response.data;
-        const url = URL.createObjectURL(blob);
-
-        // Create an image from the fetched SVG
-        const img = new Image();
-        img.src = url;
-
-        // Define the desired size for the tank
-        const tankWidth = 50; // Adjust the width to suit your needs
-        const tankHeight = 50; // Adjust the height to suit your needs
-
-        // Once the image is loaded, draw it on the canvas
-        img.onload = () => {
-          ctx.drawImage(img, player.x - tankWidth / 2, this.player1.y - tankHeight / 2, tankWidth, tankHeight);
-
-          // Draw the gun (turret)
-          ctx.translate(player.x, this.player1.y - tankHeight / 2); // Adjust for tank position
-          ctx.rotate((-this.angle * Math.PI) / 180); // Rotate based on angle
-          ctx.restore();
-        };
-        // // Load the tank image
-        // const img = document.getElementById('tankImage');
-
-        // // Define the desired size for the tank
-        // const tankWidth = img.width / 2; // Change this value to adjust the width
-        // const tankHeight = img.height / 2; // Change this value to adjust the height
-
-        // // Draw the tank image at the player's position with the specified size
-        // ctx.drawImage(img, player.x - tankWidth / 2, this.player1.y - tankHeight / 2, tankWidth, tankHeight); // Center the tank image
-
-        // // Draw the gun (turret)
-        // ctx.translate(player.x, this.player1.y - img.height / 2); // Adjust for tank position
-        // ctx.rotate((-this.angle * Math.PI) / 180); // Rotate based on angle
-        // ctx.restore();
+        ctx.translate(player.x, this.player1.y);
+  
+        // Draw the tank body
+        ctx.fillStyle = this.player1.tankColor;
+        ctx.fillRect(-player.size / 2, -player.size / 4, player.size, player.size / 2);
+  
+        // Draw the tank turret
+        const turretLength = player.size * 0.7;
+        ctx.translate(0, -player.size / 7);
+        ctx.rotate((-this.angle * Math.PI) / 180);
+        ctx.fillStyle = this.player1.tankColor;
+        ctx.fillRect(0, -5, turretLength, 10);
+    
+        ctx.restore();
       },
 
       drawAimCircle(player){
@@ -501,8 +503,21 @@
         // Get the canvas context
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext('2d');
-        this.renderGame();
-        ctx.save();
+        ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+        // Draw the terrain
+        this.drawTerrain(ctx);
+        
+        // Draw player 1's tank
+        this.drawTank(ctx, this.player1);
+
+        //Draw player names
+        this.drawPlayerNames(ctx);
+
+        //Draw player health
+        this.drawPlayerHealth(ctx);
+
+        this.drawWind(ctx);
 
         const x = player.x;
         const y = player.y;
@@ -523,7 +538,6 @@
         ctx.lineTo(this.lineStopX, this.lineStopY); // Use the updated stop positions
         ctx.strokeStyle = "red";
         ctx.stroke();
-        ctx.restore();
 
       },
     },

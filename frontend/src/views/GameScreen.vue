@@ -1,24 +1,23 @@
 <template>
   <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
     <div>
-      <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-6">
-        <!-- style="background: url('assets/metalbg.png') no-repeat center center; background-size: cover; width: 1280px;"> -->
+      <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-8">
 
-        <div class="flex flex-col space-y-1">
+        <div class="flex flex-col space-y-1 w-1/3">
           <div>
             <button
               mouseover="showFireHelp"
               @mouseleave="hideFireHelp"
               @click="fireMissile"
-              class="ml-4 h-16 bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
+              class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
               WEAPON SELECTOR
             </button>
           </div>
 
           <div>
             <button
-              class="ml-4 h-16 bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
-              <div class="flex flex-row justify-center space-x-4">
+              class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+              <div class="flex flex-row justify-center space-x-8">
                 <div class="text-black font-bold text-3xl">SMALL MISSILE</div>
                 <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
                 <div class="text-black font-bold text-3xl">{{ player1.ammunition[0].count }}</div>
@@ -26,14 +25,14 @@
 
             </button>
           </div>
-      </div>
+        </div>
 
-        <div class="relative">
+        <div class="relative w-1/4">
           <button
               @mouseover="showFireHelp"
               @mouseleave="hideFireHelp"
               @click="fireMissile"
-              class="w-80 py-16 bg-red-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-red-400 font-bold text-4xl">
+              class="py-16 w-full bg-red-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-red-400 font-bold text-4xl">
               FIRE
             <span v-if="fireHelpVisible" class="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl">
               Click to fire!
@@ -42,7 +41,7 @@
         </div>
 
         <!-- Row flex for money, time and so on -->
-        <div class ="flex flex-rows space-x-8">
+        <div class ="flex flex-rows space-x-8 w-1/3 mt-4">
 
           <div class ="flex flex-col space-y-4">
             <div class="font-bold text-white text-2xl">
@@ -72,13 +71,13 @@
             <div class = "w-16 h-16" style="background: url('assets/trophy_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
-        </div>
+          <div class="relative mb-16">
+            <div class="w-20 h-20" style="background: url('assets/pause_icon.png') no-repeat center center; background-size: cover;"></div>
+          </div>
 
-        <!-- Pause button, absolute position from the bar-->
-        <div class="relative mb-16">
-          <div class="w-20 h-20" style="background: url('assets/pause_icon.png') no-repeat center center; background-size: cover;"></div>
         </div>
       </div>
+
     </div>
 
     <div>
@@ -119,7 +118,7 @@
         terrain: [],
         player1: {
           x: 120,
-          y: 440,
+          y: 140,
           size: 40,
           angle: 45,
           power: 50,
@@ -187,7 +186,7 @@
 
         //size of rectangles for healthbars
         const player1X = 10 + 200 / 2;
-        const player2X = 1070 + 200 / 2;
+        const player2X = this.canvasWidth - 210 + 200 / 2;
 
         ctx.font = "28px Montserrat";
         ctx.fillStyle = "black";
@@ -204,25 +203,25 @@
         ctx.fillStyle = 'black'; // White color
         ctx.fillRect(10, 50, 200, 40);
 
-        ctx.fillRect(1070, 50, 200, 40);
+        ctx.fillRect(this.canvasWidth - 210, 50, 200, 40);
 
         // Draw red fill
         ctx.fillStyle = '#FF0000'; // Red color
         ctx.fillRect(10, 50, 180, 40); // Adjusted for border thickness
-        ctx.fillRect(1070, 50, 180, 40); // Adjusted for border thickness
+        ctx.fillRect(this.canvasWidth - 210, 50, 180, 40); // Adjusted for border thickness
 
         //Draw outline
         ctx.strokeStyle = 'gray';
         ctx.lineWidth = 5; // Border width
         ctx.strokeRect(10, 50, 200, 40);
-        ctx.strokeRect(1070, 50, 200, 40);
+        ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
 
         ctx.fillStyle = '#000000'; // Text color
         ctx.font = '20px Montserrat';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('80/100', 110, 70);
-        ctx.fillText('80/100', 1170, 70);
+        ctx.fillText('80/100', this.canvasWidth - 110, 70);
 
         ctx.restore();
       },
@@ -234,8 +233,8 @@
         ctx.font = 'bold 20px Montserrat';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('Wind: ', 600, 20);
-        ctx.fillText(this.wind, 639, 20);
+        ctx.fillText('Wind: ', this.canvasWidth/2, 20);
+        ctx.fillText(this.wind, this.canvasWidth/2 + 40, 20);
 
         ctx.restore();
       },
@@ -281,9 +280,9 @@
         this.player1.ammunition[0].count--;
         const startX = this.player1.x;
         const startY = this.player1.y - 15; //this.terrain[Math.floor(player.x)] - player.size / 2
-        const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 4;
-        const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 10;
-        const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 8;
+        const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 4;
+        const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 12;
+        const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 8;
         const endY = this.canvasHeight;
 
         this.missile = {
@@ -541,6 +540,9 @@
         ctx.stroke();
 
       },
+    },
+    beforeUnmount() {
+      window.removeEventListener('keydown', this.onKeyPressed);
     },
   };
   </script>

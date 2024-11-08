@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response
-from model.svgTemplates import SVG_SELECTOR
+from models.svgTemplates import SVG_SELECTOR
 
 router = APIRouter()
 

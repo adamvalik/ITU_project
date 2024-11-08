@@ -1,0 +1,43 @@
+services:
+  itu_redis:
+    image: redis:latest
+    container_name: itu_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+
+  itu_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload  # command override for development (--reload)
+    container_name: itu_backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - itu_redis
+    networks:
+      - app_network
+
+  itu_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: itu_frontend
+    ports:
+      - "8080:8080"  # development: serve directly on port 8080 with hot-reloading
+    # - "8080:80"    # production:  serve via NGINX on port 8080 mapped to port 80 inside the container
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app_network
+
+
+networks:
+  app_network:
+    driver: bridge
+

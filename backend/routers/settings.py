@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from model.settings import settings
+from models.settings import settings
 
 router = APIRouter()
 

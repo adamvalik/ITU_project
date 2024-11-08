@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import players
-from routers import tanks
-from routers import mapCreator
-from routers import settings
-from routers import game
-from routers import gameScreen
+from redisClient import get_redis_client
+
+from routers import mapCreator, players, tanks, settings, game, gameScreen, debug
+from managers import playerManager, gameManager
 
 app = FastAPI()
 
@@ -24,6 +22,15 @@ app.include_router(tanks.router)
 app.include_router(settings.router)
 app.include_router(game.router)
 app.include_router(gameScreen.router)
+app.include_router(debug.router)
 
-# muzes nastavit spolecny prerix pro vsechny routy v routeru
-#app.include_router(user_router, prefix="/api/v1")
+redis_client = get_redis_client()
+
+playerManager = playerManager.PlayerManager(redis_client)
+playerManager.initialize_players()
+
+gameManager = gameManager.GameManager(redis_client)
+gameManager.initialize_game()
+
+
+

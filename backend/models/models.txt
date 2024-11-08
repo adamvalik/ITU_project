@@ -18,6 +18,7 @@ class Ammunition(BaseModel):
   cost: int
 
 class Player(BaseModel):
+  id: int
   name: str
   tankType: int
   color: str
@@ -30,7 +31,7 @@ class Player(BaseModel):
   fuel: int
   fuelMax: int
   health: int
-  ammunitionCount: list[int] # 0 for no shells, -1 for shell that user does not have
+  ammunitionCount: list[int]
 
   xCord: int
   yCord: int

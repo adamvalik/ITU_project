@@ -110,6 +110,7 @@
     props: {
       gameWidth: Number,
       gameHeight: Number,
+      scaleFactor: Number,
     },
     data() {
       return {
@@ -117,8 +118,8 @@
         canvasHeight: this.gameHeight - 176,
         terrain: [],
         player1: {
-          x: 100,
-          y: 370,
+          x: 120,
+          y: 440,
           size: 40,
           angle: 45,
           power: 50,
@@ -399,9 +400,10 @@
       },
 
       onMouseDown(event) {
+        console.log(event.clientX);
         const rect = this.$refs.gameCanvas.getBoundingClientRect();
-        this.mousePosition.x = event.clientX - rect.left;
-        this.mousePosition.y = event.clientY - rect.top;
+        this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
+        this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
         // Check if the click is within the aim circle
         if (this.isHovering) {
@@ -417,8 +419,8 @@
 
       onMouseMove(event) {
           const rect = this.$refs.gameCanvas.getBoundingClientRect();
-          this.mousePosition.x = event.clientX - rect.left;
-          this.mousePosition.y = event.clientY - rect.top;
+          this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
+          this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
           const dx = this.mousePosition.x - this.player1.x;
           const dy = this.mousePosition.y - this.player1.y;
@@ -454,8 +456,8 @@
       onMouseClick(event) {
         console.log("Clicked insideee the aim circle!"); // Debug message
         const rect = this.$refs.gameCanvas.getBoundingClientRect();
-        this.mousePosition.x = event.clientX - rect.left;
-        this.mousePosition.y = event.clientY - rect.top;
+        this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
+        this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
         const dx = this.mousePosition.x - this.player1.x;
         const dy = this.mousePosition.y - this.player1.y;
@@ -468,8 +470,8 @@
           this.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
           this.power = Math.round((distance / this.aimCircleRadius) * this.maxShotPower);
           this.stopLine = true;
-          this.stopLineX = this.mousePosition.x;
-          this.stopLineY = this.mousePosition.y;
+          // this.stopLineX = this.mousePosition.x;
+          // this.stopLineY = this.mousePosition.y;
           this.drawAimCircle(this.player1);
         }
       },

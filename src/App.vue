@@ -16,6 +16,7 @@
         @toggleMute="toggleMute"
         :gameWidth="gameWidth"
         :gameHeight="gameHeight"
+        :scaleFactor="scaleFactor"
       />
     </div>
   </div>

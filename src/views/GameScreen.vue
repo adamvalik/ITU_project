@@ -1,8 +1,7 @@
 <template>
-    <div class="game-screen text-center mt-10">
-      <div
-        class="h-48 bg-black bg-opacity-80 bg-neutral-900 text-white m-auto items-center justify-center flex flex-rows space-x-6"
-        style="width: 1280px;">
+  <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
+    <div>
+      <div class="h-48 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-6">
         <!-- style="background: url('assets/metalbg.png') no-repeat center center; background-size: cover; width: 1280px;"> -->
 
         <div class="flex flex-col space-y-1">
@@ -11,20 +10,20 @@
               mouseover="showFireHelp"
               @mouseleave="hideFireHelp"
               @click="fireMissile"
-              class="ml-4 w-96 h-16 bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
+              class="ml-4 h-16 bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
               WEAPON SELECTOR
             </button>
           </div>
 
           <div>
             <button
-              class="ml-4 w-96 h-16 bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+              class="ml-4 h-16 bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-4">
                 <div class="text-black font-bold text-3xl">SMALL MISSILE</div>
                 <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
                 <div class="text-black font-bold text-3xl">{{ player1.ammunition[0].count }}</div>
               </div>
-               
+
             </button>
           </div>
       </div>
@@ -79,17 +78,14 @@
         <div class="relative mb-16">
           <div class="w-20 h-20" style="background: url('assets/pause_icon.png') no-repeat center center; background-size: cover;"></div>
         </div>
-
-        
-        
       </div>
-
     </div>
+
     <div>
-      <canvas 
-        ref="gameCanvas" 
-        :width="canvasWidth" 
-        :height="canvasHeight" 
+      <canvas
+        ref="gameCanvas"
+        :width="canvasWidth"
+        :height="canvasHeight"
         class="border border-gray-700 m-auto"
         @mousemove="onMouseMove"
         @click="onMouseClick"
@@ -105,12 +101,16 @@
         </button>
 
     </div>
-  </template>
-  
+  </div>
+</template>
+
   <script>
   //import axios from 'axios';
   export default {
-    name: "GameScreen",
+    props: {
+      gameWidth: Number,
+      gameHeight: Number,
+    },
     data() {
       return {
         canvasWidth: 1280,
@@ -162,7 +162,7 @@
       };
     },
     mounted() {
-      //this.wind = 0;//Math.floor(Math.random() * 100 - 50); 
+      //this.wind = 0;//Math.floor(Math.random() * 100 - 50);
       //this.player1.tankColor = "green"; //this.$route.query.color;
       this.startTimer();
       this.generateTerrain();
@@ -228,14 +228,14 @@
 
       drawWind(ctx){
         ctx.save();
-        
+
         ctx.fillStyle = 'black'; // Text color
         ctx.font = 'bold 20px Montserrat';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Wind: ', 600, 20);
         ctx.fillText(this.wind, 639, 20);
-        
+
         ctx.restore();
       },
 
@@ -284,7 +284,7 @@
         const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 10;
         const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 8;
         const endY = this.canvasHeight;
-  
+
         this.missile = {
           t: 0,
           startX,
@@ -294,33 +294,33 @@
           endX,
           endY,
         };
-  
+
         this.animateMissile();
       },
       animateMissile() {
         if (!this.missile) return;
-  
+
         const { t, startX, startY, controlX, controlY, endX, endY } = this.missile;
-  
+
         const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX;
         const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY;
-  
+
         this.missile.t += 0.01;
         if (this.missile.t >= 1 || this.checkTerrainCollision(x, y)) {
           this.explodeTerrain(x, y);
           this.missile = null;
           return;
         }
-  
+
         this.renderGame();
-  
+
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
-  
+
         requestAnimationFrame(this.animateMissile);
       },
       checkTerrainCollision(x, y) {
@@ -341,7 +341,7 @@
           }
         }
         this.renderGame();
-        this.wind = 0;// Math.floor(Math.random() * 100 - 50); 
+        this.wind = 0;// Math.floor(Math.random() * 100 - 50);
 
       },
       renderGame() {
@@ -351,7 +351,7 @@
 
         // Draw the terrain
         // this.drawTerrain(ctx);
-  
+
         // Draw player 1's tank
         // this.drawTank(ctx, this.player1);
 
@@ -427,7 +427,7 @@
             // Cap the power line's length to the circle radius
             const clampedDistance = Math.min(distance, this.aimCircleRadius);
             this.power = Math.round((clampedDistance / this.aimCircleRadius) * this.maxShotPower);
-            
+
             // Update the line end positions
             const angle = Math.atan2(dy, dx);
             this.lineStopX = this.player1.x + clampedDistance * Math.cos(angle);
@@ -473,25 +473,25 @@
           this.drawAimCircle(this.player1);
         }
       },
-      
-      
+
+
       drawTank(ctx, player) {
 
         ctx.save();
         this.player1.y = this.terrain[Math.floor(player.x)] - player.size / 2;
         ctx.translate(player.x, this.player1.y);
-  
+
         // Draw the tank body
         ctx.fillStyle = this.player1.tankColor;
         ctx.fillRect(-player.size / 2, -player.size / 4, player.size, player.size / 2);
-  
+
         // Draw the tank turret
         const turretLength = player.size * 0.7;
         ctx.translate(0, -player.size / 7);
         ctx.rotate((-this.angle * Math.PI) / 180);
         ctx.fillStyle = this.player1.tankColor;
         ctx.fillRect(0, -5, turretLength, 10);
-    
+
         ctx.restore();
       },
 
@@ -504,7 +504,7 @@
 
         // Draw the terrain
         this.drawTerrain(ctx);
-        
+
         // Draw player 1's tank
         this.drawTank(ctx, this.player1);
 

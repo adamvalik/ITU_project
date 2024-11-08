@@ -7,7 +7,7 @@
 
       <button @click="swapTank('right')" class="h-10 w-10 bg-red-500 rounded-xl hover:border-2 border-gray-100 transition-all"></button>
     </div>
-    
+
     <!-- Color Change Buttons -->
     <div class="flex gap-4">
     <!-- Color Buttons -->
@@ -22,7 +22,7 @@
     <!-- Custom Color Input -->
     <label class="relative w-14 h-14 rounded-3xl cursor-pointer hover:border-2 border-gray-100 transition-all">
       <input v-model="customColor" type="color" class="absolute opacity-0 ">
-      <div 
+      <div
         class="absolute inset-0 rounded-3xl flex items-center justify-center text-l font-bold"
         :style="gradientStyle"
       >
@@ -32,7 +32,7 @@
   </div>
   </div>
 </template>
-  
+
 <script>
 import axios from 'axios';
 
@@ -41,7 +41,7 @@ export default {
     isFlipped: {
       type: Boolean,
       default: false,
-    }, 
+    },
     defaultColor: {
       type: String,
       default: '#123456',
@@ -58,13 +58,13 @@ export default {
       this.customColor = this.defaultColor;
     }
     this.changeColor(this.defaultColor);
-    this.emitSelectedTank(); 
+    this.emitSelectedTank();
     this.emitSelectedColor();
   },
   data() {
     return {
       tankType: 0,
-      selectedColor: this.defaultColor, 
+      selectedColor: this.defaultColor,
       colorOptions: [
         { hex: "#06B559" },
         { hex: "#0D6BBD" },
@@ -84,7 +84,7 @@ export default {
         ? { backgroundColor: this.customColor }
         : { background: `linear-gradient(217deg, rgb(255,0,0), rgb(255,0,0,0) 70%),
                         linear-gradient(127deg, rgb(0,255,0), rgb(0,255,0,0) 70%),
-                        linear-gradient(336deg, rgb(0,0,255), rgb(0,0,255,0) 70%)` }; 
+                        linear-gradient(336deg, rgb(0,0,255), rgb(0,0,255,0) 70%)` };
     }
   },
   methods: {
@@ -110,7 +110,7 @@ export default {
       console.log("loadTank: this.selectedColor", this.selectedColor, ", this.tankType", this.tankType);
       try {
         const response = await axios.get(`http://localhost:8000/selector/${this.tankType}`);
-        
+
         this.$refs.svgContainer.innerHTML = response.data;
 
         // wait until the next DOM update cycle
@@ -119,7 +119,7 @@ export default {
         // apply color to tank
         const elements = this.$refs.svgContainer.querySelectorAll(`[fill="#123456"]`);
         elements.forEach((element) => {
-          element.setAttribute("fill", this.color); 
+          element.setAttribute("fill", this.color);
         });
       } catch (error) {
         console.error(error);
@@ -129,14 +129,14 @@ export default {
     emitSelectedTank() {
       this.$emit('tank-selected', this.tankType);
     },
-    
+
     emitSelectedColor() {
       this.$emit('color-selected', this.color);
     },
   },
 };
 </script>
-  
+
 <style scoped>
 .tank-container {
   background-color: white;
@@ -162,4 +162,3 @@ input[type="color"]::-webkit-color-swatch {
   border: none;
 }
 </style>
-  

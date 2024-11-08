@@ -1,14 +1,17 @@
 <template>
-  <div @click="playMusic" class="relative flex flex-col justify-center items-center min-h-screen bg-cover bg-center" style="background-image: url('/assets/bg.png');">
-
-     <!-- Mute Button Icon in the Corner -->
-     <button 
-      @click="toggleMute" 
+  <div
+    @click="playMusic"
+    class="relative flex flex-col justify-center items-center overflow-hidden bg-cover bg-center"
+    :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`, backgroundImage: `url('/assets/bg.png')` }"
+  >
+     <!-- mute button-->
+     <button
+      @click="toggleMute"
       class="absolute top-4 right-4 bg-sky-300 rounded-full p-2 shadow-lg z-50 hover:bg-sky-400 transition"
     >
-      <img 
-        :src="isMuted ? '/assets/mute.png' : '/assets/unmute.png'" 
-        alt="Mute Toggle" 
+      <img
+        :src="isMuted ? '/assets/mute.png' : '/assets/unmute.png'"
+        alt="Mute Toggle"
         class="w-6 h-6"
       />
     </button>
@@ -22,10 +25,6 @@
         <p class="absolute -bottom-4 -right-6 text-xl">1v1</p>
       </h1>
     </div>
-
-    <!-- Language Flags -->
-    <!-- <img src="/assets/czech-flag.png" alt="cz" class="w-8 h-8 absolute right-16 top-4 z-10" />
-    <img src="/assets/uk-flag.png" alt="uk" class="w-8 h-8 absolute right-4 top-4 z-10" /> -->
 
     <!-- Menu Buttons -->
     <div class="flex flex-col justify-center gap-3 z-10">
@@ -48,7 +47,7 @@
       <router-link @click.stop="submitClassicMode" to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
         Classic mode
       </router-link>
-      <div 
+      <div
         v-if="!customModeSetting"
         @click.stop
         @mouseenter="customModeSetting = true"
@@ -57,9 +56,9 @@
       >
         Custom mode
       </div>
-      <div 
-        v-else 
-        @click.stop 
+      <div
+        v-else
+        @click.stop
         class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col gap-2 items-center justify-center hover:bg-gray-100"
         key="mode2"
       >
@@ -67,20 +66,20 @@
 
         <div class="flex self-start items-center px-4 mt-10 gap-8">
           <label for="timer" class="text-xl font-semibold pr-10">Timer</label>
-          <input 
-            id="timer" 
-            type="checkbox" 
-            class="form-checkbox h-6 w-6 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-200 focus:ring-opacity-50 hover:border-blue-500" 
-            v-model="timer" 
+          <input
+            id="timer"
+            type="checkbox"
+            class="form-checkbox h-6 w-6 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-200 focus:ring-opacity-50 hover:border-blue-500"
+            v-model="timer"
           />
         </div>
 
         <div class="flex self-start items-center px-4 mb-4 gap-2">
           <label for="wins" class="text-xl font-semibold pr-8">Wins</label>
-          
+
           <!-- Left Button to Decrease -->
-          <button 
-            @click="decreaseWins" 
+          <button
+            @click="decreaseWins"
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
           >
             &#9664;
@@ -92,8 +91,8 @@
           </div>
 
           <!-- Right Button to Increase -->
-          <button 
-            @click="increaseWins" 
+          <button
+            @click="increaseWins"
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
           >
             &#9654;
@@ -101,8 +100,8 @@
         </div>
 
         <!-- Go Button -->
-        <router-link 
-          to="/chooseTanks" 
+        <router-link
+          to="/chooseTanks"
           @click="submitCustomMode"
           class="absolute bottom-1 right-1 font-bold border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 text-xl py-2 px-6 rounded-2xl mt-4 transition duration-300"
         >
@@ -118,9 +117,9 @@
 
     <!-- Audio Element for Button Click Sound -->
     <!-- <audio ref="buttonSound" :src="buttonSoundSrc" preload="auto"></audio> -->
+    <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
   </div>
 
-  <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
 </template>
 
 <script>
@@ -131,6 +130,16 @@ export default {
   name: 'MainPage',
   components: {
     Settings,
+  },
+  props: {
+    gameWidth: {
+      type: Number,
+      required: true,
+    },
+    gameHeight: {
+      type: Number,
+      required: true,
+    }
   },
   data() {
     return {
@@ -165,12 +174,12 @@ export default {
       console.error(error);
     }
     // emit the initial mute state
-    this.emitMute(); 
+    this.emitMute();
   },
   methods: {
     // background music
     playMusic() {
-      if (!this.isMuted) 
+      if (!this.isMuted)
       this.$emit('playMusic');
     },
     updateMusicVolume(volume) {
@@ -190,7 +199,7 @@ export default {
       if (this.wins > 1) {
         this.wins--;
       }
-    },    
+    },
     increaseWins() {
       this.wins++;
     },

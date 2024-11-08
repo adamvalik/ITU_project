@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex">
     <!-- Left Side (Player 1) -->
     <div class="w-1/2 flex flex-col items-center justify-center border-r-2 border-gray-300">
 
@@ -67,7 +67,7 @@ export default {
   },
   data() {
     return {
-      loading: true, 
+      loading: true,
       player1: {
         name: null,
         tankType: 0,
@@ -75,7 +75,7 @@ export default {
         armor: 0,
         power: 0,
         speed: 0,
-        skillPoints: 6, 
+        skillPoints: 6,
         money: 10000,
         fuel: 250,
         health: 100,
@@ -160,7 +160,7 @@ export default {
         if (players[1]) {
           this.player2 = players[1];
         }
-        
+
         this.loading = false;
       } catch (error) {
         console.error(error);

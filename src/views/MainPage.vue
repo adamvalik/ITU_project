@@ -132,14 +132,8 @@ export default {
     Settings,
   },
   props: {
-    gameWidth: {
-      type: Number,
-      required: true,
-    },
-    gameHeight: {
-      type: Number,
-      required: true,
-    }
+    gameWidth: Number,
+    gameHeight: Number,
   },
   data() {
     return {

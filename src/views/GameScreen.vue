@@ -1,29 +1,5 @@
 <template>
     <div class="game-screen text-center mt-10">
-      <h1 class="text-2xl font-bold mb-4">Tanks</h1>
-      <!-- <label class="block"><span class="font-bold">Wind: <span class="text-2xl">{{ wind }}</span> </span>  (positive for right, negative for left)</label> -->
-      <div class="controls mt-4 flex justify-center items-center gap-4">
-        <div>
-          <label class="block font-bold">Angle: {{ angle }}°</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="90" 
-            v-model="angle" 
-            class="w-32"
-          />
-        </div>
-        <div>
-          <label class="block font-bold">Power: {{ power }}</label>
-          <input 
-            type="range" 
-            min="10" 
-            max="100" 
-            v-model="power" 
-            class="w-32"
-          />
-        </div>
-      </div>
       <div
         class="h-48 bg-black bg-opacity-80 bg-neutral-900 text-white m-auto items-center justify-center flex flex-rows space-x-6"
         style="width: 1280px;">
@@ -42,20 +18,16 @@
 
           <div>
             <button
-              mouseover="showFireHelp"
-              @mouseleave="hideFireHelp"
-              @click="fireMissile"
               class="ml-4 w-96 h-16 bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-4">
                 <div class="text-black font-bold text-3xl">SMALL MISSILE</div>
                 <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">20</div>
+                <div class="text-black font-bold text-3xl">{{ player1.ammunition[0].count }}</div>
               </div>
                
             </button>
           </div>
       </div>
-        <!-- <img src="assets/small_missile_icon.png" alt="Missile Icon"> -->
 
         <div class="relative">
           <button
@@ -75,28 +47,28 @@
 
           <div class ="flex flex-col space-y-4">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ time }} (s)</h1>
+              <h1>{{ player1.time }} (s)</h1>
             </div>
             <div class = "w-16 h-16" style="background: url('assets/time_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
           <div class ="flex flex-col space-y-2">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ money }}$</h1>
+              <h1>{{ player1.money }}$</h1>
             </div>
             <div class = "w-20 h-20" style="background: url('assets/money_bag_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
           <div class ="flex flex-col space-y-2, items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ fuel }}/{{ fuelMax }}</h1>
+              <h1>{{ player1.fuel }}/{{ player1.fuelMax }}</h1>
             </div>
             <div class = "w-20 h-20" style="background: url('assets/fuel_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
           <div class ="flex flex-col space-y-3">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ wins }}win</h1>
+              <h1>{{ player1.wins }}win</h1>
             </div>
             <div class = "w-16 h-16" style="background: url('assets/trophy_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
@@ -153,6 +125,21 @@
           tankColor: "green",
           name: "DJ Khaled",
           health: 100,
+          ammunition: [
+            {
+              name: "smallMissile",
+              count: 20,
+              damage: 20,
+              radius: 30,
+              cost: 200,
+            },
+          ],
+          wins: 1,
+          money: 4000,
+          fuel: 100,
+          fuelMax: 250,
+          time: 40,
+
         },
         mousePosition: {
           x: 0,
@@ -161,13 +148,10 @@
         isHovering: false,
         aimCircleRadius: 200,
         maxShotPower: 100,
-        minShotPower: 1,
-        minShotDistance: 50,
         stopLine: false,
         lineStopX: 200,
         lineStopY: 400,
         isDragging: false,
-        imgTank: null,
 
         wind: 0,
         missile: null,
@@ -175,16 +159,11 @@
         power: 50,
         gameOver: false,
         fireHelpVisible: false,
-        time: 40,
-        money: 4000,
-        fuel: 100,
-        fuelMax: 250,
-        wins: 1,
       };
     },
     mounted() {
-      this.wind = 0;//Math.floor(Math.random() * 100 - 50); 
-      this.player1.tankColor = "green"; //this.$route.query.color;
+      //this.wind = 0;//Math.floor(Math.random() * 100 - 50); 
+      //this.player1.tankColor = "green"; //this.$route.query.color;
       this.startTimer();
       this.generateTerrain();
       this.renderGame();
@@ -260,10 +239,23 @@
         ctx.restore();
       },
 
+      drawAnglePower(ctx) {
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.font = "bold 20px Montserrat";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        // ctx.fillText(`Angle: ${this.angle}°`, this.player1.x, this.player1.y - 50);
+        // ctx.fillText(`Power: ${this.power}`, this.player1.x + 10, this.player1.y - 50);
+        ctx.fillText(`${Math.round(this.angle)}°,`, this.player1.x - 10, this.player1.y - 180);
+        ctx.fillText(this.power, this.player1.x + 26, this.player1.y - 180);
+        ctx.restore();
+      },
+
       startTimer() {
         setInterval(() => {
-          if (this.time > 0) {
-            this.time--;
+          if (this.player1.time > 0) {
+            this.player1.time--;
           } else {
             this.gameOver = true;
           }
@@ -281,7 +273,12 @@
       },
 
       fireMissile() {
-        const startX = this.player1.x + 15;
+        const ammunition = this.player1.ammunition[0].count;
+        if(ammunition <= 0){
+          return;
+        }
+        this.player1.ammunition[0].count--;
+        const startX = this.player1.x;
         const startY = this.player1.y - 15; //this.terrain[Math.floor(player.x)] - player.size / 2
         const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 10 + this.wind * 4;
         const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 10;
@@ -332,7 +329,7 @@
       },
       explodeTerrain(x, y) {
         // Create a circular explosion in the terrain
-        const explosionRadius = 20;
+        const explosionRadius = this.player1.ammunition[0].radius;
         for (let i = -explosionRadius; i <= explosionRadius; i++) {
           const pos = Math.floor(x) + i;
           if (pos >= 0 && pos < this.canvasWidth) {
@@ -386,14 +383,14 @@
       onKeyPressed(event){
         if(event.key === 'ArrowRight'){
 
-          if(this.fuel > 0 && this.player1.x <  this.canvasWidth - 5){
-            this.fuel -= 5;
+          if(this.player1.fuel > 0 && this.player1.x <  this.canvasWidth - 5){
+            this.player1.fuel -= 5;
             this.player1.x += 5;
             this.lineStopX += 5;
           }
         } else if(event.key === 'ArrowLeft'){
-          if(this.fuel > 0 && this.player1.x > 5){
-            this.fuel -= 5;
+          if(this.player1.fuel > 0 && this.player1.x > 5){
+            this.player1.fuel -= 5;
             this.player1.x -= 5;
             this.lineStopX -= 5;
           }
@@ -518,6 +515,8 @@
         this.drawPlayerHealth(ctx);
 
         this.drawWind(ctx);
+
+        this.drawAnglePower(ctx);
 
         const x = player.x;
         const y = player.y;

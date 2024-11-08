@@ -1,7 +1,7 @@
 <template>
   <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
     <div>
-      <div class="h-48 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-6">
+      <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-6">
         <!-- style="background: url('assets/metalbg.png') no-repeat center center; background-size: cover; width: 1280px;"> -->
 
         <div class="flex flex-col space-y-1">
@@ -113,8 +113,8 @@
     },
     data() {
       return {
-        canvasWidth: 1280,
-        canvasHeight: 720,
+        canvasWidth: this.gameWidth,
+        canvasHeight: this.gameHeight - 176,
         terrain: [],
         player1: {
           x: 100,

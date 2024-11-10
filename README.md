@@ -25,6 +25,15 @@ This project uses Docker Compose, which is included with Docker Desktop (downloa
 | `docker-compose exec <service_name> sh`| Opens a shell in a specific running container.        |
 | `docker ps`                            | Lists all currently running Docker containers.        |
 
+### Commands inside the docker
+Watch for changes in Tailwind CSS:
+```bash
+docker exec -it frontend npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/output.css --watch
+```
+
+
+
+
 ## Running the Project
 
 Services will be available at:

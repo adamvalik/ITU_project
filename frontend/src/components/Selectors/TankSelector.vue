@@ -1,26 +1,46 @@
 <template>
-  <div class="flex flex-col items-center bg-gray-100">
+  <div class="flex flex-col items-center mb-6">
     <div class="flex gap-4 items-center justify-between">
-      <button @click="swapTank('left')" class="h-10 w-10 bg-red-500 rounded-xl hover:border-2 border-gray-100 transition-all"></button>
+      <svg
+        @click="swapTank('left')"
+        class="cursor-pointer "
+        width="39"
+        height="43"
+        viewBox="0 0 39 43"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+       <path d="M3 26.7162C-0.999998 24.4068 -1 18.6333 3 16.3239L29.28 1.15112C33.28 -1.15828 38.28 1.72847 38.28 6.34727L38.28 36.6928C38.28 41.3116 33.28 44.1984 29.28 41.889L3 26.7162Z" fill="#EF4446"/>
+      </svg>
 
-      <div ref="svgContainer" class="tank-container w-64 h-64 mb-4 shadow-xl" :class="{ 'flip-x': isFlipped }"></div>
+      <div ref="svgContainer" class="w-64 h-64 mb-4 shadow-xl" :class="{ 'transform -scale-x-100': isFlipped }"></div>
 
-      <button @click="swapTank('right')" class="h-10 w-10 bg-red-500 rounded-xl hover:border-2 border-gray-100 transition-all"></button>
+      <svg
+        @click="swapTank('right')"
+        class="cursor-pointer transform rotate-180"
+        width="39"
+        height="43"
+        viewBox="0 0 39 43"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M3 26.7162C-0.999998 24.4068 -1 18.6333 3 16.3239L29.28 1.15112C33.28 -1.15828 38.28 1.72847 38.28 6.34727L38.28 36.6928C38.28 41.3116 33.28 44.1984 29.28 41.889L3 26.7162Z" fill="#EF4446"/>
+      </svg>
+
     </div>
 
-    <!-- Color Change Buttons -->
+    <!-- color change buttons -->
     <div class="flex gap-4">
-    <!-- Color Buttons -->
     <button
       v-for="(color, index) in colorOptions"
       :key="index"
       :style="{ backgroundColor: color.hex }"
       @click="changeColor(color.hex)"
-      class="w-14 h-14 rounded-3xl hover:border-2 border-gray-100 transition-all"
+      class="w-14 h-14 rounded-3xl hover:border-2 border-sky transition-all"
     ></button>
 
-    <!-- Custom Color Input -->
-    <label class="relative w-14 h-14 rounded-3xl cursor-pointer hover:border-2 border-gray-100 transition-all">
+    <!-- custom color input -->
+    <label class="relative w-14 h-14 rounded-3xl cursor-pointer hover:border-2 border-sky transition-all">
       <input v-model="customColor" type="color" class="absolute opacity-0 ">
       <div
         class="absolute inset-0 rounded-3xl flex items-center justify-center text-l font-bold"
@@ -29,7 +49,7 @@
         <span class="text-white">+</span>
       </div>
     </label>
-  </div>
+   </div>
   </div>
 </template>
 
@@ -107,15 +127,11 @@ export default {
     },
 
     async loadTank() {
-      console.log("loadTank: this.selectedColor", this.selectedColor, ", this.tankType", this.tankType);
       try {
         const response = await axios.get(`http://localhost:8000/selector/${this.tankType}`);
-
         this.$refs.svgContainer.innerHTML = response.data;
 
-        // wait until the next DOM update cycle
         await this.$nextTick();
-
         // apply color to tank
         const elements = this.$refs.svgContainer.querySelectorAll(`[fill="#123456"]`);
         elements.forEach((element) => {
@@ -129,7 +145,6 @@ export default {
     emitSelectedTank() {
       this.$emit('tank-selected', this.tankType);
     },
-
     emitSelectedColor() {
       this.$emit('color-selected', this.color);
     },
@@ -138,15 +153,6 @@ export default {
 </script>
 
 <style scoped>
-.tank-container {
-  background-color: white;
-  overflow: hidden;
-}
-
-.flip-x {
-  transform: scaleX(-1);
-}
-
 input[type="color"] {
   -webkit-appearance: none;
   appearance: none;
@@ -160,5 +166,9 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 
 input[type="color"]::-webkit-color-swatch {
   border: none;
+}
+
+.border-sky {
+  border-color: #D5EFF4;
 }
 </style>

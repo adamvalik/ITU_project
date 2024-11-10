@@ -1,12 +1,15 @@
 <template>
-  <div class="flex">
+  <div class="flex gap-1 items-center my-1">
+    <SkillHint :name="name" class="pr-2 cursor-pointer">
+      <img :src="image" :alt="name" class="w-8 h-8" />
+    </SkillHint>
     <div
       v-for="n in 5"
       :key="n"
       @click="setSkillLevel(n)"
       @mouseenter="hoverSkillLevel(n)"
       @mouseleave="hoverSkillLevel(0)"
-      class="w-12 h-12 rounded-2xl border-4 bg-gray-300 border-gray-400"
+      class="w-12 h-12 rounded-2xl border-4 bg-gray-300 border-gray-400 cursor-pointer"
       :class="[
         {'bg-yellow-300 border-yellow-400': n <= currentLevel,
         'bg-yellow-100 border-yellow-200': n <= hoverLevel }]"
@@ -15,7 +18,12 @@
 </template>
 
 <script>
+import SkillHint from './SkillHint.vue';
+
 export default {
+  components: {
+    SkillHint
+  },
   props: {
     currentLevel: {
       type: Number,
@@ -23,6 +31,14 @@ export default {
     },
     freePoints: {
       type: Number,
+      required: true
+    },
+    image: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
       required: true
     }
   },

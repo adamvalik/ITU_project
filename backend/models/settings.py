@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 class Settings(BaseModel):
-  musicVolume: int = 50
+  musicVolume: int = 0
 
 settings = Settings()

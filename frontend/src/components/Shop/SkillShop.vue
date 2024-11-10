@@ -34,9 +34,9 @@ function updatePoints(usedPoints, name) {
             FREE SKILL POINTS: <span class="text-5xl ml-4 " > {{skillPoints}} </span>
         </div>
         <div>
-        <SkillShopItem name="Armor" :image="require('@/assets/armor-icon.png')" :level="props.armor" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
-        <SkillShopItem name="Power" :image="require('@/assets/power-icon.png')" :level="props.power" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
-        <SkillShopItem name="Speed" :image="require('@/assets/speed-icon.png')" :level="props.speed" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Armor" :image="'/assets/armor-icon.png'" :level="props.armor" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Power" :image="'/assets/power-icon.png'" :level="props.power" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
+        <SkillShopItem name="Speed" :image="'/assets/speed-icon.png'" :level="props.speed" :availablePoints="skillPoints" class="m-2" @updatePoints="updatePoints"></SkillShopItem>
         </div>
 </div>
 </template>

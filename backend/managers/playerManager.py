@@ -14,8 +14,8 @@ class PlayerManager:
 
     def initialize_players(self):
         """Initialize the two players' data in Redis."""
-        player1 = Player(id=1, name="Player 1", tankType=0, color='#06B559')
-        player2 = Player(id=2, name="Player 2", tankType=1, color='#0D6BBD')
+        player1 = Player(id=1, name="", tankType=0, color='#06B559')
+        player2 = Player(id=2, name="", tankType=1, color='#0D6BBD')
         self.create_player(player1)
         self.create_player(player2)
 
@@ -34,17 +34,52 @@ class PlayerManager:
                 players.append(player)
         return players
 
-    def update_player(self, player_id: int, player_data: dict):
+    def update_name(self, player_id: int, name: str):
         player = self.get_player(player_id)
         if player:
-            try:
-                updated_player = player.copy(update=player_data)
-                self.create_player(updated_player.id, updated_player.dict())  # overwrite with new data
-                return updated_player
-            except ValidationError as e:
-                print(f"Validation error updating player {player_id}: {e}")
-                return None
-        return None
+            player.name = name
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+
+    def update_tank(self, player_id: int, tank_type: int):
+        player = self.get_player(player_id)
+        if player:
+            player.tankType = tank_type
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+
+    def update_color(self, player_id: int, color: str):
+        player = self.get_player(player_id)
+        if player:
+            player.color = color
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+
+    def update_skill(self, player_id: int, skill: str, value: int):
+        player = self.get_player(player_id)
+        if player:
+            if skill == "armor":
+                player.armorSkill = value
+            elif skill == "power":
+                player.powerSkill = value
+            elif skill == "speed":
+                player.speedSkill = value
+            else:
+                raise ValidationError(f"Invalid skill: {skill}")
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+
+    def update_skill_points(self, player_id: int, skill_points: int):
+        player = self.get_player(player_id)
+        if player:
+            player.skillPoints = skill_points
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
 
     def delete_player(self, player_id: int):
         player_key = f"{self.key_prefix}{player_id}"
@@ -54,3 +89,4 @@ class PlayerManager:
         """Reset the two players' data in Redis."""
         self.delete_player(1)
         self.delete_player(2)
+        self.initialize_players()

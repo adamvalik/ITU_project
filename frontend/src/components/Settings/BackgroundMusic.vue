@@ -9,7 +9,7 @@
 export default {
   data() {
     return {
-      currentVolume: 0.5
+      currentVolume: 0.0
     };
   },
   methods: {

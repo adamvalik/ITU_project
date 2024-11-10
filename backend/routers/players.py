@@ -7,12 +7,39 @@ from redisClient import get_redis_client
 
 router = APIRouter()
 
-@router.post("/players/{player_id}")
-async def update_player(player_id: int, player: dict, redis_client = Depends(get_redis_client)):
+@router.post("/players/{player_id}/name")
+async def update_player_name(player_id: int, name: str, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    updated_player = player_manager.update_player(player_id, player)
-    if updated_player is None:
-        raise HTTPException(status_code=404, detail="Player not found or invalid data")
+    player_manager.update_name(player_id, name)
+
+@router.post("/players/{player_id}/tankType")
+async def update_player_tank(player_id: int, tank_type: int, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.update_tank(player_id, tank_type)
+
+
+@router.post("/players/{player_id}/color")
+async def update_player_color(player_id: int, color: str, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.update_color(player_id, color)
+    return {"message": "Player color updated"}
+
+@router.post("/players/{player_id}/skill")
+async def update_player_skill(player_id: int, skill: str, value: int, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.update_skill(player_id, skill, value)
+    return {"message": "Player skill updated"}
+
+@router.post("/players/{player_id}/skillPoints")
+async def update_player_skill_points(player_id: int, skill_points: int, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.update_skill_points(player_id, skill_points)
+    return {"message": "Player skill points updated"}
+
+@router.post("/players/{player_id}")
+async def update_player(player_id: int, player: Player, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.create_player(player)
     return {"message": "Player updated"}
 
 @router.get("/players", response_model=list[Player])

@@ -4,9 +4,9 @@
 
     <div class="mb-4">
       <label class="font-semibold text-lg">Music Volume: {{ musicVolume }}%</label>
-      <input 
-        type="range" 
-        min="0" 
+      <input
+        type="range"
+        min="0"
         max="100"
         v-model="musicVolume"
         @input="updateMusicVolume"
@@ -26,7 +26,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      musicVolume: 50,
+      musicVolume: 0,
     };
   },
   async mounted() {

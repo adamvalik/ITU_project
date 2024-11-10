@@ -11,13 +11,19 @@
     >
       <img
         :src="isMuted ? '/assets/mute.png' : '/assets/unmute.png'"
-        alt="Mute Toggle"
+        alt="Mute"
         class="w-6 h-6"
       />
     </button>
 
-    <!-- Multiple Clouds Moving Across the Background -->
-    <img v-for="(cloud, index) in clouds" :key="index" :src="cloud.src" :class="cloud.class" @click="playButtonSound" :style="getCloudStyle(index)" />
+    <!-- clouds -->
+    <img
+      v-for="(cloud, index) in clouds"
+      :key="index"
+      src="/assets/cloud.png"
+      class="cloud absolute w-52 opacity-80"
+      :style="getCloudStyle(index)"
+    />
 
     <div>
       <h1 class="relative text-7xl font-bold mb-8 z-10">
@@ -26,7 +32,7 @@
       </h1>
     </div>
 
-    <!-- Menu Buttons -->
+    <!-- menu buttons -->
     <div class="flex flex-col justify-center gap-3 z-10">
       <button @click="showGameModes" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         START GAME
@@ -42,42 +48,51 @@
       </button>
     </div>
 
-    <!-- Game Modes Modal -->
+    <!-- game modes modal -->
     <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
-      <router-link @click.stop="submitClassicMode" to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center">
+      <router-link @click.stop="submitClassicMode" to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-52 flex items-center justify-center">
         Classic mode
       </router-link>
       <div
         v-if="!customModeSetting"
         @click.stop
         @mouseenter="customModeSetting = true"
-        class="text-3xl font-bold bg-white rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-48 flex items-center justify-center"
-        key="mode1"
+        class="text-3xl font-bold bg-white rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-52 flex items-center justify-center"
       >
         Custom mode
       </div>
       <div
         v-else
         @click.stop
-        class="relative h-48 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col gap-2 items-center justify-center hover:bg-gray-100"
-        key="mode2"
+        class="relative h-52 w-96 bg-white p-8 rounded-lg shadow-2xl flex flex-col gap-2 items-center justify-center hover:bg-gray-100"
       >
         <p class="absolute top-4 left-1/4 text-3xl font-bold">Custom mode</p>
 
-        <div class="flex self-start items-center px-4 mt-10 gap-8">
-          <label for="timer" class="text-xl font-semibold pr-10">Timer</label>
+        <div class="flex self-start items-center mt-12 px-2 gap-8">
+          <label for="isTimer" class="text-xl font-semibold pr-10">Timer</label>
           <input
-            id="timer"
+            id="isTimes"
             type="checkbox"
             class="form-checkbox h-6 w-6 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-200 focus:ring-opacity-50 hover:border-blue-500"
-            v-model="timer"
+            v-model="isTimer"
           />
         </div>
+        <div class="flex self-start items-center px-2 gap-1">
+          <label for="timePerTurn" class="text-xl font-semibold pr-8">Per turn</label>
+          <input
+            type="number"
+            v-model="timePerTurn"
+            class="w-16 h-8 text-xl text-center border-2 border-gray-300 rounded-lg"
+            :disabled="!isTimer"
+            :class="{ 'bg-gray-200, opacity-70': !isTimer }"
+          />
+          <p class="text-xl">sec</p>
+        </div>
 
-        <div class="flex self-start items-center px-4 mb-4 gap-2">
-          <label for="wins" class="text-xl font-semibold pr-8">Wins</label>
+        <div class="flex self-start items-center mb-4 px-2 gap-2">
+          <label for="toWins" class="text-xl font-semibold pr-8">Wins</label>
 
-          <!-- Left Button to Decrease -->
+          <!-- decrease -->
           <button
             @click="decreaseWins"
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
@@ -85,12 +100,12 @@
             &#9664;
           </button>
 
-          <!-- Display Number of Wins -->
-          <div class="text-2xl font-bold w-8 text-center">
-            {{ wins }}
+          <!-- number of wins -->
+          <div class="text-xl w-8 text-center">
+            {{ toWins }}
           </div>
 
-          <!-- Right Button to Increase -->
+          <!-- increase -->
           <button
             @click="increaseWins"
             class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-1 px-2 rounded-lg"
@@ -99,7 +114,7 @@
           </button>
         </div>
 
-        <!-- Go Button -->
+        <!-- go button -->
         <router-link
           to="/chooseTanks"
           @click="submitCustomMode"
@@ -110,13 +125,11 @@
       </div>
     </div>
 
-    <!-- Modal Window -->
+    <!-- settings -->
     <div v-if="isSettingsVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <Settings @hideSettings="hideSettings" @updateMusicVolume="updateMusicVolume" />
     </div>
 
-    <!-- Audio Element for Button Click Sound -->
-    <!-- <audio ref="buttonSound" :src="buttonSoundSrc" preload="auto"></audio> -->
     <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
   </div>
 
@@ -137,28 +150,23 @@ export default {
   },
   data() {
     return {
-      wins: 5,
-      timer: false,               // Timer setting for custom mode
+      cloudCount: 10,
+      toWins: 5,
+      isTimer: false,
+      timePerTurn: 30,
       customModeSetting: false,
-      isSettingsVisible: false,   // Controls whether the modal is visible
-      isGameModesVisible: false,  // Controls whether the game modes modal is visible
-      isMuted: true,             // Controls whether the background music is muted
-      // soundEffectsVolume: 50,     // Default value for sound effects slider
-      // buttonSoundSrc: "/assets/another-one.mp3",  // Path to button click sound
-      // Array of cloud properties for dynamic rendering
-      clouds: [
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 70px; animation-duration: 20s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: -10px; animation-duration: 30s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 150px; animation-duration: 35s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 170px; animation-duration: 25s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 50px; animation-duration: 40s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 120px; animation-duration: 27s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 180px; animation-duration: 23s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 80px; animation-duration: 22s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 60px; animation-duration: 34s;' },
-        { src: '/assets/cloud.png', class: 'cloud', style: 'top: 130px; animation-duration: 28s;' },
-      ],
+      isSettingsVisible: false,
+      isGameModesVisible: false,
+      isMuted: true,
     };
+  },
+  computed: {
+    clouds() {
+      return Array.from({ length: this.cloudCount });
+    },
+  },
+  created() {
+    this.initializeCloudStyles();
   },
   async mounted() {
     // set initial music volume to 50%
@@ -190,19 +198,21 @@ export default {
     },
 
     decreaseWins() {
-      if (this.wins > 1) {
-        this.wins--;
+      if (this.toWins > 1) {
+        this.toWins--;
       }
     },
     increaseWins() {
-      this.wins++;
+      this.toWins++;
     },
+
     showSettings() {
       this.isSettingsVisible = true;
     },
     hideSettings() {
       this.isSettingsVisible = false;
     },
+
     showGameModes() {
       this.isGameModesVisible = true;
     },
@@ -211,38 +221,60 @@ export default {
       this.isGameModesVisible = false;
     },
 
+    // game mode submit also means to clear previous game settings
     async submitClassicMode() {
       try {
-        await axios.post('http://localhost:8000/game/mode?mode=classic');
+        await axios.delete('http://localhost:8000/game/reset');
       } catch (error) {
         console.error(error);
       }
     },
     async submitCustomMode() {
       try {
-        await axios.post(`http://localhost:8000/game/mode?mode=custom&timer=${this.timer}&wins=${this.wins}`);
+        await axios.delete('http://localhost:8000/game/reset');
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        await axios.post(`http://localhost:8000/game/custom_mode`, {
+          isTimer: this.isTimer,
+          timePerTurn: this.timePerTurn,
+          toWins: this.toWins,
+        });
       } catch (error) {
         console.error(error);
       }
     },
 
+    getPredefinedValue(array, index) {
+      return array[index % array.length];
+    },
     getCloudStyle(index) {
-      const baseStyle = this.clouds[index].style;
-      const zIndex = index % 2 === 0 ? 1 : 40;  // Set z-index based on even or odd index
-      return `${baseStyle} z-index: ${zIndex};`;
-    }
+      const topValues = [-10, 30, 60, 90, 120, 150, 180];
+      const durationValues = [20, 25, 30, 35, 40];
+      const zIndexValues = [1, 40];
+      const leftOffsets = [-300, -250, -200, -150];
+
+      const top = this.getPredefinedValue(topValues, index);
+      const animDuration = this.getPredefinedValue(durationValues, index);
+      const zIndex = this.getPredefinedValue(zIndexValues, index);
+      const leftOffset = this.getPredefinedValue(leftOffsets, index);
+
+      return `top: ${top}px; animation-duration: ${animDuration}s; z-index: ${zIndex}; left: ${leftOffset}px;`;
+    },
+    initializeCloudStyles() {
+    this.cloudStyles = Array.from(
+        { length: this.cloudCount },
+        (_, index) => this.getCloudStyle(index)
+      );
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Cloud Animation */
 .cloud {
-  position: absolute;
-  width: 200px; /* Adjust size */
-  left: -150px; /* Start off-screen on the left */
   animation: moveCloud linear infinite;
-  opacity: 85%;
 }
 
 @keyframes moveCloud {
@@ -250,8 +282,7 @@ export default {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(120vw); /* Move to the right, off-screen */
+    transform: translateX(120vw); /* move off-screen */
   }
 }
-
 </style>

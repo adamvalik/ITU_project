@@ -58,10 +58,10 @@ const effectiveLevel = computed(() => {
 <template>
   <div class="flex items-start">
     <!-- Armor Label and Icon -->
-    
+
     <!-- Armor Status Bars -->
     <div class="flex items-center">
-      <img :src="props.image" class="w-9 h-9 mr-4" />
+      <img :src="props.image" :alt="props.name" class="w-9 h-9 mr-4" />
 
       <!-- Active armor bars -->
       <div
@@ -81,7 +81,7 @@ const effectiveLevel = computed(() => {
       <!-- Upgrade/ Downgrade Buttons -->
       <div
         class="w-12 h-12 rounded-3xl border-4 bg-green-500 border-green-600 ml-8 flex justify-center items-center cursor-pointer
-         hover:bg-green-600 hover:border-green-700 
+         hover:bg-green-600 hover:border-green-700
          active:bg-green-700 active:border-green-800"
   @click="upgradeSkill"
         >
@@ -90,7 +90,7 @@ const effectiveLevel = computed(() => {
 
     <div
       class="w-12 h-12 rounded-3xl border-4 bg-red-500 border-red-600 ml-2 flex justify-center items-center cursor-pointer
-         hover:bg-red-600 hover:border-red-700 
+         hover:bg-red-600 hover:border-red-700
          active:bg-red-700 active:border-red-800"
         @click="downgradeSkill"
     >

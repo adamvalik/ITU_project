@@ -1,13 +1,15 @@
 from pydantic import BaseModel
 
+# toWins = 0 is indicating classic mode (also without timer)
+
 class Game(BaseModel):
   isTimer: bool = False
-  timePerRound: int = 30 # initial time for the timer
+  timePerTurn: int = 30 # initial time for the timer
   toWins: int = 0
   wind: int = 0
   mapName: str = ""
 
 class CustomMode(BaseModel):
   isTimer: bool
-  timePerRound: int
+  timePerTurn: int
   toWins: int

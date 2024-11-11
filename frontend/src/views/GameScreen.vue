@@ -3,26 +3,50 @@
     <div>
       <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-8">
 
-        <div class="flex flex-col space-y-1 w-1/3">
+        <div class="flex flex-col space-y-1 w-1/3 relative">
           <div>
             <button
               mouseover="showFireHelp"
               @mouseleave="hideFireHelp"
-              @click="fireMissile"
+              @click="toggleWeaponMenu"
               class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
               WEAPON SELECTOR
             </button>
           </div>
 
-          <div>
+          <div v-if="!toggleDropDownMenu">
             <button
               class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+              <div class="flex flex-row justify-center space-x-8">
+                <div class="text-black font-bold text-3xl">{{ this.activeMissile.name }}</div>
+                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
+                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[activeMissile.id] }}</div>
+              </div>
+            </button>
+          </div>
+
+          <div v-if="toggleDropDownMenu" class="absolute top-full mt-2 bg-gray-600 border-4 border-gray-700 space-y-2">
+            <button v-if="checkExistingAmmo('small')" @click="selectMissile('small')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-8">
                 <div class="text-black font-bold text-3xl">SMALL MISSILE</div>
                 <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
                 <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[0] }}</div>
               </div>
+            </button>
 
+            <button v-if="checkExistingAmmo('medium')" @click="selectMissile('medium')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+              <div class="flex flex-row justify-center space-x-8">
+                <div class="text-black font-bold text-3xl">MEDIUM MISSILE</div>
+                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
+                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[1] }}</div>
+              </div>
+            </button>
+            <button v-if="checkExistingAmmo('big')" @click="selectMissile('big')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+              <div class="flex flex-row justify-center space-x-8">
+                <div class="text-black font-bold text-3xl">BIG MISSILE</div>
+                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
+                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[2] }}</div>
+              </div>
             </button>
           </div>
         </div>
@@ -123,6 +147,7 @@
         
         //Map data
         terrain: [],
+        terrainType: "",
 
         //Player data
         player1: {
@@ -168,6 +193,7 @@
 
         //Fire help visibility
         fireHelpVisible: false,
+        toggleDropDownMenu: false,
 
         //
         isPractice: true,
@@ -177,16 +203,71 @@
           yCord: 0,
           health: 0,
           color: "",
+        },
+
+        activeMissile: {
+          id: 0,
+          name: "",
+          damage: 0,
+          radius: 0,
         }
+
+
       };
     },
     mounted() {
+      this.selectActiveMissile('small');
+      this.generateTerrain();
       this.checkPractice();
       this.loadPlayerData();
       this.loadGameData();
       window.addEventListener('keydown', this.onKeyPressed);
     },
     methods: {
+      toggleWeaponMenu() {
+        this.toggleDropDownMenu = !this.toggleDropDownMenu;
+      },
+
+      selectMissile(missileType) {
+        this.selectActiveMissile(missileType);
+        this.toggleDropDownMenu = false;
+      },
+
+      checkExistingAmmo(missileType) {
+        if(missileType == 'small'){
+          return this.player1.ammunitionCount[0] != -1;
+        } else if(missileType == 'medium'){
+          return this.player1.ammunitionCount[1] != -1;
+        } else if(missileType == 'big'){
+          return this.player1.ammunitionCount[2] != -1;
+        }
+      },
+       
+      selectActiveMissile(missileType) {
+        if(missileType == 'small'){
+          this.activeMissile = {
+            id: 0,
+            name: "SMALL MISSILE",
+            damage: 20,
+            radius: 30,
+          };
+        } else if(missileType == 'medium'){
+          this.activeMissile = {
+            id: 1,
+            name: "MEDIUM MISSILE",
+            damage: 30,
+            radius: 40,
+          };
+        } else if(missileType == 'big'){
+          this.activeMissile = {
+            id: 2,
+            name: "BIG MISSILE",
+            damage: 40,
+            radius: 50,
+          };
+        }
+      },
+
       async checkPractice() {
 
         if(!this.isPractice){
@@ -207,7 +288,6 @@
         await axios.get('http://localhost:8000/players/1')
           .then((response) => {
             this.player1 = response.data;
-            this.generateTerrain();
             this.drawGame();
           })
           .catch((error) => {
@@ -363,22 +443,28 @@
         ctx.restore();
       },
 
-      generateTerrain() {
-        // Generate a simple random terrain within 2/3 of the canvas height
-        const maxTerrainHeight = (this.canvasHeight * 2) / 3;
-        this.terrain = new Array(this.canvasWidth).fill(0).map((_, x) => {
-          const baseHeight = maxTerrainHeight; // Base height is 2/3 of the canvas height
-          const variation = Math.sin(x * 0.06) * 15 + Math.sin(x * 0.1) * 10 + Math.sin(x * 0.01) * 50;
-          return baseHeight + variation;
-        });
+      async generateTerrain() {
+        await axios.get('http://localhost:8000/generate-terrain', {
+          params: {
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
+          }
+        })
+          .then((response) => {
+            this.terrain = response.data.data;
+            this.terrainType = response.data.type;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       },
 
       fireMissile() {
-        const ammunition = this.player1.ammunitionCount[0];
+        const ammunition = this.player1.ammunitionCount[this.activeMissile.id];
         if(ammunition <= 0){
           return;
         }
-        this.player1.ammunitionCount[0]--;
+        this.player1.ammunitionCount[this.activeMissile.id]--;
         const startX = this.player1.xCord;
         const startY = this.player1.yCord - 15; //this.terrain[Math.floor(player.x)] - player.size / 2
         const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 4;
@@ -430,7 +516,7 @@
       },
       explodeTerrain(x, y) {
         //Create a circular explosion in the terrain
-        const explosionRadius = 30;
+        const explosionRadius = this.activeMissile.radius;
         for (let i = -explosionRadius; i <= explosionRadius; i++) {
           const pos = Math.floor(x) + i;
           if (pos >= 0 && pos < this.canvasWidth) {
@@ -452,7 +538,13 @@
         }
         ctx.lineTo(this.canvasWidth, this.canvasHeight);
         ctx.closePath();
-        ctx.fillStyle = "saddlebrown";
+        if(this.terrainType === "mud"){
+          ctx.fillStyle = "saddlebrown";
+        } else {
+          ctx.fillStyle = "green";
+          console.log(this.terrain.type);
+        }
+        
         ctx.fill();
       },
 

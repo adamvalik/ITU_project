@@ -14,6 +14,6 @@ class Player(BaseModel):
   fuel: int = 250
   fuelMax: int = 250
   health: int = 100
-  ammunitionCount: list[int] = [20,0,0]
+  ammunitionCount: list[int] = [20,-1, 10]
   xCord: int = 120
   yCord: int = 140

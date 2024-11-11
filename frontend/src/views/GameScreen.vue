@@ -6,11 +6,14 @@
         <div class="flex flex-col space-y-1 w-1/3 relative">
           <div>
             <button
-              mouseover="showFireHelp"
-              @mouseleave="hideFireHelp"
+              @mouseover="showSelectorHelp"
+              @mouseleave="hideSelectorHelp"
               @click="toggleWeaponMenu"
-              class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl">
+              class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl relative">
               WEAPON SELECTOR
+              <span v-if="selectorHelpVisible" class="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl">
+              Click to select weapon!
+            </span>
             </button>
           </div>
 
@@ -183,8 +186,8 @@
         toggleHovering: false,
         toggleDragging: false,
         aimCircleRadius: 200,
-        aimLaserXCord: 200,
-        aimLaserYCord: 400,
+        aimLaserXCord: 0,
+        aimLaserYCord: 0,
         angle: 45,
         power: 50,
 
@@ -193,7 +196,9 @@
 
         //Fire help visibility
         fireHelpVisible: false,
+        selectorHelpVisible: false,
         toggleDropDownMenu: false,
+        toggleDisableFire: false,
 
         //
         isPractice: true,
@@ -330,8 +335,23 @@
         this.fireHelpVisible = false;
       },
 
+      showSelectorHelp() {
+        this.selectorHelpVisible = true;
+      },
+
+      hideSelectorHelp() {
+        this.selectorHelpVisible = false;
+      },
+
       backToMenu() {
         this.$router.push('/');
+      },
+
+      calculateLaserPos() {
+        const distance = (this.power / 100) * this.aimCircleRadius;
+        const angleInRadians = (-this.angle * Math.PI) / 180;
+        this.aimLaserXCord = this.player1.xCord + distance * Math.cos(angleInRadians);
+        this.aimLaserYCord = this.player1.yCord + distance * Math.sin(angleInRadians);
       },
 
 
@@ -460,6 +480,12 @@
       },
 
       fireMissile() {
+
+        if(this.toggleDisableFire){
+          return;
+        }
+        this.toggleDisableFire = true;
+
         const ammunition = this.player1.ammunitionCount[this.activeMissile.id];
         if(ammunition <= 0){
           return;
@@ -500,6 +526,7 @@
               this.gameOver = true;
             }
           }
+          this.toggleDisableFire = false;
           this.explodeTerrain(x, y);
           this.missile = null;
           return;
@@ -564,20 +591,28 @@
       },
 
       onKeyPressed(event){
-        if(event.key === 'ArrowRight'){
-
+        if(event.key === 'd'){
           if(this.player1.fuel > 0 && this.player1.xCord <  this.canvasWidth - 5){
             this.player1.fuel -= 5;
             this.player1.xCord += 5;
             this.aimLaserXCord += 5;
           }
-        } else if(event.key === 'ArrowLeft'){
+        } else if(event.key === 'a'){
           if(this.player1.fuel > 0 && this.player1.xCord > 5){
             this.player1.fuel -= 5;
             this.player1.xCord -= 5;
             this.aimLaserXCord -= 5;
           }
+        } else if(event.key === 'ArrowRight'){
+          this.power = Math.min(100, this.power + 1);
+        } else if(event.key === 'ArrowLeft'){
+          this.power = Math.max(1, this.power - 1);
+        } else if(event.key === 'ArrowUp'){
+          this.angle += 1;
+        } else if(event.key === 'ArrowDown'){
+          this.angle -= 1;
         }
+
         this.drawGame();
       },
 
@@ -718,6 +753,9 @@
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+        // Calculate the laser line's endpoint based on the updated angle and power
+        this.calculateLaserPos();
 
         // Draw the terrain
         this.drawTerrain(ctx);

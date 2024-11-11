@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class Game(BaseModel):
   isTimer: bool = False
-  timePerTurn: int = 30 # initial time for the timer
+  timePerTurn: int = 3000 # initial time for the timer
   toWins: int = 0
   wind: int = 0
   mapName: str = ""

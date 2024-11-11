@@ -9,11 +9,11 @@ class Player(BaseModel):
   powerSkill: int = 0
   speedSkill: int = 0
   skillPoints: int = 6
-  wins: int = 0
-  money: int = 0
+  wins: int = 1
+  money: int = 2000
   fuel: int = 250
   fuelMax: int = 250
   health: int = 100
-  ammunitionCount: list[int] = [0,0,0]
-  xCord: int = 0
-  yCord: int = 0
+  ammunitionCount: list[int] = [20,0,0]
+  xCord: int = 120
+  yCord: int = 140

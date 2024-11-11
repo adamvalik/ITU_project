@@ -466,7 +466,7 @@
         }
         this.player1.ammunitionCount[this.activeMissile.id]--;
         const startX = this.player1.xCord;
-        const startY = this.player1.yCord - 15; //this.terrain[Math.floor(player.x)] - player.size / 2
+        const startY = this.player1.yCord - 15;
         const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 4;
         const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 12;
         const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 8;
@@ -494,6 +494,12 @@
 
         this.missile.t += 0.01;
         if (this.missile.t >= 1 || this.checkTerrainCollision(x, y)) {
+          if(this.isPractice && this.checkTargetCollision(x, y)){
+            this.practiceTarget.health -= this.activeMissile.damage;
+            if(this.practiceTarget.health <= 0){
+              this.gameOver = true;
+            }
+          }
           this.explodeTerrain(x, y);
           this.missile = null;
           return;
@@ -514,6 +520,15 @@
         //Check if the missile hit the terrain
         return y >= this.terrain[Math.floor(x)];
       },
+
+      checkTargetCollision(x, y) {
+        const dx = this.practiceTarget.xCord - x;
+        const dy = this.practiceTarget.yCord - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance <= this.activeMissile.radius;
+      },
+
+
       explodeTerrain(x, y) {
         //Create a circular explosion in the terrain
         const explosionRadius = this.activeMissile.radius;

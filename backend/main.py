@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from redisClient import get_redis_client
 
 from routers import mapCreator, players, tanks, settings, game, gameScreen, debug
-from managers import playerManager, gameManager
+from managers import playerManager, gameManager, practiceTargetManager
 
 app = FastAPI()
 
@@ -38,6 +38,9 @@ playerManager.initialize_players()
 
 gameManager = gameManager.GameManager(redis_client)
 gameManager.initialize_game()
+
+practiceTargetManager = practiceTargetManager.PracticeTargetManager(redis_client)
+practiceTargetManager.initialize_practice_target()
 
 
 

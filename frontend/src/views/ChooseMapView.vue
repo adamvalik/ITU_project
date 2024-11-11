@@ -3,50 +3,54 @@
     class="flex flex-col items-center bg-white"
     :style="{ width: `${gameWidth}px`, height: `${gameHeight}px` }"
   >
-    <div class="flex justify-around items-center mb-6 h-1/3 w-5/6">
+    <div class="flex justify-around items-center h-1/3 w-5/6">
       <div
-        v-for="(map, index) in maps"
+        v-for="(map, index) in defaultMaps"
         :key="index"
-        :class="['w-72 border-4 border-gray-300 rounded-lg', { 'border-green-500': selectedMap === map }]"
+        :class="['w-72 border-4 border-gray-300 rounded-xl', { 'border-green-500': selectedMap === map.name }]"
         @click="selectMap(map)"
       >
-        <img :src="map.image" alt="Map preview" />
+        <img :src="map.image" alt="Map preview" class="rounded-lg" />
       </div>
     </div>
 
     <hr class="w-full border-gray-500" />
 
-    <div class="flex items-center justify-center space-x-8 mb-4">
-      <!-- Create Map Button -->
-      <button @click="createMap" class="px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300">
-        CREATE YOUR MAP
-      </button>
-
-      <!-- Large Map Preview -->
-      <div class="border-4 border-green-500 w-80 h-48 flex items-center justify-center">
-        <img :src="selectedMap.image" alt="Selected map" class="w-full h-full rounded-lg" />
+    <div class="flex items-center justify-around w-full h-3/5">
+      <div class="w-1/3 flex items-center justify-end pr-10">
+        <button @click="createMap" class="px-4 py-4 w-32 h-32 bg-gray-200 font-bold rounded-lg shadow-md hover:bg-gray-300">
+          CREATE YOUR MAP
+        </button>
       </div>
 
-      <!-- Your Maps List -->
-      <div class="text-left">
-        <h3 class="font-semibold text-gray-700 mb-2">YOUR MAPS:</h3>
+      <div
+        :class="['w-1/3 border-4 border-gray-300 rounded-xl', { 'border-green-500': customMapSelected }]"
+        @click="selectCustomMap"
+      >
+        <img src="/assets/bg.png" alt="Custom map" class="w-full h-full rounded-lg" />
+      </div>
+
+      <div class="text-left w-1/3 pl-10">
+        <h3 class="font-semibold text-gray-700 mb-1">YOUR MAPS:</h3>
         <ul>
           <li
-            v-for="(map, index) in customMaps"
+            v-for="(mapName, index) in customMapNames"
             :key="index"
-            :class="['cursor-pointer', { 'font-bold text-green-600': selectedMap === map }]"
-            @click="selectMap(map)"
+            :class="['cursor-pointer', { 'font-bold text-green-600': selectedMap === mapName }]"
+            @click="selectCustomMap(mapName)"
           >
-            {{ map.name }}
+            {{ mapName }}
           </li>
         </ul>
       </div>
     </div>
 
-    <!-- Weather Selection Section -->
-    <div class="flex items-center space-x-4 mb-8">
-      <span class="font-bold text-lg">WEATHER:</span>
-      <span class="font-bold">{{ selectedWeather }}</span>
+    <!-- weather selection -->
+    <div class="flex flex-col items-center justify-normal mb-8">
+      <div class="flex gap-8">
+        <span class="font-bold text-lg">WEATHER:</span>
+        <span class="font-bold">{{ selectedWeather }}</span>
+      </div>
       <div class="flex space-x-2">
         <button
           v-for="(weather, index) in weathers"
@@ -82,22 +86,17 @@ export default {
     gameWidth: Number,
     gameHeight: Number,
   },
-  mounted() {
-    this.selectedMap = this.maps[0];
-  },
   data() {
     return {
-      maps: [
-        { name: 'default', image: '/assets/map1.png' },
-        { name: 'desert', image: '/assets/map2.png' },
-        { name: 'arctic', image: '/assets/map3.png' },
+      defaultMaps: [
+        { name: '__forest', image: '/assets/bg.png' },
+        { name: '__desert', image: '/assets/bg.png' },
+        { name: '__mountains', image: '/assets/bg.png' },
       ],
-      customMaps: [
-        { name: 'desert_madness', image: '/assets/map1.png' },
-        { name: 'my_map', image: '/assets/map2.png' },
-        { name: 'mountainss', image: '/assets/map3.png' },
-      ],
-      selectedMap: { name: 'default', image: '/assets/map1.png' },
+      selectedMap: '__forest',
+      customMapNames: ['map1', 'map2', 'map3', 'map4'],
+      customMapSelected: false,
+
       weathers: [
         { label: 'Sunny', icon: '/assets/sunny-icon.png' },
         { label: 'Cloudy', icon: '/assets/cloudy-icon.png' },
@@ -107,20 +106,19 @@ export default {
     };
   },
   methods: {
-    selectMap(map) {
-      this.selectedMap = map;
-    },
-    createMap() {
-      console.log('Create your map button clicked');
-    },
     selectWeather(weather) {
       this.selectedWeather = weather;
     },
-    chooseTank() {
-      console.log('Choose tank button clicked');
+    selectMap(map) {
+      this.selectedMap = map.name;
+      this.customMapSelected = false;
     },
-    playGame() {
-      console.log('Play button clicked');
+    selectCustomMap(map) {
+      this.selectedMap = map;
+      this.customMapSelected = true;
+    },
+    createMap() {
+      this.$router.push({ path: '/mapCreator', query: { fromMapSelector: true } });
     },
   },
 };

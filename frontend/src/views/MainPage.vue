@@ -40,9 +40,9 @@
       <router-link to="/game" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         TUTORIAL
       </router-link>
-      <router-link to="/mapCreator" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+      <button @click="createMap" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
-      </router-link>
+      </button>
       <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         SETTINGS
       </button>
@@ -220,6 +220,11 @@ export default {
       this.customModeSetting = false;
       this.isGameModesVisible = false;
     },
+
+    createMap() {
+      this.$router.push({ path: '/mapCreator', query: { fromMapSelector: false } });
+    },
+
 
     // game mode submit also means to clear previous game settings
     async submitClassicMode() {

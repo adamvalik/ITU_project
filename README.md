@@ -26,9 +26,9 @@ This project uses Docker Compose, which is included with Docker Desktop (downloa
 | `docker ps`                            | Lists all currently running Docker containers.        |
 
 ### Commands inside the docker
-Watch for changes in Tailwind CSS:
+Watch for changes in Tailwind CSS (if not already working):
 ```bash
-docker exec -it frontend npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/output.css --watch
+docker exec -it itu_frontend npx tailwindcss -i ./src/assets/tailwind.css -o ./src/assets/output.css --watch
 ```
 
 

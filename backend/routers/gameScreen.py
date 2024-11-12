@@ -82,8 +82,12 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             dx = missileData.targetXCord - x
             dy = missileData.targetYCord - y
             distance = math.sqrt(dx * dx + dy * dy)
+
+            #Player hit
             if distance <= missileData.radius + 20:
                 returnModel.hitPlayer = True
+                player.money += 200
+                returnModel.playerMoney = 200
                 missileData.targetHealth -= missileData.damage
                 if(missileData.targetHealth < 0):
                     returnModel.targetHealth = 0

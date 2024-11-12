@@ -199,6 +199,7 @@
         //Response
         responseGameOver: false,
         responseHitPlayer: false,
+        responseMoney: 0,
         newterrain: [],
         newTargetHealth: 0,
 
@@ -539,6 +540,7 @@
           this.responseGameOver = response.data.gameOver;
           this.newTargetHealth = response.data.targetHealth;
           this.responseHitPlayer = response.data.hitPlayer;
+          this.responseMoney = response.data.playerMoney;
         })
         .catch((error) => {
           console.error(error);
@@ -570,8 +572,8 @@
 
           if(this.responseHitPlayer){
             this.practiceTarget.health = this.newTargetHealth;
+            this.player1.money += this.responseMoney;
           }
-        
           if(this.responseGameOver){
             this.gameOver = true;
           }
@@ -715,6 +717,12 @@
         ctx.save();
         console.log(this.player1.xCord, this.player1.yCord, 40);
         this.player1.yCord = this.terrain[Math.floor(this.player1.xCord)] - 40 / 2;
+
+        const groundLevel = this.canvasHeight - 40 / 2;
+        if (this.player1.yCord > groundLevel) {
+          this.player1.yCord = groundLevel;
+        }
+
         ctx.translate(this.player1.xCord, this.player1.yCord);
 
         //Color for outline

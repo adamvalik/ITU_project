@@ -30,3 +30,4 @@ class MissileComputationResponse(BaseModel):
     missileTrajectory: list[tuple[float, float]] = []
     gameOver: bool = False
     targetHealth: int = 0
+    playerMoney: int = 0

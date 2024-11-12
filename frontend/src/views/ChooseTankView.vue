@@ -120,7 +120,7 @@
 
     <!-- footer buttons -->
     <div class="absolute bottom-4 left-0 right-0 flex justify-between px-8">
-      <router-link to="/" @click="deleteData" class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-200">
+      <router-link to="/" class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition duration-200">
         Back to Main Page
       </router-link>
 
@@ -275,15 +275,6 @@ export default {
         console.error(error);
       }
     },
-
-    async deleteData() {
-      try {
-        await apiClient.delete('/players');
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
   }
 }
 </script>

@@ -33,8 +33,6 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int):
         terrain.append(baseHeight + variation)
     newMap = Map(name="mapka", type="mud", data=terrain)
     return newMap
-<<<<<<< HEAD
-
 
 @router.post("/save-current-player-data")
 async def save_current_player_data(currentPlayer: PlayerData, redis_client = Depends(get_redis_client)):
@@ -60,5 +58,3 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     returnModel = MissileComputationResponse(ammunitionCount=player.ammunitionCount[missileData.weaponSelected])
     player_manager.create_player(player)
     return returnModel
-=======
->>>>>>> 0293bc85eeaa1b9962a7dac70b3e62912bd7988d

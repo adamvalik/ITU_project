@@ -124,7 +124,7 @@
       ></canvas>
     </div>
     <div v-if="gameOver" class="absolute inset-0 flex flex-col space-y-2 items-center justify-center bg-black bg-opacity-50">
-        <h1 class="text-4xl font-bold">Game Over!</h1>
+        <h1 class="text-4xl font-bold">You won!</h1>
         <button @click="backToMenu" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl mt-4 justify-center items-center">
           Back to Menu
         </button>
@@ -223,7 +223,7 @@
     mounted() {
       this.selectActiveMissile('small');
       this.generateTerrain();
-      this.checkPractice();
+      this.loadPracticeTarget();
       this.loadPlayerData();
       this.loadGameData();
       window.addEventListener('keydown', this.onKeyPressed);
@@ -273,7 +273,7 @@
         }
       },
 
-      async checkPractice() {
+      async loadPracticeTarget() {
 
         if(!this.isPractice){
           return;
@@ -488,6 +488,7 @@
 
         const ammunition = this.player1.ammunitionCount[this.activeMissile.id];
         if(ammunition <= 0){
+          this.toggleDisableFire = false;
           return;
         }
         this.player1.ammunitionCount[this.activeMissile.id]--;
@@ -521,6 +522,8 @@
         this.missile.t += 0.01;
         if (this.missile.t >= 1 || this.checkTerrainCollision(x, y)) {
           if(this.isPractice && this.checkTargetCollision(x, y)){
+
+            this.player1.money += 500;
             this.practiceTarget.health -= this.activeMissile.damage;
             if(this.practiceTarget.health <= 0){
               this.gameOver = true;
@@ -537,7 +540,7 @@
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.arc(x, y, this.activeMissile.damage / 4, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
 
@@ -552,7 +555,8 @@
         const dx = this.practiceTarget.xCord - x;
         const dy = this.practiceTarget.yCord - y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance <= this.activeMissile.radius;
+        //Check if the missile hit the target, 20 is the player size
+        return distance <= this.activeMissile.radius + 20;
       },
 
 
@@ -611,6 +615,8 @@
           this.angle += 1;
         } else if(event.key === 'ArrowDown'){
           this.angle -= 1;
+        } else if(event.key === ' '){
+          this.fireMissile();
         }
 
         this.drawGame();

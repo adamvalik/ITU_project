@@ -50,11 +50,59 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         raise HTTPException(status_code=404, detail="Player not found")
     
     player_manager.delete_player(player.id)
+    returnModel = MissileComputationResponse()
     
     #Decrement ammunition count
     player.ammunitionCount[missileData.weaponSelected] -= 1
+    returnModel.ammunitionCount = player.ammunitionCount[missileData.weaponSelected]
 
+    #Create missile object
+    missile = {
+        "t": 0,
+        "startX": player.xCord,
+        "startY": player.yCord - 15,
+        "controlX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 2,
+        "controlY": player.yCord - 15 - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12,
+        "endX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4,
+        "endY": missileData.canvasHeight
+    }
+
+    missileTrajectory = []
+
+    t = 0.00
+
+    while t <= 1:
+        x = (1 - t) * (1 - t) * missile["startX"] + 2 * (1 - t) * t * missile["controlX"] + t * t * missile["endX"]
+        y = (1 - t) * (1 - t) * missile["startY"] + 2 * (1 - t) * t * missile["controlY"] + t * t * missile["endY"]
+        missileTrajectory.append((x, y))
+
+        if(y >= missileData.terrain[math.floor(x)]):
+            returnModel.hitTerrain = True
+
+            dx = missileData.targetXCord - x
+            dy = missileData.targetYCord - y
+            distance = math.sqrt(dx * dx + dy * dy)
+            if distance <= missileData.radius + 20:
+                returnModel.hitPlayer = True
+                missileData.targetHealth -= missileData.damage
+                if player.health <= 0:
+                    returnModel.gameOver = True
+
+
+            explosionRadius = missileData.radius
+            for i in range(-explosionRadius, explosionRadius):
+                pos = math.floor(x) + i
+                if pos >= 0 and pos < missileData.canvasWidth:
+                    distance = math.sqrt(i * i)
+                    if distance <= explosionRadius:
+                        impactDepth = math.sqrt(explosionRadius * explosionRadius - distance * distance)
+                        missileData.terrain[pos] = max(missileData.terrain[pos], y + impactDepth)
+        
+            break
+
+        t += 0.01
     
-    returnModel = MissileComputationResponse(ammunitionCount=player.ammunitionCount[missileData.weaponSelected])
+    returnModel.newTerrain = missileData.terrain
+    returnModel.missileTrajectory = missileTrajectory
     player_manager.create_player(player)
     return returnModel

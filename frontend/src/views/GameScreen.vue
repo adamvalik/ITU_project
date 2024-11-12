@@ -506,13 +506,19 @@
         }
 
         await axios.post('http://localhost:8000/compute-missile-data', {
+          canvasWidth: this.canvasWidth,
+          canvasHeight: this.canvasHeight,
           playerId: this.player1.id,
           terrain: this.terrain,
           angle: this.angle,
           power: this.power,
+          wind: this.wind,
           weaponSelected: this.activeMissile.id,
           radius: this.activeMissile.radius,
           damage: this.activeMissile.damage,
+          targetHealth: this.practiceTarget.health,
+          targetXCord: this.practiceTarget.xCord,
+          targetYCord: this.practiceTarget.yCord,
         })
         .then((response) => {
           this.player1.ammunitionCount[this.activeMissile.id] = response.data.ammunitionCount;

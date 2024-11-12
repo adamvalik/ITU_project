@@ -109,7 +109,7 @@ function savePlayer() {
           </div>
 
             <div v-if="player">
-                <WeaponShop class="mb-14" :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" @updateCash="updateCash"></WeaponShop>
+                <WeaponShop :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" @updateCash="updateCash"></WeaponShop>
                 <SkillShop  :armor="player.armor" :power="player.power" :speed="player.speed" :skillPoints="player.skillPoints" @updatePoints="updatePoints"></SkillShop>
                 
             </div>

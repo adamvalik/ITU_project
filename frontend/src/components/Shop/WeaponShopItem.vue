@@ -31,7 +31,6 @@ const emit = defineEmits(['updateCash']); // Define custom event
 
 function buyItem() {
   if(props.price > props.cash){
-    console.log("nelze", props.cash);
     emit('updateCash', props.price, props.name, quantity.value);
     return;
   }

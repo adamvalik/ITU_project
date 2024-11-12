@@ -55,7 +55,7 @@ function updateCash(price, name, quantity) {
 </script>
 
 <template>
-  <div class="flex flex-col justify-center mt-10">
+  <div class="flex flex-col justify-center mt-6">
     <!-- Current Cash Display -->
     <div class="flex flex-col items-center text-4xl font-extrabold text-center min-h-28 relative">
       <div class="flex">

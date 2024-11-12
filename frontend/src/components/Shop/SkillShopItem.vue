@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, defineEmits, ref, computed } from 'vue';
+import SkillDetail from './SkillDetail.vue';
 
 // Props
 const props = defineProps({
@@ -44,6 +45,7 @@ function downgradeSkill() {
   }
 }
 
+const showDetail = ref(false);
 
 
 // Max level
@@ -61,7 +63,22 @@ const effectiveLevel = computed(() => {
 
     <!-- Armor Status Bars -->
     <div class="flex items-center">
-      <img :src="props.image" :alt="props.name" class="w-9 h-9 mr-4" />
+      
+        <div class="relative">
+        <SkillDetail
+          :isVisible="showDetail"
+          skillName="Skill Name"
+          description="Skill description"
+        />
+        </div>
+        <img
+          :src="props.image"
+          class="w-9 h-9 mr-4"
+          @mouseover="showDetail = true"
+          @mouseleave="showDetail = false"
+        />
+     
+      
 
       <!-- Active armor bars -->
       <div

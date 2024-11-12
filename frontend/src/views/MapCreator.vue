@@ -93,6 +93,10 @@ const draw = (event) => {
   const x = (event.clientX - rect.left)/props.scaleFactor;
   const y = (event.clientY - rect.top)/props.scaleFactor;
 
+  if (x < 0 || y < 0 || x > canvasRef.value.width || y > canvasRef.value.height) {
+    return;
+  }
+
   // Store the current point in the path
   drawnPath.push([x, y]);
 

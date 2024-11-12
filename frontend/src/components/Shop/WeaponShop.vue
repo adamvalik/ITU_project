@@ -55,9 +55,9 @@ function updateCash(price, name, quantity) {
 </script>
 
 <template>
-  <div class="flex flex-col justify-center mt-6">
+  <div class="flex flex-col justify-center mt-4">
     <!-- Current Cash Display -->
-    <div class="flex flex-col items-center text-4xl font-extrabold text-center min-h-28 relative">
+    <div class="flex flex-col items-center text-4xl font-extrabold text-center min-h-20 relative">
       <div class="flex">
         CASH: <span class="ml-4 text-green-600" :class="{ shake: shakeCash }">{{ cash }} $</span>
       </div>
@@ -91,9 +91,9 @@ function updateCash(price, name, quantity) {
 
 @keyframes shake {
   0%, 100% { transform: translate(0, 0); color: red; }
-  25% { transform: translate(2px, 0); color: black; }
+  25% { transform: translate(2px, 0); color: #dc2626; }
   50% { transform: translate(-2px, 0); color: red; }
-  75% { transform: translate(2px, 0); color: black; }
+  75% { transform: translate(2px, 0); color: #dc2626; }
   100% { transform: translate(-2px, 0); color: red; }
 }
 </style>

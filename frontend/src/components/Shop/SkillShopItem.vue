@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from 'vue';
+import { defineProps, defineEmits, ref, computed} from 'vue';
 import SkillDetail from './SkillDetail.vue';
 
 // Props
@@ -45,7 +45,17 @@ function downgradeSkill() {
   }
 }
 
-const showDetail = ref(false);
+function getDescription(){
+  if(props.name == "Armor"){
+    return "Tank has more hp";
+
+  }else if(props.name == "Power"){
+    return "Missiles deal more damage";
+
+  }else if(props.name == "Speed"){
+    return "Tank drives further on less fuel";
+  }
+}
 
 
 // Max level
@@ -64,19 +74,22 @@ const effectiveLevel = computed(() => {
     <!-- Armor Status Bars -->
     <div class="flex items-center">
       
-        <div class="relative">
-        <SkillDetail
-          :isVisible="showDetail"
-          skillName="Skill Name"
-          description="Skill description"
-        />
-        </div>
+        <div class="relative group">
+          <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+          <SkillDetail
+            
+            :skillName="props.name"
+            :description="getDescription()"
+          />
+          </div>
+        
         <img
           :src="props.image"
           class="w-9 h-9 mr-4"
           @mouseover="showDetail = true"
           @mouseleave="showDetail = false"
         />
+      </div>
      
       
 

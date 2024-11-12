@@ -48,13 +48,14 @@ onMounted(() => {
 
 function updatePoints(usedPoints, name) {
   if(name === "Armor"){
-    player.value.armor -= usedPoints;
+    player.value.armorSkill -= usedPoints;
+    
     
   } else if(name === "Power"){
-    player.value.power -= usedPoints;
+    player.value.powerSkill -= usedPoints;
     
   } else if(name === "Speed"){
-    player.value.speed -= usedPoints;
+    player.value.speedSkill -= usedPoints;
   
   }
   player.value.skillPoints += usedPoints;
@@ -63,13 +64,13 @@ function updatePoints(usedPoints, name) {
 function updateCash(cash, name, quantity) {
   player.value.money = cash;
   if(name === "Striker"){
-    player.value.weapon1 = quantity;
+    player.value.ammunitionCount[0] = quantity;
  
   } else if(name === "Devastator"){
-    player.value.weapon2 = quantity;
+    player.value.ammunitionCount[1] = quantity;
     
   } else if(name === "Phantom"){
-    player.value.weapon3 = quantity;
+    player.value.ammunitionCount[2] = quantity;
     
   }
 }
@@ -83,9 +84,9 @@ function savePlayer() {
   console.log("W1:",player.value.weapon1);
   console.log("W2:",player.value.weapon2);
   console.log("W3:",player.value.weapon3);
-  console.log("Armor:",player.value.armor);
-  console.log("Power:",player.value.power);
-  console.log("Speed:",player.value.speed);
+  console.log("Armor:",player.value.armorSkill);
+  console.log("Power:",player.value.powerSkill);
+  console.log("Speed:",player.value.speedSkill);
   console.log("Free Pts:",player.value.skillPoints);
 
 
@@ -94,23 +95,23 @@ function savePlayer() {
 </script>
 <template>
     
-        <div class="flex flex-col justify-center items-center">
-          <div v-if="props.side == 'l'" class="flex flex-col justify-between h-52 w-full">
+        <div class="flex flex-col justify-center items-center mt-6">
+          <div v-if="props.side == 'l'" class="flex justify-between">
             <div class="text-6xl font-black self-center">
               {{ player ? player.name : 'Loading...' }}
             </div>
-            <TankImage :svg="svg" class="self-end "></TankImage>
+            <TankImage :svg="svg" class="self-end h-24"></TankImage>
           </div>
-          <div v-else class="flex flex-col-reverse justify-between h-52 w-full">
-            <TankImage :svg="svg" class="self-start flip"></TankImage>    
-            <div class="text-6xl font-black self-center">
+          <div v-else class="flex justify-between items-center">
+            <TankImage :svg="svg" class="self-start flip h-24"></TankImage>    
+            <div class="text-6xl font-black ">
               {{ player ? player.name : 'Loading...' }}
             </div>
           </div>
 
             <div v-if="player">
-                <WeaponShop :weapon="player.weapon" :weapon1="player.weapon1" :weapon2="player.weapon2" :weapon3="player.weapon3" :cash="player.money" @updateCash="updateCash"></WeaponShop>
-                <SkillShop  :armor="player.armor" :power="player.power" :speed="player.speed" :skillPoints="player.skillPoints" @updatePoints="updatePoints"></SkillShop>
+                <WeaponShop :weapon="player.weapon" :weapon1="player.ammunitionCount[0]" :weapon2="player.ammunitionCount[1]" :weapon3="player.ammunitionCount[2]" :cash="player.money" @updateCash="updateCash"></WeaponShop>
+                <SkillShop  :armor="player.armorSkill" :power="player.powerSkill" :speed="player.speedSkill" :skillPoints="player.skillPoints" @updatePoints="updatePoints"></SkillShop>
                 
             </div>
             <div @click="savePlayer" v-else>Loading player data...</div>
@@ -118,10 +119,8 @@ function savePlayer() {
 </template>
 
 <style scoped>
-/* CSS to flip the div along the Y-axis */
 .flip {
   transform: scaleX(-1);
-  /* Optional: If you want to maintain the same direction of text */
   direction: rtl; 
 }
 </style>

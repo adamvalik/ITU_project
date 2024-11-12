@@ -193,8 +193,15 @@
         angle: 45,
         power: 50,
 
-        //Missile data
-        missile: null,
+        //Missile trajectory data
+        missileTrajectory: [],
+
+        //Response
+        responseGameOver: false,
+        responseHitPlayer: false,
+        responseMoney: 0,
+        newterrain: [],
+        newTargetHealth: 0,
 
         //Fire help visibility
         fireHelpVisible: false,
@@ -362,6 +369,11 @@
         ctx.save();
     
         this.practiceTarget.yCord = this.terrain[Math.floor(this.practiceTarget.xCord)] - 40 / 2;
+
+        const groundLevel = this.canvasHeight - 40 / 2;
+        if (this.practiceTarget.yCord > groundLevel) {
+            this.practiceTarget.yCord = groundLevel;
+        }
         ctx.translate(this.practiceTarget.xCord, this.practiceTarget.yCord);
 
         //Color for outline
@@ -506,64 +518,42 @@
         }
 
         await axios.post('http://localhost:8000/compute-missile-data', {
+          canvasWidth: this.canvasWidth,
+          canvasHeight: this.canvasHeight,
           playerId: this.player1.id,
           terrain: this.terrain,
           angle: this.angle,
           power: this.power,
+          wind: this.wind,
           weaponSelected: this.activeMissile.id,
           radius: this.activeMissile.radius,
           damage: this.activeMissile.damage,
+          targetHealth: this.practiceTarget.health,
+          targetXCord: this.practiceTarget.xCord,
+          targetYCord: this.practiceTarget.yCord,
         })
         .then((response) => {
+          console.log(response);
           this.player1.ammunitionCount[this.activeMissile.id] = response.data.ammunitionCount;
+          this.missileTrajectory = response.data.missileTrajectory;
+          this.newTerrain = response.data.newTerrain;
+          this.responseGameOver = response.data.gameOver;
+          this.newTargetHealth = response.data.targetHealth;
+          this.responseHitPlayer = response.data.hitPlayer;
+          this.responseMoney = response.data.playerMoney;
         })
         .catch((error) => {
           console.error(error);
         });
 
-        
-        const startX = this.player1.xCord;
-        const startY = this.player1.yCord - 15;
-        const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 4;
-        const controlY = startY - Math.sin(this.angle * (Math.PI / 180)) * this.power * 12;
-        const endX = controlX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 8;
-        const endY = this.canvasHeight;
+        if(this.missileTrajectory != null){
+          this.animateMissile();
+        }
 
-        this.missile = {
-          t: 0,
-          startX,
-          startY,
-          controlX,
-          controlY,
-          endX,
-          endY,
-        };
-
-        this.animateMissile();
       },
       animateMissile() {
-        if (!this.missile) return;
 
-        const { t, startX, startY, controlX, controlY, endX, endY } = this.missile;
-
-        const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX;
-        const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY;
-
-        this.missile.t += 0.01;
-        if (this.missile.t >= 1 || this.checkTerrainCollision(x, y)) {
-          if(this.isPractice && this.checkTargetCollision(x, y)){
-
-            this.player1.money += 500;
-            this.practiceTarget.health -= this.activeMissile.damage;
-            if(this.practiceTarget.health <= 0){
-              this.gameOver = true;
-            }
-          }
-          this.toggleDisableFire = false;
-          this.explodeTerrain(x, y);
-          this.missile = null;
-          return;
-        }
+        const [x, y] = this.missileTrajectory.shift();
 
         this.drawGame();
 
@@ -574,37 +564,22 @@
         ctx.fillStyle = "red";
         ctx.fill();
 
-        requestAnimationFrame(this.animateMissile);
-      },
-      checkTerrainCollision(x, y) {
-        //Check if the missile hit the terrain
-        return y >= this.terrain[Math.floor(x)];
-      },
+        if(this.missileTrajectory.length > 0){
+          requestAnimationFrame(this.animateMissile);
+        } else {
 
-      checkTargetCollision(x, y) {
-        const dx = this.practiceTarget.xCord - x;
-        const dy = this.practiceTarget.yCord - y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        //Check if the missile hit the target, 20 is the player size
-        return distance <= this.activeMissile.radius + 20;
-      },
+          this.terrain = this.newTerrain;
 
-
-      explodeTerrain(x, y) {
-        //Create a circular explosion in the terrain
-        const explosionRadius = this.activeMissile.radius;
-        for (let i = -explosionRadius; i <= explosionRadius; i++) {
-          const pos = Math.floor(x) + i;
-          if (pos >= 0 && pos < this.canvasWidth) {
-            const distance = Math.sqrt(i * i);
-            if (distance <= explosionRadius) {
-              const impactDepth = Math.sqrt(explosionRadius * explosionRadius - distance * distance);
-              this.terrain[pos] = Math.max(this.terrain[pos], y + impactDepth);
-            }
+          if(this.responseHitPlayer){
+            this.practiceTarget.health = this.newTargetHealth;
+            this.player1.money += this.responseMoney;
           }
+          if(this.responseGameOver){
+            this.gameOver = true;
+          }
+          this.toggleDisableFire = false;
+          this.drawGame();
         }
-        this.drawGame();
-        //this.wind = 0;// Math.floor(Math.random() * 100 - 50);
       },
       drawTerrain(ctx) {
         ctx.beginPath();
@@ -742,6 +717,12 @@
         ctx.save();
         console.log(this.player1.xCord, this.player1.yCord, 40);
         this.player1.yCord = this.terrain[Math.floor(this.player1.xCord)] - 40 / 2;
+
+        const groundLevel = this.canvasHeight - 40 / 2;
+        if (this.player1.yCord > groundLevel) {
+          this.player1.yCord = groundLevel;
+        }
+
         ctx.translate(this.player1.xCord, this.player1.yCord);
 
         //Color for outline

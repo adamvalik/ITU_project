@@ -94,16 +94,16 @@ function savePlayer() {
 </script>
 <template>
     
-        <div class="flex flex-col justify-center items-center">
-          <div v-if="props.side == 'l'" class="flex flex-col justify-between h-52 w-full">
+        <div class="flex flex-col justify-center items-center mt-4">
+          <div v-if="props.side == 'l'" class="flex justify-between">
             <div class="text-6xl font-black self-center">
               {{ player ? player.name : 'Loading...' }}
             </div>
-            <TankImage :svg="svg" class="self-end "></TankImage>
+            <TankImage :svg="svg" class="self-end h-24"></TankImage>
           </div>
-          <div v-else class="flex flex-col-reverse justify-between h-52 w-full">
-            <TankImage :svg="svg" class="self-start flip"></TankImage>    
-            <div class="text-6xl font-black self-center">
+          <div v-else class="flex justify-between items-center">
+            <TankImage :svg="svg" class="self-start flip h-24"></TankImage>    
+            <div class="text-6xl font-black ">
               {{ player ? player.name : 'Loading...' }}
             </div>
           </div>

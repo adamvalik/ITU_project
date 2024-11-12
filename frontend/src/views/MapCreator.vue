@@ -1,10 +1,15 @@
 <script setup>
+import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
+import axios from 'axios';
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
 import OperationSelector from '../components/mapcreatorcomponents/OperationSelector.vue';
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
 
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import axios from 'axios';
+const props = defineProps({
+  gameWidth: Number,
+  gameHeight: Number,
+  scaleFactor: Number,
+});
 
 const activeTheme = ref('forest'); // Default theme
 const cursorType = ref(''); // Default cursor type
@@ -30,9 +35,7 @@ const updateTheme = (theme) => {
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
 
   // Recolor all stored areas with the new theme
-  storedGreenCoordinates.value.forEach(greenCoordinates => {
-    updateMapArea(greenCoordinates);
-  });
+  updateMapArea();
 };
 
 const updateCursor = (type) => {
@@ -64,6 +67,8 @@ let drawing = false;
 let drawnPath = [];
 const storedGreenCoordinates = ref([]);  // Array to store all green areas
 const imageArray = ref([]);  // Array to store all images
+const eraserArray = ref([]);  // Array to store all eraser paths
+const arrayArray = ref([]);  // Array to store all arrays
 
 const startDrawing = (event) => {
   drawing = true;
@@ -85,8 +90,8 @@ const draw = (event) => {
   if (!drawing || cursorType.value === '' || cursorType.value === 'obstruction') return;
 
   const rect = canvasRef.value.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
+  const x = (event.clientX - rect.left)/props.scaleFactor;
+  const y = (event.clientY - rect.top)/props.scaleFactor;
 
   // Store the current point in the path
   drawnPath.push([x, y]);
@@ -97,11 +102,12 @@ const draw = (event) => {
 
   if (cursorType.value === 'eraser') {
     ctx.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+    // Store the eraser path
+    eraserArray.value.push([x, y]);
+    arrayArray.value.push({ type: "eraser", data: [x, y] });
   } else {
     ctx.lineTo(x, y);
     ctx.stroke();
-    // ctx.beginPath();
-    // ctx.moveTo(x, y);
   }
 };
 
@@ -119,9 +125,10 @@ const sendToBackend = async (path) => {
 
     // Store the green coordinates
     storedGreenCoordinates.value.push(result.greenCoordinates);
+    arrayArray.value.push({ type: "stroke", data: result.greenCoordinates });
 
     // Update the map with the new area
-    updateMapArea(result.greenCoordinates);
+    updateMapArea();
   } catch (error) {
     console.error('Error sending path to backend:', error);
   } finally {
@@ -129,23 +136,31 @@ const sendToBackend = async (path) => {
   }
 };
 
-const updateMapArea = (greenCoordinates) => {
+const updateMapArea = () => {
   ctx.beginPath();
 
   // Set color based on active theme
   ctx.strokeStyle = brushColor.value;
   ctx.lineWidth = 2;
 
-  imageArray.value.forEach(({ x, y, desiredWidth, desiredHeight }) => {
-    const img = new Image();
-    img.src = obstructionIconPath.value;
-    img.onload = () => {
-      ctx.drawImage(img, x - desiredWidth / 2, y - desiredHeight / 2, desiredWidth, desiredHeight);
-    };
-  });
-
-  greenCoordinates.forEach(([x, y]) => {
-    ctx.lineTo(x, y);
+  arrayArray.value.forEach(({ type, data }) => {
+    if (type === "eraser") {
+      ctx.clearRect(data[0] - brushSize / 2, data[1] - brushSize / 2, brushSize, brushSize);
+    }
+    if (type === "stroke") {
+      ctx.beginPath();
+      data.forEach(([x, y]) => {
+        ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+    if (type === "image") {
+      const img = new Image();
+      img.src = obstructionIconPath.value;
+      img.onload = () => {
+        ctx.drawImage(img, data.x - data.desiredWidth / 2, data.y - data.desiredHeight / 2, data.desiredWidth, data.desiredHeight);
+      };
+    }
   });
 
   ctx.stroke();
@@ -156,8 +171,13 @@ const updateBrushCircle = (event) => {
 
   const brushCircle = document.querySelector('.brush-circle');
   brushCircle.style.display = 'block';
-  brushCircle.style.left = `${event.clientX - brushSize / 2}px`;
-  brushCircle.style.top = `${event.clientY - brushSize / 2}px`;
+
+  const rect = canvasRef.value.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / props.scaleFactor;
+  const y = (event.clientY - rect.top) / props.scaleFactor;
+
+  brushCircle.style.left = `${x - brushSize /2}px`;
+  brushCircle.style.top = `${y - brushSize /2}px`;
 };
 
 const hideBrushCircle = () => {
@@ -189,8 +209,8 @@ const onDrop = (event) => {
 
   // Get the drop coordinates
   const rect = canvasRef.value.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
+  const x = (event.clientX - rect.left) / props.scaleFactor;
+  const y = (event.clientY - rect.top) / props.scaleFactor;
   console.log(`Drop coordinates: x=${x}, y=${y}`);
 
   // Get the dragged image URL
@@ -216,19 +236,13 @@ const animateImage = (img, startX, startY, width, height) => {
   const step = () => {
     ctx.clearRect(startX - width / 2, y - height / 2, width, height); // Clear previous image position
 
-    // Check for collision with any non-transparent color
-    const imageData = ctx.getImageData(startX, y + height / 2, width, 1).data;
-    console.log('Image data:', imageData);
+    // Check for collision with any non-transparent color TODO: CHANGE THIS MAGIC THING
+    const imageData = ctx.getImageData(startX - 10, y + height / 2, width, 1).data;
     let collision = false;
 
     // Check if all pixels in the row are transparent
     for (let i = 3; i < imageData.length; i += 4) { // Iterate over alpha values
-      console.log('Alpha value:', imageData[i]);
-      console.log("r value:", imageData[i-3]);
-      console.log("g value:", imageData[i-2]);
-      console.log("b value:", imageData[i-1]);
       if (imageData[i] > 30) { // Check for non-transparent pixel
-        console.log('Collision detected');
         collision = true;
         break;
       }
@@ -241,29 +255,52 @@ const animateImage = (img, startX, startY, width, height) => {
     } else {
       ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
       imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
-      storedGreenCoordinates.value.forEach(greenCoordinates => {
-        updateMapArea(greenCoordinates);
-      });
+      arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
+      updateMapArea();
     }
   };
 
   step(); // Start the animation
 };
-
 </script>
 
 <template>
-  <div class="min-h-screen bg-beige flex flex-col justify-center items-center relative custom-cursor">
-    <div class="canvas-container">
+  <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
+
+    <div class="bg-beige flex flex-col items-center relative custom-cursor">
+
       <ThemeSelector :activeTheme="activeTheme" @theme-change="updateTheme" class="theme-selector"/>
+
+      <div class="canvas-container">
+        <canvas ref="canvasRef" width="900" height="500" class="border-2 border-black"
+                @dragover.prevent
+                @drop="onDrop"
+        ></canvas>
+        <div class="brush-circle"></div>
+      </div>
+
       <OperationSelector :activeTheme="activeTheme" @cursor-change="updateCursor" class="operation-selector"/>
-      <canvas ref="canvasRef" width="900" height="500" class="border-2 border-black mt-4"
-              @dragover.prevent
-              @drop="onDrop"
-      ></canvas>
+
+      <RenderingScreen :visible="isLoading" message="Rendering..." />
+
+      <button @click="rollDice" class="dice-button border-8 border-red-700 bg-red-300 hover:bg-red-400 font-bold text-xl py-4 px-6 rounded-2xl">
+        <img src="/assets/dice.svg" alt="Dice" class="w-full h-full"/>
+      </button>
+
+      <div class="flex justify-between w-3/4  mt-4 mb-8 pt-6 gap-4">
+        <button @click="clearMap" class="border-4 border-red-700 text-center bg-red-300 hover:bg-red-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+          CLEAR MAP
+        </button>
+        <button @click="saveMap" class="border-4 border-green-700 text-center bg-green-300 hover:bg-green-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+          SAVE MAP
+        </button>
+        <button @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+          START PLAYING
+        </button>
+      </div>
+
     </div>
-    <div class="brush-circle"></div>
-    <RenderingScreen :visible="isLoading" message="Rendering..." />
+
   </div>
 </template>
 
@@ -280,13 +317,13 @@ const animateImage = (img, startX, startY, width, height) => {
 .canvas-container {
   position: relative;
   display: inline-block;
-  margin-top: 50px; /* Adjust the value as needed */
+  margin-top: 150px; /* Adjust the value as needed */
 
 }
 
 .theme-selector {
   position: absolute;
-  top: -90px; /* Adjust as needed */
+  top: 30px; /* Adjust as needed */
   left: 50%;
   transform: translateX(-50%);
 }
@@ -294,9 +331,23 @@ const animateImage = (img, startX, startY, width, height) => {
 .operation-selector {
   position: absolute;
   top: 40%;
-  right: -140px; /* Adjust as needed */
+  right: 90px; /* Adjust as needed */
   transform: translateY(-50%);
 }
+
+
+.dice-button {
+  position: absolute;
+  top: 65%; /* Adjust as needed */
+  right: 90px; /* Adjust as needed */
+  width: 110px; /* Adjust size as needed */
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .brush-circle {
   position: absolute;
   width: 25px; /* Match the brush size */
@@ -308,3 +359,5 @@ const animateImage = (img, startX, startY, width, height) => {
   display: none; /* Hidden until the eraser is active */
 }
 </style>
+
+

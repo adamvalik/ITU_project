@@ -31,8 +31,8 @@ function goNextRound(){
     <PlayerShopCard :player_id="2" ref="P2" side="r"></PlayerShopCard>
     </div>
     <div class="flex justify-around w-full mt-8">
-        <router-link to="/" class="flex items-center justify-center w-80 h-14 bg-gray-400 rounded-lg font-bold text-2xl ml-10 cursor-pointer">MAIN MENU</router-link>
-        <router-link to="/game" class="flex items-center justify-center w-80 h-14 bg-green-500 rounded-lg font-bold text-2xl mr-10 cursor-pointer" @click="goNextRound">NEXT ROUND</router-link>
+        <router-link to="/" class="flex items-center justify-center w-80 h-14 bg-gray-400 hover:bg-gray-500 border-2 border-gray-600 rounded-lg font-bold text-2xl ml-10 cursor-pointer">MAIN MENU</router-link>
+        <router-link to="/game" class="flex items-center justify-center w-80 h-14 bg-green-500 hover:bg-green-600 border-2 border-green-700 rounded-lg font-bold text-2xl mr-10 cursor-pointer" @click="goNextRound">NEXT ROUND</router-link>
 
     </div>
     </div>

@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from 'vue';
+import { defineProps, defineEmits, ref, computed} from 'vue';
 import SkillDetail from './SkillDetail.vue';
 
 // Props
@@ -45,6 +45,19 @@ function downgradeSkill() {
   }
 }
 
+function getDescription(){
+  if(props.name == "Armor"){
+    return "Tank has more hp";
+
+  }else if(props.name == "Power"){
+    return "Missiles deal more damage";
+
+  }else if(props.name == "Speed"){
+    return "Tank drives further on less fuel";
+  }
+}
+
+
 // Max level
 const maxLevel = 5;
 
@@ -66,7 +79,7 @@ const effectiveLevel = computed(() => {
           <SkillDetail
             
             :skillName="props.name"
-            description="Improves your speed in game, so you drive more for less fuel"
+            :description="getDescription()"
           />
           </div>
         

@@ -41,7 +41,7 @@ function buyItem() {
 </script>
 <template>
     <div class="flex flex-col justify-center items-center">
-    <div class="bg-gray-300 rounded-lg p-4 text-center shadow-md w-32">
+    <div class="bg-gray-300 rounded-lg p-4 text-center shadow-xl w-32 ">
       <!-- Item icon and quantity -->
       <div class="relative bg-gray-100 rounded-md p-2">
         <!-- Quantity in upper-left corner -->
@@ -70,7 +70,7 @@ function buyItem() {
       <!-- Buy Button -->
     </div>
       <button 
-        class="bg-green-500 text-white font-bold py-2 w-full rounded-md mt-3 hover:bg-green-600"
+        class="bg-green-500 text-white font-bold py-2 w-full rounded-md mt-3 hover:bg-green-600 border-2 border-green-700"
         @click="buyItem"
       >
         BUY

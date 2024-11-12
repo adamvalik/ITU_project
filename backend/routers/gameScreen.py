@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from models.map import Map
 from redisClient import get_redis_client
 import math
+from typing import List, Tuple
 
 router = APIRouter()
 

@@ -1,25 +1,34 @@
 <template>
-  <div class="container">
+  <div class="flex justify-around items-center w-auto bg-teal-200 rounded-lg border-8 border-black">
     <button
-        class="icon-button beach"
-        :class="{ active: activeButton === 'beach' }"
-        @click="setActiveButton('beach')"
+      class="icon-button beach border-8 rounded-lg p-1 transition-transform transform hover:scale-110"
+      :class="{
+        'border-gray-900': activeButton === 'beach',
+        'border-gray-300': activeButton !== 'beach',
+      }"
+      @click="setActiveButton('beach')"
     >
-      <img src="/assets/beach_icon.svg" alt="Beach Icon" />
+      <img src="/assets/beach_icon.svg" alt="Beach Icon" class="w-10 h-10" />
     </button>
     <button
-        class="icon-button forest"
-        :class="{ active: activeButton === 'forest' }"
-        @click="setActiveButton('forest')"
+      class="icon-button forest border-8 rounded-lg p-1 transition-transform transform hover:scale-110"
+      :class="{
+        'border-gray-900': activeButton === 'forest',
+        'border-gray-300': activeButton !== 'forest',
+      }"
+      @click="setActiveButton('forest')"
     >
-      <img src="/assets/forest_icon.svg" alt="Forest Icon" />
+      <img src="/assets/forest_icon.svg" alt="Forest Icon" class="w-10 h-10" />
     </button>
     <button
-        class="icon-button winter"
-        :class="{ active: activeButton === 'winter' }"
-        @click="setActiveButton('winter')"
+      class="icon-button winter border-8 rounded-lg p-1 transition-transform transform hover:scale-110"
+      :class="{
+        'border-gray-900': activeButton === 'winter',
+        'border-gray-300': activeButton !== 'winter',
+      }"
+      @click="setActiveButton('winter')"
     >
-      <img src="/assets/winter_icon.svg" alt="Winter Icon" />
+      <img src="/assets/winter_icon.svg" alt="Winter Icon" class="w-10 h-10" />
     </button>
   </div>
 </template>
@@ -40,55 +49,20 @@ watch(activeButton, (newVal) => {
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: auto;
-  padding: 5px;
-  background-color: #94f4e2; /* Dark background color */
-  border-radius: 12px;
-  border: 8px solid #000000; /* Dark border color */
-}
 
 .icon-button {
-  border: 8px solid #cbd5e0; /* Light border color */
-  border-radius: 12px;
-  padding: 5px;
-  cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
-  display: flex;
-  width: auto;
-  margin-left : 5px; /* TODO: or 5? */
-  margin-right : 5px;
-}
-
-.icon-button img {
-  width: 40px;
-  height: 40px;
-}
-
-.icon-button:hover {
-  transform: scale(1.1);
+  margin: 10px; /* Add margin around each button */
 }
 
 .icon-button.beach {
-  background-color: #fefcbf; /* Light yellow */
+  @apply bg-yellow-100;
 }
 
 .icon-button.forest {
-  background-color: #c6f6d5; /* Light green */
+  @apply bg-green-100;
 }
 
 .icon-button.winter {
-  background-color: #bee3f8; /* Light blue */
-}
-
-.icon-button.active {
-  border-color: #2d3748; /* Darker border color for active button */
-}
-
-.icon-button:not(.active) {
-  border-color: #e2e8f0; /* Lighter border color for inactive buttons */
+  @apply bg-blue-100;
 }
 </style>

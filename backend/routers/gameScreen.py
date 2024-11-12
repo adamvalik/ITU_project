@@ -61,9 +61,9 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         "t": 0,
         "startX": player.xCord,
         "startY": player.yCord - 15,
-        "controlX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 2,
-        "controlY": player.yCord - 15 - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12,
-        "endX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4,
+        "controlX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 2,
+        "controlY": player.yCord - 15 - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 16,
+        "endX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 4,
         "endY": missileData.canvasHeight
     }
 
@@ -85,7 +85,12 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             if distance <= missileData.radius + 20:
                 returnModel.hitPlayer = True
                 missileData.targetHealth -= missileData.damage
-                if player.health <= 0:
+                if(missileData.targetHealth < 0):
+                    returnModel.targetHealth = 0
+                else:
+                    returnModel.targetHealth = missileData.targetHealth
+            
+                if missileData.targetHealth <= 0:
                     returnModel.gameOver = True
 
 

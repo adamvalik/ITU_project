@@ -29,3 +29,4 @@ class MissileComputationResponse(BaseModel):
     newTerrain: list[float] = []
     missileTrajectory: list[tuple[float, float]] = []
     gameOver: bool = False
+    targetHealth: int = 0

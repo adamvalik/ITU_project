@@ -45,9 +45,6 @@ function downgradeSkill() {
   }
 }
 
-const showDetail = ref(false);
-
-
 // Max level
 const maxLevel = 5;
 
@@ -64,19 +61,22 @@ const effectiveLevel = computed(() => {
     <!-- Armor Status Bars -->
     <div class="flex items-center">
       
-        <div class="relative">
-        <SkillDetail
-          :isVisible="showDetail"
-          skillName="Skill Name"
-          description="Skill description"
-        />
-        </div>
+        <div class="relative group">
+          <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+          <SkillDetail
+            
+            :skillName="props.name"
+            description="Improves your speed in game, so you drive more for less fuel"
+          />
+          </div>
+        
         <img
           :src="props.image"
           class="w-9 h-9 mr-4"
           @mouseover="showDetail = true"
           @mouseleave="showDetail = false"
         />
+      </div>
      
       
 

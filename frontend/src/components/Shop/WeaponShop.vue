@@ -57,7 +57,7 @@ function updateCash(price, name, quantity) {
 <template>
   <div class="flex flex-col justify-center mt-6">
     <!-- Current Cash Display -->
-    <div class="flex flex-col items-center text-4xl font-extrabold text-center min-h-28 relative">
+    <div class="flex flex-col items-center text-4xl font-extrabold text-center min-h-20 relative">
       <div class="flex">
         CASH: <span class="ml-4 text-green-600" :class="{ shake: shakeCash }">{{ cash }} $</span>
       </div>

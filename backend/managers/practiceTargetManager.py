@@ -1,6 +1,6 @@
 from typing import Optional
 from redis import Redis
-from models.practicetarget import PracticeTarget
+from models.playground import PracticeTarget
 from pydantic import ValidationError
 
 class PracticeTargetManager:

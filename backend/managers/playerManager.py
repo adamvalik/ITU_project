@@ -14,7 +14,7 @@ class PlayerManager:
 
     def initialize_players(self):
         """Initialize the two players' data in Redis."""
-        player1 = Player(id=1, name="Kamos", tankType=0, color='green')
+        player1 = Player(id=1, name="", tankType=0, color='#06B559')
         player2 = Player(id=2, name="", tankType=1, color='#0D6BBD')
         self.create_player(player1)
         self.create_player(player2)

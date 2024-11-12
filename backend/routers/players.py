@@ -17,7 +17,6 @@ async def update_player_tank(player_id: int, tank_type: int, redis_client = Depe
     player_manager = PlayerManager(redis_client)
     player_manager.update_tank(player_id, tank_type)
 
-
 @router.post("/players/{player_id}/color")
 async def update_player_color(player_id: int, color: str, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
@@ -58,7 +57,7 @@ async def get_player(player_id: int):
         raise HTTPException(status_code=404, detail="Player not found")
     return player
 
-@router.delete("/players")
+@router.delete("/players/reset")
 async def delete_players(redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
     player_manager.reset_players()

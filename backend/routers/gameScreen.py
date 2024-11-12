@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from models.map import Map
 from redisClient import get_redis_client
 import math
+from typing import List, Tuple
 
 router = APIRouter()
 
@@ -32,6 +33,7 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int):
         terrain.append(baseHeight + variation)
     newMap = Map(name="mapka", type="mud", data=terrain)
     return newMap
+<<<<<<< HEAD
 
 
 @router.post("/save-current-player-data")
@@ -58,3 +60,5 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     returnModel = MissileComputationResponse(ammunitionCount=player.ammunitionCount[missileData.weaponSelected])
     player_manager.create_player(player)
     return returnModel
+=======
+>>>>>>> 0293bc85eeaa1b9962a7dac70b3e62912bd7988d

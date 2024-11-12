@@ -138,6 +138,7 @@
 <script>
 import Settings from '../components/Settings/Settings.vue';
 import axios from 'axios';
+import apiClient from '@/api';
 
 export default {
   name: 'MainPage',
@@ -226,29 +227,27 @@ export default {
     },
 
 
-    // game mode submit also means to clear previous game settings
+    // game mode submit also means to clear previous game&players settings
     async submitClassicMode() {
       try {
-        await axios.delete('http://localhost:8000/game/reset');
-      } catch (error) {
-        console.error(error);
-      }
+          await apiClient.delete('/players/reset');
+          await apiClient.delete('/game/reset');
+        } catch (error) {
+          console.error(error);
+        }
     },
     async submitCustomMode() {
       try {
-        await axios.delete('http://localhost:8000/game/reset');
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        await axios.post(`http://localhost:8000/game/custom_mode`, {
-          isTimer: this.isTimer,
-          timePerTurn: this.timePerTurn,
-          toWins: this.toWins,
-        });
-      } catch (error) {
-        console.error(error);
-      }
+          await apiClient.delete('/game/reset');
+          await apiClient.delete('/players/reset');
+          await axios.post(`http://localhost:8000/game/custom_mode`, {
+            isTimer: this.isTimer,
+            timePerTurn: this.timePerTurn,
+            toWins: this.toWins,
+          });
+        } catch (error) {
+          console.error(error);
+        }
     },
 
     getPredefinedValue(array, index) {

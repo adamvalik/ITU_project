@@ -56,27 +56,27 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     player.ammunitionCount[missileData.weaponSelected] -= 1
     returnModel.ammunitionCount = player.ammunitionCount[missileData.weaponSelected]
 
-    #Create missile object
-    missile = {
-        "t": 0,
-        "startX": player.xCord,
-        "startY": player.yCord - 15,
-        "controlX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 2,
-        "controlY": player.yCord - 15 - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 16,
-        "endX": player.xCord + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 4,
-        "endY": missileData.canvasHeight
-    }
+    #Set missile data
+    startX = player.xCord
+    startY = player.yCord - 15
+    controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
+    controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
+    endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 8
+    endY = missileData.canvasHeight
 
+
+    # missile["endX"] = missile["controlX"] + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 2
     missileTrajectory = []
 
     t = 0.00
 
     while t <= 1:
-        x = (1 - t) * (1 - t) * missile["startX"] + 2 * (1 - t) * t * missile["controlX"] + t * t * missile["endX"]
-        y = (1 - t) * (1 - t) * missile["startY"] + 2 * (1 - t) * t * missile["controlY"] + t * t * missile["endY"]
+        x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX
+        y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY
+        t += 0.01
         missileTrajectory.append((x, y))
 
-        if(y >= missileData.terrain[math.floor(x)]):
+        if 0 <= math.floor(x) < len(missileData.terrain) and y >= missileData.terrain[math.floor(x)]:
             returnModel.hitTerrain = True
 
             dx = missileData.targetXCord - x
@@ -109,7 +109,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         
             break
 
-        t += 0.01
+        
     
     returnModel.newTerrain = missileData.terrain
     returnModel.missileTrajectory = missileTrajectory

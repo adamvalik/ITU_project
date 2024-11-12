@@ -155,19 +155,21 @@
         //Player data
         player1: {
           id: 0,
-          xCord: 0,
-          yCord: 0,
-          angle: 0,
-          power: 0,
-          color: "",
           name: "",
-          health: 0,
-          ammunitionCount: 0,
+          tankType: 0,
+          color: "",
+          armorSkill: 0,
+          powerSkill: 0,
+          speedSkill: 0,
+          skillPoints: 0,
           wins: 0,
           money: 0,
           fuel: 0,
           fuelMax: 0,
-          time: 0,
+          health: 0,
+          ammunitionCount: 0,
+          xCord: 0,
+          yCord: 0,
         },
 
         //Mouse position
@@ -293,6 +295,7 @@
         await axios.get('http://localhost:8000/players/1')
           .then((response) => {
             this.player1 = response.data;
+            console.log(response.data);
             this.drawGame();
           })
           .catch((error) => {
@@ -470,28 +473,55 @@
             canvasHeight: this.canvasHeight,
           }
         })
-          .then((response) => {
-            this.terrain = response.data.data;
-            this.terrainType = response.data.type;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+        .then((response) => {
+          this.terrain = response.data.data;
+          this.terrainType = response.data.type;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       },
 
-      fireMissile() {
+      async fireMissile() {
 
         if(this.toggleDisableFire){
           return;
         }
         this.toggleDisableFire = true;
 
+        await axios.post('http://localhost:8000/save-current-player-data', {
+          player: this.player1,
+        })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
         const ammunition = this.player1.ammunitionCount[this.activeMissile.id];
         if(ammunition <= 0){
           this.toggleDisableFire = false;
           return;
         }
-        this.player1.ammunitionCount[this.activeMissile.id]--;
+
+        await axios.post('http://localhost:8000/compute-missile-data', {
+          playerId: this.player1.id,
+          terrain: this.terrain,
+          angle: this.angle,
+          power: this.power,
+          weaponSelected: this.activeMissile.id,
+          radius: this.activeMissile.radius,
+          damage: this.activeMissile.damage,
+        })
+        .then((response) => {
+          this.player1.ammunitionCount[this.activeMissile.id] = response.data.ammunitionCount;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+        
         const startX = this.player1.xCord;
         const startY = this.player1.yCord - 15;
         const controlX = startX + Math.cos(this.angle * (Math.PI / 180)) * this.power * 12 + this.wind * 4;
@@ -596,13 +626,13 @@
 
       onKeyPressed(event){
         if(event.key === 'd'){
-          if(this.player1.fuel > 0 && this.player1.xCord <  this.canvasWidth - 5){
+          if(this.player1.fuel > 0 && this.player1.xCord <  this.canvasWidth - 25){
             this.player1.fuel -= 5;
             this.player1.xCord += 5;
             this.aimLaserXCord += 5;
           }
         } else if(event.key === 'a'){
-          if(this.player1.fuel > 0 && this.player1.xCord > 5){
+          if(this.player1.fuel > 0 && this.player1.xCord > 25){
             this.player1.fuel -= 5;
             this.player1.xCord -= 5;
             this.aimLaserXCord -= 5;

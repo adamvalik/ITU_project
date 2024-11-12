@@ -5,6 +5,7 @@ from redisClient import get_redis_client
 
 from routers import mapCreator, players, tanks, settings, game, gameScreen, debug
 from managers import playerManager, gameManager, practiceTargetManager
+from managers.mapCreatorManager import MapCreatorManager
 
 app = FastAPI()
 
@@ -42,5 +43,6 @@ gameManager.initialize_game()
 practiceTargetManager = practiceTargetManager.PracticeTargetManager(redis_client)
 practiceTargetManager.initialize_practice_target()
 
+mapCreatorManager = MapCreatorManager(redis_client)
 
 

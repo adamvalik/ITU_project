@@ -1,5 +1,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
+// TODO import { processPath, erasePath, addNewImage, retrieveMap, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
+import {  erasePath, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
+
 import axios from 'axios';
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
 import OperationSelector from '../components/mapcreatorcomponents/OperationSelector.vue';
@@ -31,6 +34,7 @@ const updateTheme = (theme) => {
     brushColor.value = '#02f1fb';
     obstructionIconPath.value = '/assets/snowman_icon.svg';
   }
+  setMapType(mapName, theme);
   // Clear the canvas before recoloring
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
 
@@ -69,6 +73,7 @@ const storedGreenCoordinates = ref([]);  // Array to store all green areas
 const imageArray = ref([]);  // Array to store all images
 const eraserArray = ref([]);  // Array to store all eraser paths
 const arrayArray = ref([]);  // Array to store all arrays
+const mapName = 'map1';  // Default map name
 
 const startDrawing = (event) => {
   drawing = true;
@@ -109,6 +114,7 @@ const draw = (event) => {
     // Store the eraser path
     eraserArray.value.push([x, y]);
     arrayArray.value.push({ type: "eraser", data: [x, y] });
+    erasePath([x, y]); //TODO
   } else {
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -122,10 +128,13 @@ const sendToBackend = async (path) => {
 
   try {
     const response = await axios.post('http://localhost:8000/process-path', {
+      map_name: mapName,
       path,
       bottomY
     });
     const result = response.data;
+
+    //const result = processPath(mapName, path, bottomY); TODO
 
     // Store the green coordinates
     storedGreenCoordinates.value.push(result.greenCoordinates);
@@ -188,7 +197,7 @@ const hideBrushCircle = () => {
   document.querySelector('.brush-circle').style.display = 'none';
 };
 
-onMounted(() => {
+onMounted(async () => {
   const canvas = canvasRef.value;
   ctx = canvas.getContext('2d', { willReadFrequently: true });
 
@@ -199,6 +208,8 @@ onMounted(() => {
     updateBrushCircle(event); // Update circle position while moving
   });
   canvas.addEventListener('mouseleave', hideBrushCircle); // Hide circle when mouse leaves canvas
+
+  await createMap(mapName);
 });
 
 onBeforeUnmount(() => {
@@ -260,6 +271,7 @@ const animateImage = (img, startX, startY, width, height) => {
       ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
       imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
       arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
+      // addNewImage({ x: startX, y: y }); TODO
       updateMapArea();
     }
   };

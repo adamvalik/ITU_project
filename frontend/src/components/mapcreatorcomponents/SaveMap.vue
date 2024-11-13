@@ -9,7 +9,7 @@
           Save
         </button>
         <button @click="saveAndReturn" class="bg-green-300 hover:bg-green-400 text-green-700 font-bold py-2 px-4 rounded">
-          Save and Return
+          Save and Exit
         </button>
       </div>
     </div>

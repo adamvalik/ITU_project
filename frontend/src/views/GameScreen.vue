@@ -1,5 +1,5 @@
 <template>
-  <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
+  <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`, backgroundColor: '#D5EFF4'}">
     <div>
       <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-8">
 
@@ -147,7 +147,7 @@
         //Default canvas size
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
-        
+
         //Map data
         terrain: [],
         terrainType: "",
@@ -256,7 +256,7 @@
           return this.player1.ammunitionCount[2] != -1;
         }
       },
-       
+
       selectActiveMissile(missileType) {
         if(missileType == 'small'){
           this.activeMissile = {
@@ -367,7 +367,7 @@
 
       drawPracticeTarget(ctx) {
         ctx.save();
-    
+
         this.practiceTarget.yCord = this.terrain[Math.floor(this.practiceTarget.xCord)] - 40 / 2;
 
         const groundLevel = this.canvasHeight - 40 / 2;
@@ -400,7 +400,7 @@
         const player1X = 10 + 200 / 2;
         const player2X = this.canvasWidth - 210 + 200 / 2;
 
-        ctx.font = "28px Montserrat";
+        ctx.font = "28px sans-serif";
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -422,7 +422,7 @@
         ctx.fillRect(this.canvasWidth - 210, 50, 200, 40);
 
         // Draw red fill
-        ctx.fillStyle = '#FF0000'; 
+        ctx.fillStyle = '#FF0000';
         const healthBarWidth = this.player1.health * 2;
         ctx.fillRect(10, 50, healthBarWidth, 40);
 
@@ -430,7 +430,7 @@
           const practiceHealthBarWidth = this.practiceTarget.health * 2;
           ctx.fillRect(this.canvasWidth - 210, 50, practiceHealthBarWidth, 40);
         } else {
-          ctx.fillRect(this.canvasWidth - 210, 50, 180, 40); 
+          ctx.fillRect(this.canvasWidth - 210, 50, 180, 40);
         }
 
         //Draw outline
@@ -440,7 +440,7 @@
         ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
 
         ctx.fillStyle = '#FFFFFF'; // Text color
-        ctx.font = '20px Montserrat';
+        ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${this.player1.health}/100`, 110, 70);
@@ -458,7 +458,7 @@
         ctx.save();
 
         ctx.fillStyle = 'black'; // Text color
-        ctx.font = 'bold 20px Montserrat';
+        ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Wind: ', this.canvasWidth/2, 20);
@@ -470,7 +470,7 @@
       drawAnglePower(ctx) {
         ctx.save();
         ctx.fillStyle = 'black';
-        ctx.font = 'bold 20px Montserrat';
+        ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${Math.round(this.angle)}°,`, this.player1.xCord - 10, this.player1.yCord - 180);
@@ -590,12 +590,13 @@
         ctx.lineTo(this.canvasWidth, this.canvasHeight);
         ctx.closePath();
         if(this.terrainType === "mud"){
-          ctx.fillStyle = "saddlebrown";
+          // ctx.fillStyle = "saddlebrown";
+          ctx.fillStyle = "#0D8747";
         } else {
           ctx.fillStyle = "green";
           console.log(this.terrain.type);
         }
-        
+
         ctx.fill();
       },
 
@@ -637,10 +638,10 @@
         if (this.toggleHovering) {
 
           //Start dragging in the circle
-          this.toggleDragging = true; 
+          this.toggleDragging = true;
 
           //Update aiming line start positions
-          this.aimLaserXCord = this.mousePosition.x; 
+          this.aimLaserXCord = this.mousePosition.x;
           this.aimLaserYCord = this.mousePosition.y;
         }
       },
@@ -648,7 +649,7 @@
       onMouseUp() {
 
         //Dragging is stopped
-        this.toggleDragging = false; 
+        this.toggleDragging = false;
       },
 
       onMouseMove(event) {
@@ -749,7 +750,7 @@
         ctx.beginPath();
         ctx.arc(this.player1.xCord, this.player1.yCord, this.aimCircleRadius, 0, 2 * Math.PI);
         // Fill the circle with a semi-transparent color
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.2)';
         ctx.fill();  // Fill first to apply transparency correctly
 
         // Stroke the border of the circle
@@ -809,9 +810,9 @@
   </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
 canvas {
   font-family: 'Montserrat', sans-serif;
-}
+} */
 </style>

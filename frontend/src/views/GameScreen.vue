@@ -400,7 +400,7 @@
         const player1X = 10 + 200 / 2;
         const player2X = this.canvasWidth - 210 + 200 / 2;
 
-        ctx.font = "28px Montserrat";
+        ctx.font = "28px sans-serif";
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -440,7 +440,7 @@
         ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
 
         ctx.fillStyle = '#FFFFFF'; // Text color
-        ctx.font = '20px Montserrat';
+        ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${this.player1.health}/100`, 110, 70);
@@ -458,7 +458,7 @@
         ctx.save();
 
         ctx.fillStyle = 'black'; // Text color
-        ctx.font = 'bold 20px Montserrat';
+        ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Wind: ', this.canvasWidth/2, 20);
@@ -470,7 +470,7 @@
       drawAnglePower(ctx) {
         ctx.save();
         ctx.fillStyle = 'black';
-        ctx.font = 'bold 20px Montserrat';
+        ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${Math.round(this.angle)}°,`, this.player1.xCord - 10, this.player1.yCord - 180);
@@ -810,9 +810,9 @@
   </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
 canvas {
   font-family: 'Montserrat', sans-serif;
-}
+} */
 </style>

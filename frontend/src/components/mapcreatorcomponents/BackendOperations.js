@@ -36,6 +36,7 @@ export const addNewImage = async (mapName, startX, y) => {
 export const retrieveMap = async (mapName) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/retrieve_map`, { map_name: mapName });
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Error in retrieveMap:', error);

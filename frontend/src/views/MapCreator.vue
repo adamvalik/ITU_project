@@ -2,13 +2,20 @@
 
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
 // TODO import { processPath, erasePath, addNewImage, retrieveMap, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
-import {  erasePath, setMapType, createMap, processPath, addNewImage } from '@/components/mapcreatorcomponents/BackendOperations.js';
+import {
+  erasePath,
+  setMapType,
+  createMap,
+  processPath,
+  addNewImage,
+} from '@/components/mapcreatorcomponents/BackendOperations.js';
 
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
 import OperationSelector from '../components/mapcreatorcomponents/OperationSelector.vue';
 import SaveMap from '@/components/mapcreatorcomponents/SaveMap.vue';
 const showModal = ref(false);
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
+import { useRoute } from 'vue-router';
 
 const props = defineProps({
   gameWidth: Number,
@@ -23,6 +30,8 @@ const isLoading = ref(false); // Add this reactive state to track loading
 const brushSize = 25; // Eraser brush size
 const brushColor = ref('#2e7d32'); // Make brushColor reactive
 const obstructionIconPath = ref('/assets/tree_icon.svg'); // Default obstruction icon
+const route = useRoute();
+const showStartPlayingButton = ref(route.query.fromMapSelector === 'true');
 
 const updateTheme = (theme) => {
   activeTheme.value = theme;
@@ -162,6 +171,9 @@ const updateMapArea = () => {
   ctx.strokeStyle = brushColor.value;
   ctx.lineWidth = 2;
 
+  //const result = retrieveMap(mapName);
+  //console.log('Result from retrieveMap:', result);
+
   arrayArray.value.forEach(({ type, data }) => {
     if (type === "eraser") {
       console.log('Eraser data:', data);
@@ -266,6 +278,15 @@ const animateImage = (img, startX, startY, width, height) => {
   step(); // Start the animation
 };
 
+const clearMap = () => {
+  storedGreenCoordinates.value = [];
+  imageArray.value = [];
+  eraserArray.value = [];
+  arrayArray.value = [];
+  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+  updateMapArea();
+};
+
 onMounted(async () => {
   const canvas = canvasRef.value;
   ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -288,6 +309,7 @@ onBeforeUnmount(() => {
 });
 
 const openModal = () => {
+
   showModal.value = true;
 };
 
@@ -347,7 +369,7 @@ const saveAndReturn = (name) => {
           :onClose="closeModal"
         />
 
-        <button @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+        <button v-if="showStartPlayingButton" @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           START PLAYING
         </button>
       </div>

@@ -86,9 +86,9 @@ def add_new_image(request: ImageRequest, redis_client = Depends(get_redis_client
   return {"message": "Image added to the map"}
 
 @router.post("/retrieve_map")
-def retrieve_map(map_name: str, redis_client = Depends(get_redis_client)):
+def retrieve_map(request: CreateMapRequest, redis_client = Depends(get_redis_client)):
     mapManager = MapCreatorManager(redis_client)
-    map_data = mapManager.get_map(map_name)
+    map_data = mapManager.get_map(request.map_name)
     if map_data:
         return map_data
     else:

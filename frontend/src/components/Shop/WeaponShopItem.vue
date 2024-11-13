@@ -46,7 +46,7 @@ function buyItem() {
       <div class="relative bg-gray-100 rounded-md p-2">
         <!-- Quantity in upper-left corner -->
         <div class="absolute top-0 left-0 bg-gray-400 text-black font-black rounded-full w-10 h-10 flex items-center justify-center shadow-md -translate-x-2 -translate-y-2">
-          {{ quantity }}
+          {{ quantity==-1 ? 0 : quantity }}
         </div>
         <img class="w-20 h-20 mx-auto" :src="image" alt="Item" />
         <div class="relative group">

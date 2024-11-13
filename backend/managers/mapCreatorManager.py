@@ -8,9 +8,10 @@ class MapCreatorManager:
         self.redis_client = redis_client
 
     def create_map(self, map_name: str):
-        new_map = Map(name=map_name)
-        map_key = f"{new_map.name}"
-        self.redis_client.set(map_key, new_map.json())
+        map_key = f"{map_name}"
+        if not self.redis_client.exists(map_key):
+            new_map = Map(name=map_name)
+            self.redis_client.set(map_key, new_map.json())
 
     def get_map(self, map_name: str) -> Optional[Map]:
         map_key = f"{map_name}"

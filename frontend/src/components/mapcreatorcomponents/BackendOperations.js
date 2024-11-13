@@ -24,9 +24,9 @@ export const erasePath = async (mapName, path) => {
   }
 };
 
-export const addNewImage = async (mapName, image) => {
+export const addNewImage = async (mapName, startX, y) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/add_new_image`, { map_name: mapName, image });
+    const response = await axios.post(`${API_BASE_URL}/add_new_image`, { map_name: mapName, image: [startX, y] });
     return response.data;
   } catch (error) {
     console.error('Error in addNewImage:', error);

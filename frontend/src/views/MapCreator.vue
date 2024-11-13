@@ -1,11 +1,13 @@
 <script setup>
+
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
 // TODO import { processPath, erasePath, addNewImage, retrieveMap, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
-import {  erasePath, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
+import {  erasePath, setMapType, createMap, processPath, addNewImage } from '@/components/mapcreatorcomponents/BackendOperations.js';
 
-import axios from 'axios';
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
 import OperationSelector from '../components/mapcreatorcomponents/OperationSelector.vue';
+import SaveMap from '@/components/mapcreatorcomponents/SaveMap.vue';
+const showModal = ref(false);
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
 
 const props = defineProps({
@@ -41,6 +43,7 @@ const updateTheme = (theme) => {
   // Recolor all stored areas with the new theme
   updateMapArea();
 };
+
 
 const updateCursor = (type) => {
   cursorType.value = type;
@@ -86,8 +89,12 @@ const stopDrawing = async () => {
   if (!drawing) return;
   drawing = false;
   ctx.beginPath();
-  if (drawnPath.length > 0 && cursorType.value === 'pen') {
-    await sendToBackend(drawnPath);  // Send path to backend after drawing
+  if (drawnPath.length > 0) {
+    if (cursorType.value === 'eraser') {
+      await erasePath(mapName, eraserArray.value);  // Send eraser path to backend after drawing
+    } else if (cursorType.value === 'pen') {
+      await sendToBackend(drawnPath);  // Send path to backend after drawing
+    }
   }
 };
 
@@ -114,7 +121,6 @@ const draw = (event) => {
     // Store the eraser path
     eraserArray.value.push([x, y]);
     arrayArray.value.push({ type: "eraser", data: [x, y] });
-    erasePath([x, y]); //TODO
   } else {
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -127,14 +133,14 @@ const sendToBackend = async (path) => {
   const bottomY = canvas.height;
 
   try {
-    const response = await axios.post('http://localhost:8000/process-path', {
-      map_name: mapName,
-      path,
-      bottomY
-    });
-    const result = response.data;
+    console.log('Sending path to backend:', path);
+    console.log('Bottom Y:', bottomY);
+    console.log('Map name:', mapName);
 
-    //const result = processPath(mapName, path, bottomY); TODO
+    const result = await processPath(mapName, path, bottomY);
+
+    console.log('Result from processPath:', result);
+
 
     // Store the green coordinates
     storedGreenCoordinates.value.push(result.greenCoordinates);
@@ -158,9 +164,11 @@ const updateMapArea = () => {
 
   arrayArray.value.forEach(({ type, data }) => {
     if (type === "eraser") {
+      console.log('Eraser data:', data);
       ctx.clearRect(data[0] - brushSize / 2, data[1] - brushSize / 2, brushSize, brushSize);
     }
     if (type === "stroke") {
+      console.log('Stroke data:', data);
       ctx.beginPath();
       data.forEach(([x, y]) => {
         ctx.lineTo(x, y);
@@ -176,7 +184,7 @@ const updateMapArea = () => {
     }
   });
 
-  ctx.stroke();
+  // ctx.stroke();
 };
 
 const updateBrushCircle = (event) => {
@@ -196,27 +204,6 @@ const updateBrushCircle = (event) => {
 const hideBrushCircle = () => {
   document.querySelector('.brush-circle').style.display = 'none';
 };
-
-onMounted(async () => {
-  const canvas = canvasRef.value;
-  ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-  document.addEventListener('mousedown', startDrawing);
-  document.addEventListener('mouseup', stopDrawing);
-  document.addEventListener('mousemove', (event) => {
-    draw(event);
-    updateBrushCircle(event); // Update circle position while moving
-  });
-  canvas.addEventListener('mouseleave', hideBrushCircle); // Hide circle when mouse leaves canvas
-
-  await createMap(mapName);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', startDrawing);
-  document.removeEventListener('mouseup', stopDrawing);
-  document.removeEventListener('mousemove', draw);
-});
 
 const onDrop = (event) => {
   event.preventDefault();
@@ -271,13 +258,54 @@ const animateImage = (img, startX, startY, width, height) => {
       ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
       imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
       arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
-      // addNewImage({ x: startX, y: y }); TODO
+      addNewImage(mapName, startX, y);
       updateMapArea();
     }
   };
 
   step(); // Start the animation
 };
+
+onMounted(async () => {
+  const canvas = canvasRef.value;
+  ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  document.addEventListener('mousedown', startDrawing);
+  document.addEventListener('mouseup', stopDrawing);
+  document.addEventListener('mousemove', (event) => {
+    draw(event);
+    updateBrushCircle(event); // Update circle position while moving
+  });
+  canvas.addEventListener('mouseleave', hideBrushCircle); // Hide circle when mouse leaves canvas
+
+  await createMap(mapName);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', startDrawing);
+  document.removeEventListener('mouseup', stopDrawing);
+  document.removeEventListener('mousemove', draw);
+});
+
+const openModal = () => {
+  showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const saveMap = (name) => {
+  // Implement save map logic here
+  console.log('Saving map:', name);
+};
+
+const saveAndReturn = (name) => {
+  // Implement save and return logic here
+  console.log('Saving and returning map:', name);
+  // Add logic to return to the previous page or state
+};
+
 </script>
 
 <template>
@@ -307,9 +335,18 @@ const animateImage = (img, startX, startY, width, height) => {
         <button @click="clearMap" class="border-4 border-red-700 text-center bg-red-300 hover:bg-red-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           CLEAR MAP
         </button>
-        <button @click="saveMap" class="border-4 border-green-700 text-center bg-green-300 hover:bg-green-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+
+        <button @click="openModal" class="border-4 border-green-700 text-center bg-green-300 hover:bg-green-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           SAVE MAP
         </button>
+
+        <SaveMap
+          :visible="showModal"
+          :onSave="saveMap"
+          :onSaveAndReturn="saveAndReturn"
+          :onClose="closeModal"
+        />
+
         <button @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           START PLAYING
         </button>

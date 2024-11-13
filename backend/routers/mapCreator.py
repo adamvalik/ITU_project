@@ -18,7 +18,7 @@ class EraserRequest(BaseModel):
 
 class ImageRequest(BaseModel):
     map_name: str
-    image: Tuple[int, int]
+    image: Tuple[float, float]
 
 class TypeRequest(BaseModel):
     map_name: str
@@ -70,16 +70,18 @@ def compute_green_area(path, bottom_y):
 @router.post("/erase-path")
 def erase_path(request: EraserRequest, redis_client = Depends(get_redis_client)):
   path = request.path
-  mapManager = MapManager(redis_client)
-  mapManager.add_new_data("arrayArray", "eraserArray", {"data": path})
+  map_name = request.map_name
+  mapManager = MapCreatorManager(redis_client)
+  mapManager.add_new_data(map_name, "eraserArray", {"data": path})
 
   return {"message": "Eraser path added to the map"}
 
 @router.post("/add_new_image")
 def add_new_image(request: ImageRequest, redis_client = Depends(get_redis_client)):
+  map_name = request.map_name
   image = request.image
-  mapManager = MapManager(redis_client)
-  mapManager.add_new_data("arrayArray", "imageArray", {"data": image})
+  mapManager = MapCreatorManager(redis_client)
+  mapManager.add_new_data(map_name, "imageArray", {"data": image})
 
   return {"message": "Image added to the map"}
 

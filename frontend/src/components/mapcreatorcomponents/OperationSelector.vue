@@ -39,6 +39,7 @@ const emit = defineEmits(['cursor-change']);
 
 const onDragStart = (event) => {
   console.log("Drag start event"); // Debug log
+  setActiveButton('obstruction'); // Automatically select the obstruction button
   event.dataTransfer.setData('text/plain', obstructionIcon.value); // Pass the icon URL or ID
 };
 

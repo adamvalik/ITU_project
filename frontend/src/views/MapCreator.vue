@@ -369,9 +369,9 @@ const saveAndReturn = (name) => {
           :onClose="closeModal"
         />
 
-        <button v-if="showStartPlayingButton" @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+        <router-link v-if="showStartPlayingButton" to="/chooseMap" @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           START PLAYING
-        </button>
+        </router-link>
       </div>
 
     </div>

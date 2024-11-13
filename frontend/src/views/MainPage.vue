@@ -43,12 +43,12 @@
       <button @click="createMap" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         CREATE MAP
       </button>
-      <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
-        SETTINGS
-      </button>
       <router-link to="/shop" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
         SHOP
       </router-link>
+      <button @click="showSettings" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl">
+        SETTINGS
+      </button>
     </div>
 
     <!-- game modes modal -->

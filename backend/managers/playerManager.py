@@ -81,6 +81,14 @@ class PlayerManager:
         else:
             raise ValidationError(f"Player with id {player_id} not found")
 
+    def increment_skill_points(self, player_id: int):
+        player = self.get_player(player_id)
+        if player:
+            player.skillPoints += 1
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+
     def delete_player(self, player_id: int):
         player_key = f"{self.key_prefix}{player_id}"
         self.redis_client.delete(player_key)

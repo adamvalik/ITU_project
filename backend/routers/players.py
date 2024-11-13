@@ -35,6 +35,12 @@ async def update_player_skill_points(player_id: int, skill_points: int, redis_cl
     player_manager.update_skill_points(player_id, skill_points)
     return {"message": "Player skill points updated"}
 
+@router.post("/players/{player_id}/skillPointsInc")
+async def increment_player_skill_points(player_id: int, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.increment_skill_points(player_id)
+    return {"message": "Player skill points incremented"}
+
 @router.post("/players/{player_id}")
 async def update_player(player_id: int, player: Player, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)

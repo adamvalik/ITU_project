@@ -128,14 +128,14 @@
         <button @click="backToMenu" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl mt-4 justify-center items-center">
           Back to Menu
         </button>
-
     </div>
   </div>
 </template>
 
   <script>
+import axios from 'axios';
+import apiClient from '@/api';
 
-  import axios from 'axios';
   export default {
     props: {
       gameWidth: Number,
@@ -237,6 +237,19 @@
       this.loadGameData();
       window.addEventListener('keydown', this.onKeyPressed);
     },
+    watch: {
+      async gameOver(newValue) {
+        if (newValue) {
+          try {
+            await apiClient.post('/players/1/skillPointsInc');
+            await apiClient.post('/players/2/skillPointsInc');
+          } catch (error) {
+            console.error(error);
+          }
+          this.$router.push('/shop');
+        }
+      }
+    },
     methods: {
       toggleWeaponMenu() {
         this.toggleDropDownMenu = !this.toggleDropDownMenu;
@@ -276,8 +289,8 @@
           this.activeMissile = {
             id: 2,
             name: "BIG MISSILE",
-            damage: 40,
-            radius: 50,
+            damage: 100,
+            radius: 300,
           };
         }
       },

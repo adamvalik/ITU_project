@@ -1,7 +1,7 @@
 <template>
   <div
-    class="flex flex-col items-center bg-white"
-    :style="{ width: `${gameWidth}px`, height: `${gameHeight}px` }"
+    class="flex flex-col items-center bg-cover bg-center"
+    :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`, backgroundImage: `url(${backgroundImageUrl})`}"
   >
     <div class="flex justify-around items-center h-1/3 w-5/6">
       <div
@@ -46,7 +46,7 @@
     </div>
 
     <!-- weather selection -->
-    <div class="flex flex-col items-center justify-normal mb-8">
+    <div class="flex flex-col items-center justify-normal mb-8 z-10">
       <div class="flex gap-8">
         <span class="font-bold text-lg">WEATHER:</span>
         <span class="font-bold">{{ selectedWeather }}</span>
@@ -104,6 +104,18 @@ export default {
       ],
       selectedWeather: 'Extreme',
     };
+  },
+  computed: {
+    backgroundImageUrl() {
+      switch (this.selectedWeather) {
+        case 'Extreme':
+          return '/assets/bg3-extreme.png';
+        case 'Sunny':
+          return '/assets/bg3-sunny.png';
+        default:
+          return '/assets/bg3-cloudy.png';
+      }
+    }
   },
   methods: {
     selectWeather(weather) {

@@ -18,5 +18,6 @@ class Player(BaseModel):
   xCord: float = 0
   yCord: float = 140
 
-class PlayerData(BaseModel):
-  player: Player
+class PlayersData(BaseModel):
+  player1: Player
+  player2: Player

@@ -17,38 +17,28 @@
             </button>
           </div>
 
-          <div v-if="!toggleDropDownMenu">
+          <div v-if="!toggleDropDownMenu && activeMissile">
             <button
               class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-8">
-                <div class="text-black font-bold text-3xl">{{ this.activeMissile.name }}</div>
+                <div class="text-black font-bold text-3xl">{{ activeMissile.name }}</div>
                 <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[activeMissile.id] }}</div>
+                <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.activeMissileId] }}</div>
               </div>
             </button>
           </div>
 
           <div v-if="toggleDropDownMenu" class="absolute top-full mt-2 bg-gray-600 border-4 border-gray-700 space-y-2">
-            <button v-if="checkExistingAmmo('small')" @click="selectMissile('small')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+            <button 
+              v-for="(missile) in currentPlayerMissiles" 
+              :key="missile.id"
+              @click="selectMissile(missile.id)"
+              class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400"
+            >
               <div class="flex flex-row justify-center space-x-8">
-                <div class="text-black font-bold text-3xl">SMALL MISSILE</div>
-                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[0] }}</div>
-              </div>
-            </button>
-
-            <button v-if="checkExistingAmmo('medium')" @click="selectMissile('medium')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
-              <div class="flex flex-row justify-center space-x-8">
-                <div class="text-black font-bold text-3xl">MEDIUM MISSILE</div>
-                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[1] }}</div>
-              </div>
-            </button>
-            <button v-if="checkExistingAmmo('big')" @click="selectMissile('big')" class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
-              <div class="flex flex-row justify-center space-x-8">
-                <div class="text-black font-bold text-3xl">BIG MISSILE</div>
-                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">{{ player1.ammunitionCount[2] }}</div>
+                <div class="text-black font-bold text-3xl">{{ missile.name }}</div>
+                <div class="w-8 h-8" :style="{ background: `url(${missile.picture}) no-repeat center center`, backgroundSize: 'cover' }"></div>
+                <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[missile.id] }}</div>
               </div>
             </button>
           </div>
@@ -82,21 +72,21 @@
 
           <div class ="flex flex-col space-y-2 items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ player1.money }}$</h1>
+              <h1>{{ currentPlayer.money }}$</h1>
             </div>
             <div class = "w-20 h-20" style="background: url('assets/money_bag_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
           <div class ="flex flex-col space-y-2, items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ player1.fuel }}/{{ player1.fuelMax }}</h1>
+              <h1>{{ currentPlayer.fuel }}/{{ player1.fuelMax }}</h1>
             </div>
             <div class = "w-20 h-20" style="background: url('assets/fuel_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
 
           <div class ="flex flex-col space-y-3 items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ player1.wins }}win</h1>
+              <h1>{{ currentPlayer.wins }}win</h1>
             </div>
             <div class = "w-16 h-16" style="background: url('assets/trophy_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
@@ -224,6 +214,8 @@ import apiClient from '@/api';
 
         //Missile trajectory data
         missileTrajectory: [],
+        missiles: [],
+        activeMissileId: 0,
 
         //Response
         responseGameOver: false,
@@ -237,29 +229,37 @@ import apiClient from '@/api';
         selectorHelpVisible: false,
         toggleDropDownMenu: false,
         toggleDisableFire: false,
-
-        //
-        isPractice: true,
-        practiceTarget: {
-          name: "",
-          xCord: 0,
-          yCord: 0,
-          health: 0,
-          color: "",
-        },
-
-        activeMissile: {
-          id: 0,
-          name: "",
-          damage: 0,
-          radius: 0,
-        }
-
-
       };
     },
+    computed: {
+      currentPlayer() {
+        return this.p1Turn ? this.player1 : this.player2;
+      },
+
+      nextPlayer() {
+        return this.p1Turn ? this.player2 : this.player1;
+      },
+
+      activeMissile() {
+        return this.missiles[this.activeMissileId];
+      },
+
+      currentAimCircle() {
+        return this.p1Turn ? this.p1Circle : this.p2Circle;
+      },
+
+      currentPlayerMissiles() {
+        const displayedMissiles = [];
+        for (let i = 0; i < this.player1.ammunitionCount.length; i++) {
+          if (this.currentPlayer.ammunitionCount[i] >= 0) {
+            displayedMissiles.push(this.missiles[i]);
+          }
+        }
+        return displayedMissiles;
+      }
+    },
     mounted() {
-      this.selectActiveMissile('small');
+      this.loadMissiles();
       this.generateTerrain();
       this.loadPlayerData();
       this.loadGameData();
@@ -283,44 +283,19 @@ import apiClient from '@/api';
         this.toggleDropDownMenu = !this.toggleDropDownMenu;
       },
 
-      selectMissile(missileType) {
-        this.selectActiveMissile(missileType);
+      async loadMissiles() {
+        await apiClient.get('/missiles')
+          .then((response) => {
+            this.missiles = response.data;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+
+      selectMissile(missileId) {
+        this.activeMissileId = missileId;
         this.toggleDropDownMenu = false;
-      },
-
-      checkExistingAmmo(missileType) {
-        if(missileType == 'small'){
-          return this.player1.ammunitionCount[0] != -1;
-        } else if(missileType == 'medium'){
-          return this.player1.ammunitionCount[1] != -1;
-        } else if(missileType == 'big'){
-          return this.player1.ammunitionCount[2] != -1;
-        }
-      },
-
-      selectActiveMissile(missileType) {
-        if(missileType == 'small'){
-          this.activeMissile = {
-            id: 0,
-            name: "SMALL MISSILE",
-            damage: 20,
-            radius: 30,
-          };
-        } else if(missileType == 'medium'){
-          this.activeMissile = {
-            id: 1,
-            name: "MEDIUM MISSILE",
-            damage: 30,
-            radius: 40,
-          };
-        } else if(missileType == 'big'){
-          this.activeMissile = {
-            id: 2,
-            name: "BIG MISSILE",
-            damage: 100,
-            radius: 300,
-          };
-        }
       },
 
       async loadPlayerData() {
@@ -501,7 +476,8 @@ import apiClient from '@/api';
         this.toggleDisableFire = true;
 
         await axios.post('http://localhost:8000/save-current-player-data', {
-          player: this.player1,
+          player1: this.player1,
+          player2: this.player2,
         })
         .then((response) => {
           console.log(response);
@@ -510,7 +486,7 @@ import apiClient from '@/api';
           console.error(error);
         });
 
-        const ammunition = this.player1.ammunitionCount[this.activeMissile.id];
+        const ammunition = this.currentPlayer.ammunitionCount[this.activeMissileId];
         if(ammunition <= 0){
           this.toggleDisableFire = false;
           return;
@@ -519,21 +495,16 @@ import apiClient from '@/api';
         await axios.post('http://localhost:8000/compute-missile-data', {
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          playerId: this.player1.id,
+          playerId: this.currentPlayer.id,
           terrain: this.terrain,
-          angle: this.p1Circle.angle,
-          power: this.p2Circle.power,
+          angle: this.currentAimCircle.angle,
+          power: this.currentAimCircle.power,
           wind: this.wind,
           weaponSelected: this.activeMissile.id,
-          radius: this.activeMissile.radius,
-          damage: this.activeMissile.damage,
-          targetHealth: this.practiceTarget.health,
-          targetXCord: this.practiceTarget.xCord,
-          targetYCord: this.practiceTarget.yCord,
         })
         .then((response) => {
           console.log(response);
-          this.player1.ammunitionCount[this.activeMissile.id] = response.data.ammunitionCount;
+          this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
           this.missileTrajectory = response.data.missileTrajectory;
           this.newTerrain = response.data.newTerrain;
           this.responseGameOver = response.data.gameOver;
@@ -559,7 +530,7 @@ import apiClient from '@/api';
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
-        ctx.arc(x, y, this.activeMissile.damage / 4, 0, 2 * Math.PI);
+        ctx.arc(x, y, this.missiles[this.activeMissileId].damage / 4, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
 
@@ -570,14 +541,16 @@ import apiClient from '@/api';
           this.terrain = this.newTerrain;
 
           if(this.responseHitPlayer){
-            this.practiceTarget.health = this.newTargetHealth;
-            this.player1.money += this.responseMoney;
+            this.nextPlayer.health = this.newTargetHealth;
+            this.currentPlayer.money += this.responseMoney;
+
           }
           if(this.responseGameOver){
             this.gameOver = true;
           }
           this.toggleDisableFire = false;
           this.p1Turn = !this.p1Turn;
+          this.activeMissileId = 0;
           this.drawGame();
         }
       },
@@ -872,9 +845,4 @@ import apiClient from '@/api';
   </script>
 
 <style scoped>
-/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-
-canvas {
-  font-family: 'Montserrat', sans-serif;
-} */
 </style>

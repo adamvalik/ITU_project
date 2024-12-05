@@ -1,12 +1,5 @@
 from pydantic import BaseModel
 
-class PracticeTarget(BaseModel):
-    name: str
-    xCord: int
-    yCord: int
-    health: int
-    color: str
-
 class MissileComputationData(BaseModel):
     canvasWidth: int
     canvasHeight: int
@@ -16,11 +9,8 @@ class MissileComputationData(BaseModel):
     power: float
     wind: int
     weaponSelected: int
-    radius: int
-    damage: int
-    targetHealth: int
-    targetXCord: float
-    targetYCord: float
+    # radius: int
+    # damage: int
 
 class MissileComputationResponse(BaseModel):
     ammunitionCount: int = 0
@@ -31,3 +21,11 @@ class MissileComputationResponse(BaseModel):
     gameOver: bool = False
     targetHealth: int = 0
     playerMoney: int = 0
+
+class Missile(BaseModel):
+    id: int
+    name: str
+    damage: int
+    radius: int
+    price: int
+    picture: str

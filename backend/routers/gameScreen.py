@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
-from models.playground import PracticeTarget
 from models.player import Player
-from models.player import PlayerData
-from models.playground import MissileComputationData, MissileComputationResponse
-from managers.practiceTargetManager import PracticeTargetManager
+from models.player import PlayersData
+from models.missile import Missile, MissileComputationData, MissileComputationResponse
+from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
 from pydantic import BaseModel
 from models.map import Map
@@ -14,13 +13,13 @@ from typing import List, Tuple
 router = APIRouter()
 
 
-@router.get("/practice-target", response_model=PracticeTarget)
-async def get_practice_target(redis_client = Depends(get_redis_client)):
-    practice_target_manager = PracticeTargetManager(redis_client)
-    practice_target = practice_target_manager.get_practice_target()
-    if not practice_target:
-        raise HTTPException(status_code=404, detail="Practice targets not found")
-    return practice_target
+@router.get("/missiles", response_model=List[Missile])
+async def get_missiles():
+    missile_manager = MissileManager(get_redis_client())
+    missiles = missile_manager.get_missiles()
+    if not missiles:
+        raise HTTPException(status_code=404, detail="Missiles not found")
+    return missiles
 
 
 @router.get("/generate-terrain", response_model=Map)
@@ -35,37 +34,56 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int):
     return newMap
 
 @router.post("/save-current-player-data")
-async def save_current_player_data(currentPlayer: PlayerData, redis_client = Depends(get_redis_client)):
+async def save_current_player_data(players: PlayersData, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.delete_player(currentPlayer.player.id)
-    player_manager.create_player(currentPlayer.player)
+    player_manager.delete_player(players.player1.id)
+    player_manager.create_player(players.player1)
+    player_manager.delete_player(players.player2.id)
+    player_manager.create_player(players.player2)
     return {"message": "Successfully saved player data"}
 
 
 @router.post("/compute-missile-data", response_model=MissileComputationResponse)
 async def compute_missile_data(missileData: MissileComputationData, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player = player_manager.get_player(missileData.playerId)
-    if not player:
+    missile_manager = MissileManager(redis_client)
+
+    playerShooter = player_manager.get_player(missileData.playerId)
+    playerTarget = None
+    activeMissile = missile_manager.get_missile(missileData.weaponSelected)
+
+    if(missileData.playerId == 1):
+        playerTarget = player_manager.get_player(2)
+    else:
+        playerTarget = player_manager.get_player(1)
+
+    if not playerShooter or not playerTarget:
         raise HTTPException(status_code=404, detail="Player not found")
     
-    player_manager.delete_player(player.id)
+    player_manager.delete_player(playerShooter.id)
+    player_manager.delete_player(playerTarget.id)
     returnModel = MissileComputationResponse()
     
     #Decrement ammunition count
-    player.ammunitionCount[missileData.weaponSelected] -= 1
-    returnModel.ammunitionCount = player.ammunitionCount[missileData.weaponSelected]
+    playerShooter.ammunitionCount[missileData.weaponSelected] -= 1
+    returnModel.ammunitionCount = playerShooter.ammunitionCount[missileData.weaponSelected]
+
+    # if playerShooter.ammunitionCount[missileData.weaponSelected] < 0:
+    #     return
+
+    if missileData.playerId == 2:
+        missileData.angle = 180 - missileData.angle
+        if missileData.angle > 180:
+            missileData.angle -= 360
 
     #Set missile data
-    startX = player.xCord
-    startY = player.yCord - 15
+    startX = playerShooter.xCord
+    startY = playerShooter.yCord - 15
     controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
     controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
     endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 8
     endY = missileData.canvasHeight
 
-
-    # missile["endX"] = missile["controlX"] + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 16 + missileData.wind * 2
     missileTrajectory = []
 
     t = 0.00
@@ -79,26 +97,26 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         if 0 <= math.floor(x) < len(missileData.terrain) and y >= missileData.terrain[math.floor(x)]:
             returnModel.hitTerrain = True
 
-            dx = missileData.targetXCord - x
-            dy = missileData.targetYCord - y
+            dx = playerTarget.xCord - x
+            dy = playerTarget.yCord - y
             distance = math.sqrt(dx * dx + dy * dy)
 
             #Player hit
-            if distance <= missileData.radius + 20:
+            if distance <= activeMissile.radius + 20:
                 returnModel.hitPlayer = True
-                player.money += 200
+                playerShooter.money += 200
                 returnModel.playerMoney = 200
-                missileData.targetHealth -= missileData.damage
-                if(missileData.targetHealth < 0):
+                playerTarget.health -= activeMissile.damage
+                if(playerTarget.health < 0):
                     returnModel.targetHealth = 0
                 else:
-                    returnModel.targetHealth = missileData.targetHealth
+                    returnModel.targetHealth = playerTarget.health
             
-                if missileData.targetHealth <= 0:
+                if playerTarget.health <= 0:
                     returnModel.gameOver = True
 
 
-            explosionRadius = missileData.radius
+            explosionRadius = activeMissile.radius
             for i in range(-explosionRadius, explosionRadius):
                 pos = math.floor(x) + i
                 if pos >= 0 and pos < missileData.canvasWidth:
@@ -113,5 +131,6 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     
     returnModel.newTerrain = missileData.terrain
     returnModel.missileTrajectory = missileTrajectory
-    player_manager.create_player(player)
+    player_manager.create_player(playerShooter)
+    player_manager.create_player(playerTarget)
     return returnModel

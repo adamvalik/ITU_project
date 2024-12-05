@@ -79,7 +79,7 @@
 
           <div class ="flex flex-col space-y-2, items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ currentPlayer.fuel }}/{{ player1.fuelMax }}</h1>
+              <h1>{{ currentPlayer.fuel }}/{{ currentPlayer.fuelMax }}</h1>
             </div>
             <div class = "w-20 h-20" style="background: url('assets/fuel_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
@@ -92,7 +92,10 @@
           </div>
 
           <div class="relative mb-16">
-            <div class="w-20 h-20" style="background: url('assets/pause_icon.png') no-repeat center center; background-size: cover;"></div>
+            <button
+              @click="togglePauseGame">
+              <div class="w-20 h-20" style="background: url('assets/pause_icon.png') no-repeat center center; background-size: cover;"></div>
+            </button>
           </div>
 
         </div>
@@ -113,13 +116,19 @@
         @mousedown="onMouseDown"
       ></canvas>
     </div>
-    <div v-if="gameOver" class="absolute inset-0 flex flex-col space-y-2 items-center justify-center bg-black bg-opacity-50">
-        <h1 class="text-4xl font-bold">You won!</h1>
-        <button @click="backToMenu" class="border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl py-4 px-32 rounded-2xl mt-4 justify-center items-center">
-          Back to Menu
-        </button>
+
+    <div v-if="pauseGame" class="bg-black bg-opacity-70 items-center justify-center flex flex-col absolute inset-0 z-20">
+      <h1 class="text-4xl font-bold text-black">Game Paused</h1>
+      <button @click="togglePauseGame" class="w-64 border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl rounded-2xl px-4 py-4 mt-4 justify-center items-center">
+        Resume
+      </button>
+      <button @click="this.$router.push('/')" class="w-64 border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl px-4 py-4 rounded-2xl mt-4 justify-center items-center">
+        Back to Main Menu
+      </button>
     </div>
+
   </div>
+
 </template>
 
   <script>
@@ -194,6 +203,7 @@ import apiClient from '@/api';
         gameOver: false,
         wind: 0,
         p1Turn: true,
+        pauseGame: false,
 
         //Aim circle data
         toggleHovering: false,
@@ -281,6 +291,10 @@ import apiClient from '@/api';
     methods: {
       toggleWeaponMenu() {
         this.toggleDropDownMenu = !this.toggleDropDownMenu;
+      },
+
+      togglePauseGame() {
+        this.pauseGame = !this.pauseGame;
       },
 
       async loadMissiles() {
@@ -525,7 +539,7 @@ import apiClient from '@/api';
 
         const [x, y] = this.missileTrajectory.shift();
 
-        this.drawGame();
+        // this.drawGame();
 
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
@@ -574,62 +588,37 @@ import apiClient from '@/api';
       },
 
       onKeyPressed(event){
+
+        if(this.pauseGame){
+          return;
+        }
+
         if(event.key === 'd'){
 
-          if(this.p1Turn){
-            if(this.player1.fuel > 0 && this.player1.xCord <  this.canvasWidth - 25){
-              this.player1.fuel -= 5;
-              this.player1.xCord += 5;
-              this.p1Circle.aimLaserXCord += 5;
-            }
-          } else {
-            if(this.player2.fuel > 0 && this.player2.xCord <  this.canvasWidth - 25){
-              this.player2.fuel -= 5;
-              this.player2.xCord += 5;
-              this.p2Circle.aimLaserXCord += 5;
-            }
+          if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord <  this.canvasWidth - 25){
+            this.currentPlayer.fuel -= 5;
+            this.currentPlayer.xCord += 5;
+            this.currentAimCircle.aimLaserXCord += 5;
           }
+
         } else if(event.key === 'a'){
 
-          if(this.p1Turn){
-            if(this.player1.fuel > 0 && this.player1.xCord > 25){
-              this.player1.fuel -= 5;
-              this.player1.xCord -= 5;
-              this.p1Circle.aimLaserXCord -= 5;
-            }
-          } else {
-            if(this.player2.fuel > 0 && this.player2.xCord > 25){
-              this.player2.fuel -= 5;
-              this.player2.xCord -= 5;
-              this.p2Circle.aimLaserXCord -= 5;
-            }
+          if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord > 25){
+            this.currentPlayer.fuel -= 5;
+            this.currentPlayer.xCord -= 5;
+            this.currentAimCircle.aimLaserXCord -= 5;
           }
+
         } else if(event.key === 'ArrowRight'){
-          if(this.p1Turn){
-            this.p1Circle.power = Math.min(100, this.p1Circle.power + 1);
-          } else {
-            this.p2Circle.power = Math.min(100, this.p2Circle.power + 1);
-          }
+            this.currentAimCircle.power = Math.min(100, this.currentAimCircle.power + 1);
         } else if(event.key === 'ArrowLeft'){
-          if(this.p1Turn){
-            this.p1Circle.power = Math.max(1, this.p1Circle.power - 1);
-          } else {
-            this.p2Circle.power = Math.max(1, this.p2Circle.power - 1);
-          }
+            this.currentAimCircle.power = Math.max(1, this.p2Circle.power - 1);
         } else if(event.key === 'ArrowUp'){
-          if(this.p1Turn){
-            this.p1Circle.angle += 1;
-          } else {
-            this.p2Circle.angle += 1;
-          }
+            this.currentAimCircle.angle += 1;
         } else if(event.key === 'ArrowDown'){
-          if(this.p1Turn){
-            this.p1Circle.angle -= 1;
-          } else {
-            this.p2Circle.angle -= 1;
-          }
+            this.currentAimCircle.angle -= 1;
         } else if(event.key === ' '){
-          this.fireMissile();
+            this.fireMissile();
         }
         this.drawGame();
       },
@@ -820,22 +809,15 @@ import apiClient from '@/api';
         //Draw wind
         this.drawWind(ctx);
 
-        //Draw angle and power values in the circle
-        if(this.p1Turn){
+        // Calculate the laser line's endpoint based on the updated angle and power
+        this.calculateLaserPos(this.currentAimCircle, this.currentPlayer);
 
-          // Calculate the laser line's endpoint based on the updated angle and power
-          this.calculateLaserPos(this.p1Circle, this.player1);
+        // Draw the angle and power values
+        this.drawAnglePower(ctx, this.currentAimCircle, this.currentPlayer);
 
-          // Draw the angle and power values
-          this.drawAnglePower(ctx, this.p1Circle, this.player1);
+        // Draw the aim circle and the aiming line
+        this.drawAimCircle(ctx, this.currentAimCircle, this.currentPlayer);
 
-          // Draw the aim circle and the aiming line
-          this.drawAimCircle(ctx, this.p1Circle, this.player1);
-        } else {
-          this.calculateLaserPos(this.p2Circle, this.player2);
-          this.drawAnglePower(ctx, this.p2Circle, this.player2);
-          this.drawAimCircle(ctx, this.p2Circle, this.player2);
-        }
       },
     },
     beforeUnmount() {

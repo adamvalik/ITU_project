@@ -82,7 +82,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
     controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
     endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 8
-    endY = missileData.canvasHeight
+    endY = missileData.canvasHeight + 20
 
     missileTrajectory = []
 
@@ -114,6 +114,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             
                 if playerTarget.health <= 0:
                     returnModel.gameOver = True
+                    playerShooter.wins += 1
 
 
             explosionRadius = activeMissile.radius
@@ -124,6 +125,9 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
                     if distance <= explosionRadius:
                         impactDepth = math.sqrt(explosionRadius * explosionRadius - distance * distance)
                         missileData.terrain[pos] = max(missileData.terrain[pos], y + impactDepth)
+                        if(missileData.terrain[pos] > missileData.canvasHeight - 10):
+                            missileData.terrain[pos] = missileData.canvasHeight - 10
+
         
             break
 

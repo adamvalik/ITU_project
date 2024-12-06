@@ -33,7 +33,7 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int):
     newMap = Map(name="mapka", type="mud", data=terrain)
     return newMap
 
-@router.post("/save-current-player-data")
+@router.post("/save-current-players-data")
 async def save_current_player_data(players: PlayersData, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
     player_manager.delete_player(players.player1.id)
@@ -82,6 +82,8 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
     controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
     endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 8
+
+    # + 20 pixels to be able to have the y size to reach the size of canvas height
     endY = missileData.canvasHeight + 20
 
     missileTrajectory = []
@@ -125,6 +127,8 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
                     if distance <= explosionRadius:
                         impactDepth = math.sqrt(explosionRadius * explosionRadius - distance * distance)
                         missileData.terrain[pos] = max(missileData.terrain[pos], y + impactDepth)
+
+                        # Leave small portion of terrain at the bottom of the canvas
                         if(missileData.terrain[pos] > missileData.canvasHeight - 10):
                             missileData.terrain[pos] = missileData.canvasHeight - 10
 

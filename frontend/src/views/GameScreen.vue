@@ -3,6 +3,7 @@
     <div>
       <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-8">
 
+        <!-- Weapon menu button -->
         <div class="flex flex-col space-y-1 w-1/3 relative">
           <div>
             <button
@@ -17,6 +18,7 @@
             </button>
           </div>
 
+          <!-- Active missile -->
           <div v-if="!toggleDropDownMenu && activeMissile">
             <button
               class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
@@ -28,6 +30,7 @@
             </button>
           </div>
 
+          <!-- Drop down menu with missiles -->
           <div v-if="toggleDropDownMenu" class="absolute top-full mt-2 bg-gray-600 border-4 border-gray-700 space-y-2">
             <button 
               v-for="(missile) in currentPlayerMissiles" 
@@ -44,6 +47,7 @@
           </div>
         </div>
 
+        <!-- Fire button -->
         <div class="relative w-1/4">
           <button
               @mouseover="showFireHelp"
@@ -103,6 +107,7 @@
 
     </div>
 
+    <!-- Game canvas -->
     <div>
       <canvas
         ref="gameCanvas"
@@ -117,12 +122,13 @@
       ></canvas>
     </div>
 
+    <!-- Pause game window -->
     <div v-if="pauseGame" class="bg-black bg-opacity-70 items-center justify-center flex flex-col absolute inset-0 z-20">
       <h1 class="text-4xl font-bold text-black">Game Paused</h1>
       <button @click="togglePauseGame" class="w-64 border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl rounded-2xl px-4 py-4 mt-4 justify-center items-center">
         Resume
       </button>
-      <button @click="this.$router.push('/')" class="w-64 border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl px-4 py-4 rounded-2xl mt-4 justify-center items-center">
+      <button @click="backToMenu" class="w-64 border-4 border-sky-700 text-center bg-sky-300 hover:bg-sky-400 font-bold text-xl px-4 py-4 rounded-2xl mt-4 justify-center items-center">
         Back to Main Menu
       </button>
     </div>
@@ -143,69 +149,36 @@ import apiClient from '@/api';
     },
     data() {
       return {
-        //Default canvas size
+        // Default canvas size
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
 
-        //Map data
+        // Map data
         terrain: [],
         terrainType: "",
 
-        //Player 1 data
+        // PLayer data
         player1: {
-          id: 0,
-          name: "",
-          tankType: 0,
-          color: "",
-          armorSkill: 0,
-          powerSkill: 0,
-          speedSkill: 0,
-          skillPoints: 0,
-          wins: 0,
-          money: 0,
-          fuel: 0,
-          fuelMax: 0,
-          health: 0,
           ammunitionCount: 0,
-          xCord: 0,
-          yCord: 0,
         },
-
-        //Player data
         player2: {
-          id: 0,
-          name: "",
-          tankType: 0,
-          color: "",
-          armorSkill: 0,
-          powerSkill: 0,
-          speedSkill: 0,
-          skillPoints: 0,
-          wins: 0,
-          money: 0,
-          fuel: 0,
-          fuelMax: 0,
-          health: 0,
           ammunitionCount: 0,
-          xCord: 0,
-          yCord: 0,
         },
 
-        //Mouse position
+        // Mouse position
         mousePosition: {
           x: 0,
           y: 0,
         },
 
-        //Game data
-        useTimer: false,
+        // Game data
         timePerRound: 0,
         gameOver: false,
         wind: 0,
         p1Turn: true,
         pauseGame: false,
 
-        //Aim circle data
+        // Aim circle data
         toggleHovering: false,
         toggleDragging: false,
         aimCircleRadius: 200,
@@ -222,19 +195,18 @@ import apiClient from '@/api';
           aimLaserYCord: 0,
         },
 
-        //Missile trajectory data
+        // Missile trajectory data
         missileTrajectory: [],
         missiles: [],
         activeMissileId: 0,
 
-        //Response
+        // Response data
         responseGameOver: false,
         responseHitPlayer: false,
         responseMoney: 0,
-        newterrain: [],
         newTargetHealth: 0,
 
-        //Fire help visibility
+        // Control bar toggles
         fireHelpVisible: false,
         selectorHelpVisible: false,
         toggleDropDownMenu: false,
@@ -259,8 +231,9 @@ import apiClient from '@/api';
       },
 
       currentPlayerMissiles() {
+        // Filter only missiles where player has ammunition
         const displayedMissiles = [];
-        for (let i = 0; i < this.player1.ammunitionCount.length; i++) {
+        for (let i = 0; i < this.currentPlayer.ammunitionCount.length; i++) {
           if (this.currentPlayer.ammunitionCount[i] >= 0) {
             displayedMissiles.push(this.missiles[i]);
           }
@@ -336,19 +309,18 @@ import apiClient from '@/api';
     async loadGameData() {
       await axios.get('http://localhost:8000/game')
         .then((response) => {
-          this.useTimer = response.data.isTimer;
           this.timePerRound = response.data.timePerTurn;
           this.wind = response.data.wind;
-          this.validateTimer();
+          this.validateTimer(response.data.isTimer);
         })
         .catch((error) => {
           console.error(error);
         });
     },
 
-    validateTimer() {
+    validateTimer(useTimer) {
 
-      if(!this.useTimer){
+      if(!useTimer){
         return;
       }
 
@@ -381,7 +353,10 @@ import apiClient from '@/api';
       },
 
       calculateLaserPos(playerAimCircle, player) {
+        // Calculate the distance based on the power
         const distance = (playerAimCircle.power / 100) * this.aimCircleRadius;
+
+        // Calculate the angle in radians based on whose turn it is
         let angleInRadians;
         if (this.p1Turn) {
             angleInRadians = (-playerAimCircle.angle * Math.PI) / 180;
@@ -389,14 +364,15 @@ import apiClient from '@/api';
             angleInRadians = (-(180 - playerAimCircle.angle) * Math.PI) / 180;
         }
 
-        // Calculate laser position
+        // Calculate laser's endpoint x and y coordinates based on the angle and distance
         playerAimCircle.aimLaserXCord = player.xCord + distance * Math.cos(angleInRadians);
         playerAimCircle.aimLaserYCord = player.yCord + distance * Math.sin(angleInRadians);
       },
 
       drawPlayerNames(ctx) {
         ctx.save();
-        //size of rectangles for healthbars
+
+        // Size of rectangles for healthbars
         const player1X = 10 + 200 / 2;
         const player2X = this.canvasWidth - 210 + 200 / 2;
 
@@ -406,33 +382,33 @@ import apiClient from '@/api';
         ctx.textBaseline = "middle";
         ctx.fillText(this.player1.name, player1X, 30);
         ctx.fillText(this.player2.name, player2X, 30);
+
         ctx.restore();
       },
 
       drawPlayerHealth(ctx){
         ctx.save();
 
-        // Draw black fill
+        // Draw black background for health bars
         ctx.fillStyle = 'black';
         ctx.fillRect(10, 50, 200, 40);
         ctx.fillRect(this.canvasWidth - 210, 50, 200, 40);
 
-        // Draw red fill
+        // Draw red bacground for remaining health
         ctx.fillStyle = '#FF0000';
         const player1HealthWidth = this.player1.health * 2;
         ctx.fillRect(10, 50, player1HealthWidth, 40);
-
-
         const player2HeathWidth = this.player2.health * 2;
         ctx.fillRect(this.canvasWidth - 210, 50, player2HeathWidth, 40);
 
-        //Draw outline
+        //Draw outline for health bars
         ctx.strokeStyle = 'gray';
         ctx.lineWidth = 5; // Border width
         ctx.strokeRect(10, 50, 200, 40);
         ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
 
-        ctx.fillStyle = '#FFFFFF'; // Text color
+        // Draw remaining health / 100
+        ctx.fillStyle = '#FFFFFF';
         ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -445,7 +421,8 @@ import apiClient from '@/api';
       drawWind(ctx){
         ctx.save();
 
-        ctx.fillStyle = 'black'; // Text color
+        // Draw wind value in the middle of the canvas
+        ctx.fillStyle = 'black';
         ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -457,12 +434,15 @@ import apiClient from '@/api';
 
       drawAnglePower(ctx, playerAimCircle, player) {
         ctx.save();
+
+        // Draw the angle and power values at the top of the aim circle
         ctx.fillStyle = 'black';
         ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${Math.round(playerAimCircle.angle)}°,`, player.xCord - 10, player.yCord - 180);
         ctx.fillText(playerAimCircle.power, player.xCord + 26, player.yCord - 180);
+
         ctx.restore();
       },
 
@@ -474,6 +454,8 @@ import apiClient from '@/api';
           }
         })
         .then((response) => {
+
+          //Obtain terrain data and type
           this.terrain = response.data.data;
           this.terrainType = response.data.type;
         })
@@ -484,12 +466,14 @@ import apiClient from '@/api';
 
       async fireMissile() {
 
+        // Disable firing until the animation is finished
         if(this.toggleDisableFire){
           return;
         }
         this.toggleDisableFire = true;
 
-        await axios.post('http://localhost:8000/save-current-player-data', {
+        // Save current players data
+        await axios.post('http://localhost:8000/save-current-players-data', {
           player1: this.player1,
           player2: this.player2,
         })
@@ -500,12 +484,14 @@ import apiClient from '@/api';
           console.error(error);
         });
 
+        // Check if the player has ammunition
         const ammunition = this.currentPlayer.ammunitionCount[this.activeMissileId];
         if(ammunition <= 0){
           this.toggleDisableFire = false;
           return;
         }
 
+        // Compute missile data including trajectory, if the player hit the target and so on
         await axios.post('http://localhost:8000/compute-missile-data', {
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
@@ -520,7 +506,7 @@ import apiClient from '@/api';
           console.log(response);
           this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
           this.missileTrajectory = response.data.missileTrajectory;
-          this.newTerrain = response.data.newTerrain;
+          this.terrain = response.data.newTerrain;
           this.responseGameOver = response.data.gameOver;
           this.newTargetHealth = response.data.targetHealth;
           this.responseHitPlayer = response.data.hitPlayer;
@@ -530,6 +516,7 @@ import apiClient from '@/api';
           console.error(error);
         });
 
+        // Animate the missile
         if(this.missileTrajectory != null){
           this.animateMissile();
         }
@@ -551,8 +538,6 @@ import apiClient from '@/api';
         if(this.missileTrajectory.length > 0){
           requestAnimationFrame(this.animateMissile);
         } else {
-
-          this.terrain = this.newTerrain;
 
           if(this.responseHitPlayer){
             this.nextPlayer.health = this.newTargetHealth;

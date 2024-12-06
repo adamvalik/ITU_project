@@ -174,6 +174,7 @@ import apiClient from '@/api';
         // Game data
         timePerRound: 0,
         gameOver: false,
+        responseGameOver: false,
         wind: 0,
         p1Turn: true,
         pauseGame: false,
@@ -199,12 +200,6 @@ import apiClient from '@/api';
         missileTrajectory: [],
         missiles: [],
         activeMissileId: 0,
-
-        // Response data
-        responseGameOver: false,
-        responseHitPlayer: false,
-        responseMoney: 0,
-        newTargetHealth: 0,
 
         // Control bar toggles
         fireHelpVisible: false,
@@ -504,23 +499,15 @@ import apiClient from '@/api';
         })
         .then((response) => {
           console.log(response);
-          this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
           this.missileTrajectory = response.data.missileTrajectory;
           this.terrain = response.data.newTerrain;
+          this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
           this.responseGameOver = response.data.gameOver;
-          this.newTargetHealth = response.data.targetHealth;
-          this.responseHitPlayer = response.data.hitPlayer;
-          this.responseMoney = response.data.playerMoney;
+          this.animateMissile();
         })
         .catch((error) => {
           console.error(error);
         });
-
-        // Animate the missile
-        if(this.missileTrajectory != null){
-          this.animateMissile();
-        }
-
       },
       animateMissile() {
 
@@ -528,6 +515,7 @@ import apiClient from '@/api';
 
         // this.drawGame();
 
+        // Draw the missile as a red circle
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
@@ -535,15 +523,14 @@ import apiClient from '@/api';
         ctx.fillStyle = "red";
         ctx.fill();
 
+        // Animates the missile based on the trajectory
         if(this.missileTrajectory.length > 0){
           requestAnimationFrame(this.animateMissile);
         } else {
 
-          if(this.responseHitPlayer){
-            this.nextPlayer.health = this.newTargetHealth;
-            this.currentPlayer.money += this.responseMoney;
+          // Load updated player data after the missile has landed
+          this.loadPlayerData();
 
-          }
           if(this.responseGameOver){
             this.gameOver = true;
           }
@@ -562,11 +549,9 @@ import apiClient from '@/api';
         ctx.lineTo(this.canvasWidth, this.canvasHeight);
         ctx.closePath();
         if(this.terrainType === "mud"){
-          // ctx.fillStyle = "saddlebrown";
           ctx.fillStyle = "#0D8747";
         } else {
           ctx.fillStyle = "green";
-          console.log(this.terrain.type);
         }
 
         ctx.fill();
@@ -574,9 +559,13 @@ import apiClient from '@/api';
 
       onKeyPressed(event){
 
+        // No keys registered if the game is paused
         if(this.pauseGame){
           return;
         }
+
+
+        // Update values based on the key pressed
 
         if(event.key === 'd'){
 
@@ -597,7 +586,7 @@ import apiClient from '@/api';
         } else if(event.key === 'ArrowRight'){
             this.currentAimCircle.power = Math.min(100, this.currentAimCircle.power + 1);
         } else if(event.key === 'ArrowLeft'){
-            this.currentAimCircle.power = Math.max(1, this.p2Circle.power - 1);
+            this.currentAimCircle.power = Math.max(1, this.currentAimCircle.power - 1);
         } else if(event.key === 'ArrowUp'){
             this.currentAimCircle.angle += 1;
         } else if(event.key === 'ArrowDown'){
@@ -609,32 +598,32 @@ import apiClient from '@/api';
       },
 
       onMouseDown(event) {
-        //Obtain mousePosition relative to the canvas
+        // Obtain mousePosition relative to the canvas
         const rect = this.$refs.gameCanvas.getBoundingClientRect();
         this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
         this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
-        //Check if the click is within the aim circle
+        // Check if the click is within the aim circle
         if (this.toggleHovering) {
-          //Start dragging in the circle
+          // Start dragging in the circle
           this.toggleDragging = true;
         }
       },
 
       onMouseUp() {
 
-        //Dragging is stopped
+        // Dragging is stopped
         this.toggleDragging = false;
       },
 
       onMouseMove(event) {
 
-          //Obtain mousePosition relative to the canvas
+          // Obtain mousePosition relative to the canvas
           const rect = this.$refs.gameCanvas.getBoundingClientRect();
           this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
           this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
-          //Calculate the distance between the tank and the mouse
+          // Calculate the distance between the tank and the mouse
           let dx, dy;
           if(this.p1Turn){
             dx = this.mousePosition.x - this.player1.xCord;
@@ -645,16 +634,18 @@ import apiClient from '@/api';
           }
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          //Toggle hovering if the mouse is within the aim circle range
+          // Toggle hovering if the mouse is within the aim circle
           this.toggleHovering = distance >= 1 && distance <= this.aimCircleRadius;
+
+          // Return if not in the aim circle
           if(!this.toggleHovering){
             return;
           }
 
-          //Dragging is enabled
+          // Dragging is enabled
           if (this.toggleDragging) {
 
-            //Update the power value
+            // Update the power value and angle values based on player turn
             if(this.p1Turn){
               this.p1Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
               this.p1Circle.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
@@ -668,18 +659,18 @@ import apiClient from '@/api';
             }
           }
 
-          //Redraw the game with updated values
+          // Redraw the game with updated values
           this.drawGame();
       },
 
       onMouseClick(event) {
 
-        //Obtain mousePosition relative to the canvas
+        // Obtain mousePosition relative to the canvas
         const rect = this.$refs.gameCanvas.getBoundingClientRect();
         this.mousePosition.x = (event.clientX - rect.left)/this.scaleFactor;
         this.mousePosition.y = (event.clientY - rect.top)/this.scaleFactor;
 
-        //Calculate the distance between the tank and the mouse
+        // Calculate the distance between the tank and the mouse
         let dx, dy;
           if(this.p1Turn){
             dx = this.mousePosition.x - this.player1.xCord;
@@ -690,12 +681,13 @@ import apiClient from '@/api';
           }
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        //Toggle hovering if the mouse is within the aim circle range
+        // Toggle hovering if the mouse is within the aim circle range
         this.toggleHovering = distance >= 1 && distance <= this.aimCircleRadius;
 
+        // If mouse is within the aim circle
         if (this.toggleHovering) {
 
-          //Update the angle and power values
+          // Update the angle and power values
           if(this.p1Turn){
             this.p1Circle.angle = -(Math.atan2(dy, dx) * 180) / Math.PI;
             this.p1Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
@@ -708,24 +700,21 @@ import apiClient from '@/api';
             this.p2Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
           }
 
-          //Redraw the game with updated values
+          // Redraw the game with updated values
           this.drawGame();
         }
       },
 
       drawTank(ctx, player, playerAimCircle) {
-
         ctx.save();
-        player.yCord = this.terrain[Math.floor(player.xCord)] - 40 / 2;
 
-        const groundLevel = this.canvasHeight - 40 / 2;
-        if (player.yCord > groundLevel) {
-          player.yCord = groundLevel;
-        }
+        // Update the player's yCord based on the terrain so tank is on the ground
+        player.yCord = this.terrain[Math.floor(player.xCord)] - 40 / 4;
 
+        // Move to player's position
         ctx.translate(player.xCord, player.yCord);
 
-        //Color for outline
+        // Color for outline
         ctx.strokeStyle = "black";
 
 
@@ -735,14 +724,13 @@ import apiClient from '@/api';
         ctx.strokeRect(-40 / 2, -40 / 4, 40, 40 / 2);
 
         // Draw the tank turret
-        const turretLength = 40 * 0.7;
-        ctx.translate(0, -40 / 7);
+        const turretLength = 25;
+        ctx.translate(0, -7);
         if(player.id === 1){
           ctx.rotate((-playerAimCircle.angle * Math.PI) / 180);
         } else {
           ctx.rotate((-(180 - playerAimCircle.angle) * Math.PI) / 180);
         }
-        //ctx.fillStyle = this.player1.color;
         ctx.fillStyle = player.color;
         ctx.fillRect(0, -5, turretLength, 10);
         ctx.strokeRect(0, -5, turretLength, 10);
@@ -751,22 +739,33 @@ import apiClient from '@/api';
       },
 
       drawAimCircle(ctx, playerAimCircle, player) {
-        ctx.beginPath();
-        ctx.arc(player.xCord, player.yCord, this.aimCircleRadius, 0, 2 * Math.PI);
-        // Fill the circle with a semi-transparent color
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.2)';
-        ctx.fill();  // Fill first to apply transparency correctly
+        ctx.save();
 
-        // Stroke the border of the circle
+        ctx.beginPath();
+
+        // Draw the aim circle
+        ctx.arc(player.xCord, player.yCord, this.aimCircleRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.2)';
+        ctx.fill();
+
+        // Create the outline for the aim circle
         ctx.strokeStyle = "black";
         ctx.stroke();
 
-        // Draw the power/shot line
+        // Draw the laser line in red color
         ctx.beginPath();
-        ctx.moveTo(player.xCord, player.yCord);
-        ctx.lineTo(playerAimCircle.aimLaserXCord, playerAimCircle.aimLaserYCord); // Use the updated stop positions
+
+        // Obtain laser start position based on the turret angle
+        let turretAngle = this.p1Turn ?(-playerAimCircle.angle * Math.PI) / 180 : (-(180 - playerAimCircle.angle) * Math.PI) / 180;
+        const laserStartPosX = player.xCord + 25 * Math.cos(turretAngle);
+        const laserStartPosY = player.yCord + 25 * Math.sin(turretAngle);
+
+        ctx.moveTo(laserStartPosX, laserStartPosY);
+        ctx.lineTo(playerAimCircle.aimLaserXCord, playerAimCircle.aimLaserYCord);
         ctx.strokeStyle = "red";
         ctx.stroke();
+
+        ctx.restore();
       },
 
       drawGame(){
@@ -785,13 +784,13 @@ import apiClient from '@/api';
         // Draw player 2's tank
         this.drawTank(ctx, this.player2, this.p2Circle);
 
-        //Draw player names
+        // Draw player names
         this.drawPlayerNames(ctx);
 
-        //Draw player health
+        // Draw player health
         this.drawPlayerHealth(ctx);
 
-        //Draw wind
+        // Draw wind
         this.drawWind(ctx);
 
         // Calculate the laser line's endpoint based on the updated angle and power

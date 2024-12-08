@@ -13,6 +13,7 @@ from typing import List, Tuple
 router = APIRouter()
 
 
+# Return all missiles from the database
 @router.get("/missiles", response_model=List[Missile])
 async def get_missiles():
     missile_manager = MissileManager(get_redis_client())
@@ -22,6 +23,7 @@ async def get_missiles():
     return missiles
 
 
+# Generate terrain for the game
 @router.get("/generate-terrain", response_model=Map)
 async def generate_terrain(canvasWidth: int, canvasHeight: int):
     maxTerrainHeight = (canvasHeight * 2) / 3
@@ -33,6 +35,7 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int):
     newMap = Map(name="mapka", type="mud", data=terrain)
     return newMap
 
+# Save both players data to the database
 @router.post("/save-current-players-data")
 async def save_current_player_data(players: PlayersData, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
@@ -43,15 +46,18 @@ async def save_current_player_data(players: PlayersData, redis_client = Depends(
     return {"message": "Successfully saved player data"}
 
 
+# Compute missile data
 @router.post("/compute-missile-data", response_model=MissileComputationResponse)
 async def compute_missile_data(missileData: MissileComputationData, redis_client = Depends(get_redis_client)):
+
+    # Obtain shooting player model and active missile from the database
     player_manager = PlayerManager(redis_client)
     missile_manager = MissileManager(redis_client)
-
     playerShooter = player_manager.get_player(missileData.playerId)
-    playerTarget = None
     activeMissile = missile_manager.get_missile(missileData.weaponSelected)
 
+    # Obtain target player
+    playerTarget = None
     if(missileData.playerId == 1):
         playerTarget = player_manager.get_player(2)
     else:
@@ -60,23 +66,27 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     if not playerShooter or not playerTarget:
         raise HTTPException(status_code=404, detail="Player not found")
     
+    # Delete players from the database, so they are added later with updated data
     player_manager.delete_player(playerShooter.id)
     player_manager.delete_player(playerTarget.id)
+
+    # Create return model
     returnModel = MissileComputationResponse()
     
-    #Decrement ammunition count
+    # Decrement ammunition count
     playerShooter.ammunitionCount[missileData.weaponSelected] -= 1
     returnModel.ammunitionCount = playerShooter.ammunitionCount[missileData.weaponSelected]
 
     # if playerShooter.ammunitionCount[missileData.weaponSelected] < 0:
     #     return
 
+    # Recalculate angle for player 2
     if missileData.playerId == 2:
         missileData.angle = 180 - missileData.angle
         if missileData.angle > 180:
             missileData.angle -= 360
 
-    #Set missile data
+    # Define missile trajectory using Bezier curve
     startX = playerShooter.xCord
     startY = playerShooter.yCord - 15
     controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
@@ -90,35 +100,31 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
 
     t = 0.00
 
+    # Calculate missile trajectory
     while t <= 1:
         x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX
         y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY
         t += 0.01
         missileTrajectory.append((x, y))
 
+        # Check if missile hit terrain
         if 0 <= math.floor(x) < len(missileData.terrain) and y >= missileData.terrain[math.floor(x)]:
-            returnModel.hitTerrain = True
 
             dx = playerTarget.xCord - x
             dy = playerTarget.yCord - y
             distance = math.sqrt(dx * dx + dy * dy)
 
-            #Player hit
+            # Check if missile hit player
             if distance <= activeMissile.radius + 20:
-                returnModel.hitPlayer = True
                 playerShooter.money += 200
-                returnModel.playerMoney = 200
                 playerTarget.health -= activeMissile.damage
-                if(playerTarget.health < 0):
-                    returnModel.targetHealth = 0
-                else:
-                    returnModel.targetHealth = playerTarget.health
             
                 if playerTarget.health <= 0:
                     returnModel.gameOver = True
                     playerShooter.wins += 1
 
 
+            # Create explosion
             explosionRadius = activeMissile.radius
             for i in range(-explosionRadius, explosionRadius):
                 pos = math.floor(x) + i
@@ -132,13 +138,15 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
                         if(missileData.terrain[pos] > missileData.canvasHeight - 10):
                             missileData.terrain[pos] = missileData.canvasHeight - 10
 
-        
+            # Break the loop because the explosion should be calculated for just one point
             break
 
         
-    
+    # Update return model
     returnModel.newTerrain = missileData.terrain
     returnModel.missileTrajectory = missileTrajectory
+
+    # Update players data
     player_manager.create_player(playerShooter)
     player_manager.create_player(playerTarget)
     return returnModel

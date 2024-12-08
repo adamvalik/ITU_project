@@ -65,7 +65,7 @@
         <div class ="flex flex-rows space-x-8 w-1/3 mt-4">
 
           <div class ="flex flex-col space-y-4 items-center">
-            <div v-if="useTimer" class="font-bold text-white text-2xl">
+            <div v-if="this.useTimer" class="font-bold text-white text-2xl">
               <h1>{{ timePerRound }} (s)</h1>
             </div>
             <div v-else class="font-bold text-white text-2xl">
@@ -153,6 +153,9 @@ import apiClient from '@/api';
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
 
+        // Image canvas 
+        //imageCanvas: null,
+
         // Map data
         terrain: [],
         terrainType: "",
@@ -172,6 +175,7 @@ import apiClient from '@/api';
         },
 
         // Game data
+        useTimer: false,
         timePerRound: 0,
         gameOver: false,
         responseGameOver: false,
@@ -208,6 +212,9 @@ import apiClient from '@/api';
         toggleDisableFire: false,
       };
     },
+    // created() {
+    //   this.imageCanvas = document.createElement('canvas');
+    // },
     computed: {
       currentPlayer() {
         return this.p1Turn ? this.player1 : this.player2;
@@ -306,16 +313,17 @@ import apiClient from '@/api';
         .then((response) => {
           this.timePerRound = response.data.timePerTurn;
           this.wind = response.data.wind;
-          this.validateTimer(response.data.isTimer);
+          this.useTimer = response.data.isTimer;
+          this.validateTimer();
         })
         .catch((error) => {
           console.error(error);
         });
     },
 
-    validateTimer(useTimer) {
+    validateTimer() {
 
-      if(!useTimer){
+      if(!this.useTimer){
         return;
       }
 

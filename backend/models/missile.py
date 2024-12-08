@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+
+# Input data for missile computation
 class MissileComputationData(BaseModel):
     canvasWidth: int
     canvasHeight: int
@@ -9,19 +11,15 @@ class MissileComputationData(BaseModel):
     power: float
     wind: int
     weaponSelected: int
-    # radius: int
-    # damage: int
 
+# Response data for missile computation
 class MissileComputationResponse(BaseModel):
     ammunitionCount: int = 0
-    hitTerrain: bool = False
-    hitPlayer: bool = False
     newTerrain: list[float] = []
     missileTrajectory: list[tuple[float, float]] = []
     gameOver: bool = False
-    targetHealth: int = 0
-    playerMoney: int = 0
 
+# Missile model
 class Missile(BaseModel):
     id: int
     name: str

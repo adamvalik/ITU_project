@@ -28,3 +28,28 @@ class Missile(BaseModel):
     radius: int
     price: int
     picture: str
+
+class Laser(BaseModel):
+    power: float
+    angle: float
+    p1Turn: bool
+    playerXCord: float
+    playerYCord: float
+    aimCircleRadius: int
+
+class Movement(BaseModel):
+    playerId: int
+    key: str
+    canvasWidth: int
+    canvasHeight: int
+    aimCircleXCord: float
+    power: float
+    angle: float
+
+class MovementResponse(BaseModel):
+    aimCircleXCord: float
+    power: float
+    angle: float
+    shoot: bool
+    playerXCord: float
+    playerFuel: int

@@ -355,8 +355,8 @@ import apiClient from '@/api';
         this.$router.push('/');
       },
 
-      calculateLaserPos(playerAimCircle, player) {
-        // Calculate the distance based on the power
+      async calculateLaserPos(playerAimCircle, player) {
+        //Calculate the distance based on the power
         const distance = (playerAimCircle.power / 100) * this.aimCircleRadius;
 
         // Calculate the angle in radians based on whose turn it is
@@ -370,6 +370,22 @@ import apiClient from '@/api';
         // Calculate laser's endpoint x and y coordinates based on the angle and distance
         playerAimCircle.aimLaserXCord = player.xCord + distance * Math.cos(angleInRadians);
         playerAimCircle.aimLaserYCord = player.yCord + distance * Math.sin(angleInRadians);
+
+        // await axios.post('http://localhost:8000/calculate-laser-pos', {
+        //   angle: playerAimCircle.angle,
+        //   power: playerAimCircle.power,
+        //   playerXCord: player.xCord,
+        //   playerYCord: player.yCord,
+        //   aimCircleRadius: this.aimCircleRadius,
+        //   p1Turn: this.p1Turn,
+        // })
+        // .then((response) => {
+        //   playerAimCircle.aimLaserXCord = response.data[0];
+        //   playerAimCircle.aimLaserYCord = response.data[1];
+        // }) 
+        // .catch((error) => {
+        //   console.error(error);
+        // });
       },
 
       drawPlayerNames(ctx) {
@@ -521,7 +537,7 @@ import apiClient from '@/api';
 
         const [x, y] = this.missileTrajectory.shift();
 
-        // this.drawGame();
+        //this.drawGame();
 
         // Draw the missile as a red circle
         const canvas = this.$refs.gameCanvas;
@@ -565,44 +581,67 @@ import apiClient from '@/api';
         ctx.fill();
       },
 
-      onKeyPressed(event){
+      async onKeyPressed(event){
 
         // No keys registered if the game is paused
         if(this.pauseGame){
           return;
         }
 
-
+        await axios.post('http://localhost:8000/keyboard-movement', {
+          playerId: this.currentPlayer.id, 
+          key: event.key,
+          canvasWidth: this.canvasWidth,
+          canvasHeight: this.canvasHeight,
+          aimCircleXCord: this.currentAimCircle.aimLaserXCord,
+          power: this.currentAimCircle.power,
+          angle: this.currentAimCircle.angle,
+        })
+        .then((response) => {
+          console.log(response);
+          if(response.data.shoot === true){
+            this.fireMissile();
+          }
+          this.currentPlayer.xCord = response.data.playerXCord;
+          this.currentPlayer.fuel = response.data.playerFuel;
+          this.currentAimCircle.aimLaserXCord = response.data.aimCircleXCord;
+          this.currentAimCircle.power = response.data.power;
+          this.currentAimCircle.angle = response.data.angle;
+          this.drawGame();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
         // Update values based on the key pressed
 
-        if(event.key === 'd'){
+        // if(event.key === 'd'){
 
-          if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord <  this.canvasWidth - 25){
-            this.currentPlayer.fuel -= 5;
-            this.currentPlayer.xCord += 5;
-            this.currentAimCircle.aimLaserXCord += 5;
-          }
+        //   if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord <  this.canvasWidth - 25){
+        //     this.currentPlayer.fuel -= 5;
+        //     this.currentPlayer.xCord += 5;
+        //     this.currentAimCircle.aimLaserXCord += 5;
+        //   }
 
-        } else if(event.key === 'a'){
+        // } else if(event.key === 'a'){
 
-          if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord > 25){
-            this.currentPlayer.fuel -= 5;
-            this.currentPlayer.xCord -= 5;
-            this.currentAimCircle.aimLaserXCord -= 5;
-          }
+        //   if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord > 25){
+        //     this.currentPlayer.fuel -= 5;
+        //     this.currentPlayer.xCord -= 5;
+        //     this.currentAimCircle.aimLaserXCord -= 5;
+        //   }
 
-        } else if(event.key === 'ArrowRight'){
-            this.currentAimCircle.power = Math.min(100, this.currentAimCircle.power + 1);
-        } else if(event.key === 'ArrowLeft'){
-            this.currentAimCircle.power = Math.max(1, this.currentAimCircle.power - 1);
-        } else if(event.key === 'ArrowUp'){
-            this.currentAimCircle.angle += 1;
-        } else if(event.key === 'ArrowDown'){
-            this.currentAimCircle.angle -= 1;
-        } else if(event.key === ' '){
-            this.fireMissile();
-        }
-        this.drawGame();
+        // } else if(event.key === 'ArrowRight'){
+        //     this.currentAimCircle.power = Math.min(100, this.currentAimCircle.power + 1);
+        // } else if(event.key === 'ArrowLeft'){
+        //     this.currentAimCircle.power = Math.max(1, this.currentAimCircle.power - 1);
+        // } else if(event.key === 'ArrowUp'){
+        //     this.currentAimCircle.angle += 1;
+        // } else if(event.key === 'ArrowDown'){
+        //     this.currentAimCircle.angle -= 1;
+        // } else if(event.key === ' '){
+        //     this.fireMissile();
+        // }
+        // this.drawGame();
       },
 
       onMouseDown(event) {
@@ -820,3 +859,43 @@ import apiClient from '@/api';
 
 <style scoped>
 </style>
+
+<!-- // Image canvas 
+imageCanvas: null,
+
+created() {
+  this.imageCanvas = document.createElement('canvas');
+  this.imageCanvas.width = this.canvasWidth;
+  this.imageCanvas.height = this.canvasHeight;
+},
+
+fillImageCanvas(wind) {
+  const ctx = this.imageCanvas.getContext('2d');
+  ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+  this.drawPlayerHealth(ctx);
+  this.drawPlayerNames(ctx);
+  this.drawWind(ctx, wind);
+  this.drawTank(ctx, this.nextPlayer, this.nextPlayerCircle);
+},
+
+addItemsToImageCanvas(currentTank, activeAimCircle, terrain, anglePower) {
+  const ctx = this.imageCanvas.getContext('2d');
+  if(currentTank){
+    this.drawTank(ctx, this.currentPlayer, this.currentAimCircle);
+  }
+  if(terrain){
+    this.drawTerrain(ctx);
+  }
+  if(anglePower){
+    this.drawAnglePower(ctx, this.currentAimCircle, this.currentPlayer);
+  }
+  if(activeAimCircle){
+    this.drawAimCircle(ctx,this. currentAimCircle, this.currentPlayer);
+  }
+},
+
+const canvas = this.$refs.gameCanvas;
+const ctx = canvas.getContext('2d');
+ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+ctx.drawImage(this.imageCanvas, 0, 0); -->

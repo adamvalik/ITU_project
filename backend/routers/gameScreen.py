@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models.player import Player
 from models.player import PlayersData
-from models.missile import Missile, MissileComputationData, MissileComputationResponse
+from models.missile import Missile, MissileComputationData, MissileComputationResponse, Laser, Movement, MovementResponse
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
 from pydantic import BaseModel
@@ -22,6 +22,61 @@ async def get_missiles():
         raise HTTPException(status_code=404, detail="Missiles not found")
     return missiles
 
+@router.post("/calculate-laser-pos", response_model=Tuple[float, float])
+async def calculate_laser_pos(laserData: Laser):
+    
+    distance = (laserData.power / 100) * laserData.aimCircleRadius
+
+    angleInRadians = 0
+    if laserData.p1Turn:
+        angleInRadians = (-laserData.angle * math.pi) / 180
+    else:
+        angleInRadians = (-(180 - laserData.angle) * math.pi) / 180
+
+    aimLaserXCord = laserData.playerXCord + distance * math.cos(angleInRadians)
+    aimLaserYCord = laserData.playerYCord + distance * math.sin(angleInRadians)
+
+    return (aimLaserXCord, aimLaserYCord)
+
+@router.post("/keyboard-movement", response_model=MovementResponse)
+async def keyboard_movement(movementData: Movement, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    currentPlayer = player_manager.get_player(movementData.playerId)
+    if not currentPlayer:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    responseModel = MovementResponse(aimCircleXCord=movementData.aimCircleXCord, power=movementData.power, angle=movementData.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
+
+    if movementData.key == "d":
+        if currentPlayer.fuel > 0 and currentPlayer.xCord <  movementData.canvasWidth - 25:
+            currentPlayer.fuel -= 5
+            currentPlayer.xCord += 5
+            
+            responseModel.aimCircleXCord += 5
+            responseModel.playerXCord += 5
+            responseModel.playerFuel -= 5
+    elif movementData.key == "a":
+        if currentPlayer.fuel > 0 and currentPlayer.xCord > 25:
+            currentPlayer.fuel -= 5
+            currentPlayer.xCord -= 5
+
+            responseModel.aimCircleXCord -= 5
+            responseModel.playerXCord -= 5
+            responseModel.playerFuel -= 5
+    elif movementData.key == "ArrowRight":
+        responseModel.power = min(100, responseModel.power + 1)
+    elif movementData.key == "ArrowLeft":
+        responseModel.power = max(1, responseModel.power - 1)
+    elif movementData.key == "ArrowUp":
+        responseModel.angle += 1
+    elif movementData.key == "ArrowDown":
+        responseModel.angle -= 1
+    elif movementData.key == " ":
+        responseModel.shoot = True
+    
+    player_manager.delete_player(movementData.playerId)
+    player_manager.create_player(currentPlayer)
+    return responseModel
 
 # Generate terrain for the game
 @router.get("/generate-terrain", response_model=Map)

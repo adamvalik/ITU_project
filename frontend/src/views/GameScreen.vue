@@ -487,13 +487,6 @@ import apiClient from '@/api';
           console.error(error);
         });
 
-        // Check if the player has ammunition
-        const ammunition = this.currentPlayer.ammunitionCount[this.activeMissileId];
-        if(ammunition <= 0){
-          this.toggleDisableFire = false;
-          return;
-        }
-
         // Compute missile data including trajectory, if the player hit the target and so on
         await axios.post('http://localhost:8000/compute-missile-data', {
           canvasWidth: this.canvasWidth,
@@ -507,6 +500,13 @@ import apiClient from '@/api';
         })
         .then((response) => {
           console.log(response);
+
+          // Return if player is out of ammo
+          if(response.data.noAmmunition){
+            this.toggleDisableFire = false;
+            return;
+          }
+
           this.missileTrajectory = response.data.missileTrajectory;
           this.terrain = response.data.newTerrain;
           this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;

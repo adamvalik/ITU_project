@@ -77,8 +77,9 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     playerShooter.ammunitionCount[missileData.weaponSelected] -= 1
     returnModel.ammunitionCount = playerShooter.ammunitionCount[missileData.weaponSelected]
 
-    # if playerShooter.ammunitionCount[missileData.weaponSelected] < 0:
-    #     return
+    if playerShooter.ammunitionCount[missileData.weaponSelected] < 0:
+        returnModel.noAmmunition = True
+        return returnModel
 
     # Recalculate angle for player 2
     if missileData.playerId == 2:

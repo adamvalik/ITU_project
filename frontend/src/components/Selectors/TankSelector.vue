@@ -1,3 +1,6 @@
+<!-- File: TankSelector.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div class="flex flex-col items-center mb-6">
     <div class="flex gap-4 items-center justify-between">

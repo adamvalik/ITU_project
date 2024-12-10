@@ -1,3 +1,6 @@
+<!-- File: SkillSelector.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div class="flex gap-1 items-center my-1">
     <SkillHint :name="name" class="pr-2 cursor-pointer">

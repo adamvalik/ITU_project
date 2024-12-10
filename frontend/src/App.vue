@@ -1,3 +1,6 @@
+<!-- File: App.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <background-music ref="backgroundMusic"/>
   <div class="flex justify-center items-center h-screen bg-gray-600">

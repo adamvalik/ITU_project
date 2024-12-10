@@ -1,3 +1,6 @@
+<!-- File: ChooseMapView.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div
     class="flex flex-col items-center bg-cover bg-center"

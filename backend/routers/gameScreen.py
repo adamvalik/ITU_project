@@ -5,7 +5,7 @@ from models.missile import Missile, MissileComputationData, MissileComputationRe
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
 from pydantic import BaseModel
-from models.map import Map
+from models.mapcreator import Map
 from redisClient import get_redis_client
 import math
 from typing import List, Tuple
@@ -24,7 +24,7 @@ async def get_missiles():
 
 @router.post("/calculate-laser-pos", response_model=Tuple[float, float])
 async def calculate_laser_pos(laserData: Laser):
-    
+
     distance = (laserData.power / 100) * laserData.aimCircleRadius
 
     angleInRadians = 0
@@ -44,14 +44,14 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     currentPlayer = player_manager.get_player(movementData.playerId)
     if not currentPlayer:
         raise HTTPException(status_code=404, detail="Player not found")
-    
+
     responseModel = MovementResponse(aimCircleXCord=movementData.aimCircleXCord, power=movementData.power, angle=movementData.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
 
     if movementData.key == "d":
         if currentPlayer.fuel > 0 and currentPlayer.xCord <  movementData.canvasWidth - 25:
             currentPlayer.fuel -= 5
             currentPlayer.xCord += 5
-            
+
             responseModel.aimCircleXCord += 5
             responseModel.playerXCord += 5
             responseModel.playerFuel -= 5
@@ -73,7 +73,7 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
         responseModel.angle -= 1
     elif movementData.key == " ":
         responseModel.shoot = True
-    
+
     player_manager.delete_player(movementData.playerId)
     player_manager.create_player(currentPlayer)
     return responseModel
@@ -120,14 +120,14 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
 
     if not playerShooter or not playerTarget:
         raise HTTPException(status_code=404, detail="Player not found")
-    
+
     # Delete players from the database, so they are added later with updated data
     player_manager.delete_player(playerShooter.id)
     player_manager.delete_player(playerTarget.id)
 
     # Create return model
     returnModel = MissileComputationResponse()
-    
+
     # Decrement ammunition count
     playerShooter.ammunitionCount[missileData.weaponSelected] -= 1
     returnModel.ammunitionCount = playerShooter.ammunitionCount[missileData.weaponSelected]
@@ -174,7 +174,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             if distance <= activeMissile.radius + 20:
                 playerShooter.money += 200
                 playerTarget.health -= activeMissile.damage
-            
+
                 if playerTarget.health <= 0:
                     returnModel.gameOver = True
                     playerShooter.wins += 1
@@ -197,7 +197,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             # Break the loop because the explosion should be calculated for just one point
             break
 
-        
+
     # Update return model
     returnModel.newTerrain = missileData.terrain
     returnModel.missileTrajectory = missileTrajectory

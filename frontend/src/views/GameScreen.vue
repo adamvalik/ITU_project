@@ -32,8 +32,8 @@
 
           <!-- Drop down menu with missiles -->
           <div v-if="toggleDropDownMenu" class="absolute top-full mt-2 bg-gray-600 border-4 border-gray-700 space-y-2">
-            <button 
-              v-for="(missile) in currentPlayerMissiles" 
+            <button
+              v-for="(missile) in currentPlayerMissiles"
               :key="missile.id"
               @click="selectMissile(missile.id)"
               class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400"
@@ -153,7 +153,7 @@ import apiClient from '@/api';
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
 
-        // Image canvas 
+        // Image canvas
         //imageCanvas: null,
 
         // Map data
@@ -254,8 +254,8 @@ import apiClient from '@/api';
       async gameOver(newValue) {
         if (newValue) {
           try {
-            await apiClient.post('/players/1/skillPointsInc');
-            await apiClient.post('/players/2/skillPointsInc');
+            await apiClient.post('/player/skillPointsInc', { player: 1});
+            await apiClient.post('/player/skillPointsInc', { player: 2});
           } catch (error) {
             console.error(error);
           }
@@ -382,7 +382,7 @@ import apiClient from '@/api';
         // .then((response) => {
         //   playerAimCircle.aimLaserXCord = response.data[0];
         //   playerAimCircle.aimLaserYCord = response.data[1];
-        // }) 
+        // })
         // .catch((error) => {
         //   console.error(error);
         // });
@@ -589,7 +589,7 @@ import apiClient from '@/api';
         }
 
         await axios.post('http://localhost:8000/keyboard-movement', {
-          playerId: this.currentPlayer.id, 
+          playerId: this.currentPlayer.id,
           key: event.key,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
@@ -860,7 +860,7 @@ import apiClient from '@/api';
 <style scoped>
 </style>
 
-<!-- // Image canvas 
+<!-- // Image canvas
 imageCanvas: null,
 
 created() {

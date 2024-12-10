@@ -1,3 +1,6 @@
+<!-- File: SkillHint.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div class="relative">
     <div class="group">

@@ -36,12 +36,18 @@
               v-for="(missile) in currentPlayerMissiles" 
               :key="missile.id"
               @click="selectMissile(missile.id)"
-              class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400"
-            >
+              @mouseover="showMissileInfo = missile.id"
+              @mouseleave="showMissileInfo = null"
+              class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-8">
                 <div class="text-black font-bold text-3xl">{{ missile.name }}</div>
                 <div class="w-8 h-8" :style="{ background: `url(${missile.picture}) no-repeat center center`, backgroundSize: 'cover' }"></div>
                 <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[missile.id] }}</div>
+              </div>
+              <div v-if="showMissileInfo === missile.id" class="absolute top-0 left-full ml-0 w-60 bg-gray-400 rounded-lg p-2 border-4 border-black" style="z-index: 10;">
+                <div class="text-black font-bold text-2xl">Cost in shop: <span :style="{ color: 'green' }"> {{ missile.price }}$ </span></div>
+                <div class="text-black font-bold text-2xl">Shell radius: <span :style="{ color: 'blue' }"> {{ missile.radius }} </span></div>
+                <div class="text-black font-bold text-2xl">Damage: <span :style="{ color: 'red' }"> {{ missile.damage }}HP </span></div>
               </div>
             </button>
           </div>
@@ -149,12 +155,13 @@ import apiClient from '@/api';
     },
     data() {
       return {
-        // Default canvas size
+        // Default canvas size based on scale
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
 
         // Image canvas 
         //imageCanvas: null,
+        showMissileInfo: null,
 
         // Map data
         terrain: [],

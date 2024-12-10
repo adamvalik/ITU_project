@@ -109,3 +109,14 @@ def create_map(request: CreateMapRequest, redis_client = Depends(get_redis_clien
     mapManager.create_map(request.map_name)
     return {"message": "Map created"}
 
+class DeleteMapRequest(BaseModel):
+    map_name: str
+
+@router.post("/delete_map")
+def delete_map(request: DeleteMapRequest, redis_client = Depends(get_redis_client)):
+    mapManager = MapCreatorManager(redis_client)
+    try:
+        mapManager.delete_map(request.map_name)
+        return {"message": "Map deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

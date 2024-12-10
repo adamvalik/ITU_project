@@ -1,13 +1,14 @@
 <script setup>
 
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
-// TODO import { processPath, erasePath, addNewImage, retrieveMap, setMapType, createMap } from '@/components/mapcreatorcomponents/BackendOperations.js';
 import {
   erasePath,
   setMapType,
   createMap,
   processPath,
   addNewImage,
+  retrieveMap,
+  deleteMap,
 } from '@/components/mapcreatorcomponents/BackendOperations.js';
 
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
@@ -16,6 +17,8 @@ import SaveMap from '@/components/mapcreatorcomponents/SaveMap.vue';
 const showModal = ref(false);
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
 import { useRoute } from 'vue-router';
+import playerA from '../../public/assets/player_a.svg';
+import playerB from '../../public/assets/player_b.svg';
 
 const props = defineProps({
   gameWidth: Number,
@@ -33,7 +36,20 @@ const obstructionIconPath = ref('/assets/tree_icon.svg'); // Default obstruction
 const route = useRoute();
 const showStartPlayingButton = ref(route.query.fromMapSelector === 'true');
 
-const updateTheme = (theme) => {
+const tank1 = ref(playerA);
+const tank2 = ref(playerB);
+
+const canvasRef = ref(null);
+let ctx = null;
+let drawing = false;
+let drawnPath = [];
+// const storedGreenCoordinates = ref([]);  // Array to store all green areas
+// const imageArray = ref([]);  // Array to store all images
+// const eraserArray = ref([]);  // Array to store all eraser paths
+// const arrayArray = ref([]);  // Array to store all arrays
+const mapName = 'map1';  // Default map name
+
+const updateTheme = async (theme) => {
   activeTheme.value = theme;
   if (theme === 'forest') {
     brushColor.value = '#2e7d32';
@@ -50,9 +66,15 @@ const updateTheme = (theme) => {
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
 
   // Recolor all stored areas with the new theme
-  updateMapArea();
+  isLoading.value = true;  // Show the loading popup
+  try {
+    await updateMapArea();
+  } catch (error) {
+    console.error('Error updating map area:', error);
+  } finally {
+    isLoading.value = false;  // Hide the loading popup
+  }
 };
-
 
 const updateCursor = (type) => {
   cursorType.value = type;
@@ -77,16 +99,6 @@ const updateCursor = (type) => {
   document.querySelector('.custom-cursor').style.cursor = `url(${cursorUrl}), auto`;
 };
 
-const canvasRef = ref(null);
-let ctx = null;
-let drawing = false;
-let drawnPath = [];
-const storedGreenCoordinates = ref([]);  // Array to store all green areas
-const imageArray = ref([]);  // Array to store all images
-const eraserArray = ref([]);  // Array to store all eraser paths
-const arrayArray = ref([]);  // Array to store all arrays
-const mapName = 'map1';  // Default map name
-
 const startDrawing = (event) => {
   drawing = true;
   drawnPath = [];  // Clear previous path
@@ -100,7 +112,7 @@ const stopDrawing = async () => {
   ctx.beginPath();
   if (drawnPath.length > 0) {
     if (cursorType.value === 'eraser') {
-      await erasePath(mapName, eraserArray.value);  // Send eraser path to backend after drawing
+      await erasePath(mapName, drawnPath);  // Send eraser path to backend after drawing
     } else if (cursorType.value === 'pen') {
       await sendToBackend(drawnPath);  // Send path to backend after drawing
     }
@@ -128,8 +140,8 @@ const draw = (event) => {
   if (cursorType.value === 'eraser') {
     ctx.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
     // Store the eraser path
-    eraserArray.value.push([x, y]);
-    arrayArray.value.push({ type: "eraser", data: [x, y] });
+    // eraserArray.value.push([x, y]);
+   // arrayArray.value.push({ type: "eraser", data: [x, y] });
   } else {
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -142,21 +154,14 @@ const sendToBackend = async (path) => {
   const bottomY = canvas.height;
 
   try {
-    console.log('Sending path to backend:', path);
-    console.log('Bottom Y:', bottomY);
-    console.log('Map name:', mapName);
-
-    const result = await processPath(mapName, path, bottomY);
-
-    console.log('Result from processPath:', result);
-
+    await processPath(mapName, path, bottomY);
 
     // Store the green coordinates
-    storedGreenCoordinates.value.push(result.greenCoordinates);
-    arrayArray.value.push({ type: "stroke", data: result.greenCoordinates });
+    // storedGreenCoordinates.value.push(result.greenCoordinates);
+   // arrayArray.value.push({ type: "stroke", data: result.greenCoordinates });
 
     // Update the map with the new area
-    updateMapArea();
+    await updateMapArea();
   } catch (error) {
     console.error('Error sending path to backend:', error);
   } finally {
@@ -164,39 +169,44 @@ const sendToBackend = async (path) => {
   }
 };
 
-const updateMapArea = () => {
+const updateMapArea = async () => {
   ctx.beginPath();
 
   // Set color based on active theme
   ctx.strokeStyle = brushColor.value;
   ctx.lineWidth = 2;
 
-  //const result = retrieveMap(mapName);
-  //console.log('Result from retrieveMap:', result);
+  const result = await retrieveMap(mapName);
+  console.log('Result from retrieveMap:', result);
 
-  arrayArray.value.forEach(({ type, data }) => {
-    if (type === "eraser") {
+  result.arrayArray.forEach(({ type, data }) => {
+    console.log(`Processing type: ${type}, data:`, data);
+
+    if (type === "eraserArray" && Array.isArray(data.data)) {
       console.log('Eraser data:', data);
-      ctx.clearRect(data[0] - brushSize / 2, data[1] - brushSize / 2, brushSize, brushSize);
-    }
-    if (type === "stroke") {
-      console.log('Stroke data:', data);
+      // ctx.clearRect(data.data[0] - brushSize / 2, data.data[1] - brushSize / 2, brushSize, brushSize);
+      data.data.forEach(([x, y]) => {
+        ctx.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+      });
+    } else if (type === "greenCoordinates" && data && Array.isArray(data.data)) {
+      console.log('Stroke data:', data.data);
       ctx.beginPath();
-      data.forEach(([x, y]) => {
+      data.data.forEach(([x, y]) => {
         ctx.lineTo(x, y);
       });
       ctx.stroke();
-    }
-    if (type === "image") {
+    } else if (type === "imageArray" && Array.isArray(data.data)) {
+      console.log('Image data:', data);
+      console.log('X:', data.data[0], 'Y:', data.data[1]);
       const img = new Image();
       img.src = obstructionIconPath.value;
       img.onload = () => {
-        ctx.drawImage(img, data.x - data.desiredWidth / 2, data.y - data.desiredHeight / 2, data.desiredWidth, data.desiredHeight);
+        ctx.drawImage(img, data.data[0] - 29 / 2, data.data[1] - 29 / 2, 29, 37);
       };
+    } else {
+      console.warn(`Unexpected data type or structure for type: ${type}`, data);
     }
   });
-
-  // ctx.stroke();
 };
 
 const updateBrushCircle = (event) => {
@@ -220,6 +230,8 @@ const hideBrushCircle = () => {
 const onDrop = (event) => {
   event.preventDefault();
   console.log('onDrop event triggered');
+
+  if (cursorType.value !== 'obstruction') return;
 
   // Get the drop coordinates
   const rect = canvasRef.value.getBoundingClientRect();
@@ -268,8 +280,8 @@ const animateImage = (img, startX, startY, width, height) => {
       requestAnimationFrame(step); // Continue animation
     } else {
       ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
-      imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
-      arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
+      // imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
+    //  arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
       addNewImage(mapName, startX, y);
       updateMapArea();
     }
@@ -278,16 +290,32 @@ const animateImage = (img, startX, startY, width, height) => {
   step(); // Start the animation
 };
 
-const clearMap = () => {
-  storedGreenCoordinates.value = [];
-  imageArray.value = [];
-  eraserArray.value = [];
-  arrayArray.value = [];
+const clearMap = async () => {
+  // storedGreenCoordinates.value = [];
+  // imageArray.value = [];
+  // eraserArray.value = [];
+ // arrayArray.value = [];
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
-  updateMapArea();
+  // await updateMapArea();
+  await deleteMap("map1");
+  await createMap(mapName);
+};
+
+const rollDice = async () => {
+  const path = [];
+  let previousY = Math.random() * 500; // Initial random y value
+
+  for (let x = 1; x <= 899; x++) {
+    const y = previousY + (Math.random() * 20 - 10); // Random y value close to previous y
+    path.push([x, y]);
+    previousY = y; // Update previous y
+  }
+
+  await sendToBackend(path);
 };
 
 onMounted(async () => {
+  await deleteMap("map1");
   const canvas = canvasRef.value;
   ctx = canvas.getContext('2d', { willReadFrequently: true });
 
@@ -374,6 +402,15 @@ const saveAndReturn = (name) => {
         </router-link>
       </div>
 
+      <div class="absolute top-7 right-[25%] transform translate-x-1/2 flex gap-4">
+        <div v-if="tank1" class="w-24 h-24 rounded-full overflow-hidden border-8 border-black" style="background-color: #16b4d8;">
+          <img :src="tank1" class="w-full h-full p-2"/>
+        </div>
+        <div v-if="tank2" class="w-24 h-24 rounded-full overflow-hidden border-8 border-black" style="background-color: #ffcc99;">
+          <img :src="tank2" class="w-full h-full p-2"/>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -384,7 +421,17 @@ const saveAndReturn = (name) => {
 .extra-margin {
   margin-top: 10px; /* Adjust the value as needed */
 }
+.w-full {
+  width: 100%;
+}
 
+.h-full {
+  height: 100%;
+}
+
+.object-cover {
+  object-fit: cover;
+}
 .bg-beige {
   background-color: #f5f5dc; /* Beige color */
 }

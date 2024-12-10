@@ -73,3 +73,4 @@ async def get_tank(player_id: int, redis_client = Depends(get_redis_client)):
     svg_template = SVG_TEMPLATES[player.tankType]
     modified_svg = svg_template.replace("#123456", player.color)
     return Response(content=modified_svg, media_type="image/svg+xml")
+

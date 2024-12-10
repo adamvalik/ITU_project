@@ -60,3 +60,12 @@ export const createMap = async (mapName) => {
     console.error('Error in createMap:', error);
   }
 }
+
+export const deleteMap = async (mapName) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/delete_map`, { map_name: mapName});
+    return response.data;
+  } catch (error) {
+    console.error('Error in deleteMap:', error);
+  }
+}

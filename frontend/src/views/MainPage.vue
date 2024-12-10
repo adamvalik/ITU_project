@@ -1,3 +1,6 @@
+<!-- File: MainPage.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div
     @click="playMusic"
@@ -7,7 +10,7 @@
      <!-- mute button-->
      <button
       @click="toggleMute"
-      class="absolute top-4 right-4 bg-sky-300 rounded-full p-2 shadow-lg z-50 hover:bg-sky-400 transition"
+      class="absolute top-4 right-4 bg-sky-300 rounded-full p-2 shadow-lg z-50 hover:bg-sky-400"
     >
       <img
         :src="isMuted ? '/assets/mute.png' : '/assets/unmute.png'"
@@ -25,6 +28,7 @@
       :style="getCloudStyle(index)"
     />
 
+    <!-- header Tanks 1v1 -->
     <div>
       <h1 class="relative text-7xl font-bold mb-8 z-10">
         TANKS
@@ -53,9 +57,12 @@
 
     <!-- game modes modal -->
     <div v-if="isGameModesVisible" @click="hideGameModes" class="fixed inset-0 flex items-center justify-center gap-20 bg-black bg-opacity-50 z-50">
+      <!-- classic mode tile -->
       <router-link @click.stop="submitClassicMode" to="/chooseTanks" class="text-3xl font-bold bg-white p-8 rounded-lg shadow-2xl hover:bg-gray-100 w-96 h-52 flex items-center justify-center">
         Classic mode
       </router-link>
+
+      <!-- custom mode tile -->
       <div
         v-if="!customModeSetting"
         @click.stop
@@ -64,6 +71,8 @@
       >
         Custom mode
       </div>
+
+      <!-- custom mode tile - expand on mouseenter -->
       <div
         v-else
         @click.stop
@@ -71,6 +80,7 @@
       >
         <p class="absolute top-4 left-1/4 text-3xl font-bold">Custom mode</p>
 
+        <!-- checkbox, whether to use timer -->
         <div class="flex self-start items-center mt-12 px-2 gap-8">
           <label for="isTimer" class="text-xl font-semibold pr-10">Timer</label>
           <input
@@ -80,6 +90,8 @@
             v-model="isTimer"
           />
         </div>
+
+        <!-- if timer is checked, choose seconds per turn -->
         <div class="flex self-start items-center px-2 gap-1">
           <label for="timePerTurn" class="text-xl font-semibold pr-8">Per turn</label>
           <input
@@ -92,6 +104,7 @@
           <p class="text-xl">sec</p>
         </div>
 
+        <!-- choose number of wins to end the game -->
         <div class="flex self-start items-center mb-4 px-2 gap-2">
           <label for="toWins" class="text-xl font-semibold pr-8">Wins</label>
 
@@ -133,6 +146,7 @@
       <Settings @hideSettings="hideSettings" @updateMusicVolume="updateMusicVolume" />
     </div>
 
+    <!-- footer with the copyright -->
     <footer class="absolute bottom-4 left-4 text-gray-700 text-sm z-10">© Rogalo 2024</footer>
   </div>
 
@@ -140,11 +154,9 @@
 
 <script>
 import Settings from '../components/Settings/Settings.vue';
-import axios from 'axios';
 import apiClient from '@/api';
 
 export default {
-  name: 'MainPage',
   components: {
     Settings,
   },
@@ -155,9 +167,11 @@ export default {
   data() {
     return {
       cloudCount: 10,
+      // initial custom mode settings
       toWins: 5,
       isTimer: false,
       timePerTurn: 30,
+      // visibility controls
       customModeSetting: false,
       isSettingsVisible: false,
       isGameModesVisible: false,
@@ -172,16 +186,6 @@ export default {
   created() {
     this.initializeCloudStyles();
   },
-  async mounted() {
-    // set initial music volume to 50%
-    try {
-      await axios.post(`http://localhost:8000/settings/musicVolume?volume=50`);
-    } catch (error) {
-      console.error(error);
-    }
-    // emit the initial mute state
-    this.emitMute();
-  },
   methods: {
     // background music
     playMusic() {
@@ -191,6 +195,7 @@ export default {
     updateMusicVolume(volume) {
       this.isMuted = volume === 0;
       this.emitMute();
+      // re-emit to the App.vue
       this.$emit('updateMusicVolume', volume);
     },
     toggleMute() {
@@ -201,6 +206,7 @@ export default {
       this.$emit('toggleMute', this.isMuted);
     },
 
+    // custom mode settings
     decreaseWins() {
       if (this.toWins > 1) {
         this.toWins--;
@@ -210,13 +216,13 @@ export default {
       this.toWins++;
     },
 
+    // change visibility of modals
     showSettings() {
       this.isSettingsVisible = true;
     },
     hideSettings() {
       this.isSettingsVisible = false;
     },
-
     showGameModes() {
       this.isGameModesVisible = true;
     },
@@ -225,12 +231,12 @@ export default {
       this.isGameModesVisible = false;
     },
 
+    // open map creator
     createMap() {
       this.$router.push({ path: '/mapCreator', query: { fromMapSelector: false } });
     },
 
-
-    // game mode submit also means to clear previous game&players settings
+    // game mode submit also means to clear (reset) previous game&players settings
     async submitClassicMode() {
       try {
           await apiClient.delete('/players/reset');
@@ -241,9 +247,9 @@ export default {
     },
     async submitCustomMode() {
       try {
-          await apiClient.delete('/game/reset');
           await apiClient.delete('/players/reset');
-          await axios.post(`http://localhost:8000/game/custom_mode`, {
+          await apiClient.delete('/game/reset');
+          await apiClient.post('/game/custom_mode', {
             isTimer: this.isTimer,
             timePerTurn: this.timePerTurn,
             toWins: this.toWins,
@@ -253,6 +259,7 @@ export default {
         }
     },
 
+    // cloud animation
     getPredefinedValue(array, index) {
       return array[index % array.length];
     },

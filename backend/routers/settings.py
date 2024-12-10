@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from models.settings import settings
+from models.settings import settings, UpdateVolume
 
 router = APIRouter()
 
@@ -8,5 +8,5 @@ async def get_music_volume():
   return settings.musicVolume
 
 @router.post("/settings/musicVolume")
-async def set_music_volume(volume: int):
-  settings.musicVolume = volume
+async def set_music_volume(volume: UpdateVolume):
+  settings.musicVolume = volume.volume

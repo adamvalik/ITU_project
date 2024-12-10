@@ -1,45 +1,41 @@
 from fastapi import APIRouter, HTTPException, Depends, Response
 from models.svgTemplates import SVG_TEMPLATES
 
-from models.player import Player
+from models.player import Player, UpdateName, UpdateTankType, UpdateColor, UpdateSkill, UpdateSkillPoints, IncreaseSkillPoints
 from managers.playerManager import PlayerManager
 from redisClient import get_redis_client
 
 router = APIRouter()
 
-@router.post("/players/{player_id}/name")
-async def update_player_name(player_id: int, name: str, redis_client = Depends(get_redis_client)):
+@router.post("/player/name")
+async def update_player_name(data: UpdateName, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.update_name(player_id, name)
+    player_manager.update_name(data.player, data.name)
 
-@router.post("/players/{player_id}/tankType")
-async def update_player_tank(player_id: int, tank_type: int, redis_client = Depends(get_redis_client)):
+@router.post("/player/tankType")
+async def update_player_tank(data: UpdateTankType, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.update_tank(player_id, tank_type)
+    player_manager.update_tank(data.player, data.tankType)
 
-@router.post("/players/{player_id}/color")
-async def update_player_color(player_id: int, color: str, redis_client = Depends(get_redis_client)):
+@router.post("/player/color")
+async def update_player_color(data: UpdateColor, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.update_color(player_id, color)
-    return {"message": "Player color updated"}
+    player_manager.update_color(data.player, data.color)
 
-@router.post("/players/{player_id}/skill")
-async def update_player_skill(player_id: int, skill: str, value: int, redis_client = Depends(get_redis_client)):
+@router.post("/player/skill")
+async def update_player_skill(data: UpdateSkill, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.update_skill(player_id, skill, value)
-    return {"message": "Player skill updated"}
+    player_manager.update_skill(data.player, data.skill, data.value)
 
-@router.post("/players/{player_id}/skillPoints")
-async def update_player_skill_points(player_id: int, skill_points: int, redis_client = Depends(get_redis_client)):
+@router.post("/player/skillPoints")
+async def update_player_skill_points(data: UpdateSkillPoints, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.update_skill_points(player_id, skill_points)
-    return {"message": "Player skill points updated"}
+    player_manager.update_skill_points(data.player, data.skillPoints)
 
-@router.post("/players/{player_id}/skillPointsInc")
-async def increment_player_skill_points(player_id: int, redis_client = Depends(get_redis_client)):
+@router.post("/player/skillPointsInc")
+async def increment_player_skill_points(data: IncreaseSkillPoints, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    player_manager.increment_skill_points(player_id)
-    return {"message": "Player skill points incremented"}
+    player_manager.increment_skill_points(data.player)
 
 @router.post("/players/{player_id}")
 async def update_player(player_id: int, player: Player, redis_client = Depends(get_redis_client)):

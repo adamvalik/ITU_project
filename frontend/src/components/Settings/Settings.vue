@@ -1,3 +1,6 @@
+<!-- File: Settings.vue -->
+<!-- Author: Adam Valík (xvalik05) -->
+
 <template>
   <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
     <h2 class="text-2xl font-bold mb-4">Settings</h2>
@@ -21,7 +24,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '@/api';
 
 export default {
   data() {
@@ -34,11 +37,12 @@ export default {
   },
   methods: {
     updateMusicVolume() {
+      // emit the event from settings all the way to the app where BackgroundMusic component is
       this.$emit('updateMusicVolume', this.musicVolume / 100);
     },
     async fetchMusicVolume() {
       try {
-        const response = await axios.get('http://localhost:8000/settings/musicVolume');
+        const response = await apiClient.get('settings/musicVolume');
         this.musicVolume = response.data;
       } catch (error) {
         console.error(error);
@@ -47,7 +51,7 @@ export default {
     async closeSettings() {
       // store the music volume in the database
       try {
-        await axios.post(`http://localhost:8000/settings/musicVolume?volume=${this.musicVolume}`);
+        await apiClient.post('settings/musicVolume', { volume: this.musicVolume });
       } catch (error) {
         console.error(error);
       }

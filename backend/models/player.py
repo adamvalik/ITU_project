@@ -21,3 +21,27 @@ class Player(BaseModel):
 class PlayersData(BaseModel):
   player1: Player
   player2: Player
+
+class UpdateName(BaseModel):
+  player: int
+  name: str
+
+class UpdateTankType(BaseModel):
+  player: int
+  tankType: int
+
+class UpdateColor(BaseModel):
+  player: int
+  color: str
+
+class UpdateSkill(BaseModel):
+  player: int
+  skill: str
+  value: int
+
+class UpdateSkillPoints(BaseModel):
+  player: int
+  skillPoints: int
+
+class IncreaseSkillPoints(BaseModel):
+  player: int

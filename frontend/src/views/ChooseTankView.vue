@@ -175,6 +175,7 @@ export default {
     },
   },
   methods: {
+    // dynamically update the player settings in the database on change
     async updatePlayerName(player, name) {
       try {
         await apiClient.post('/player/name', { player: player, name: name });
@@ -189,7 +190,6 @@ export default {
         console.error(error);
       }
     },
-
     async updateColorSelection(player, color) {
       try {
         await apiClient.post('/player/color', { player: player, color: color });
@@ -197,7 +197,6 @@ export default {
         console.error(error);
       }
     },
-
     async updateSkillLevel(player, skill, value) {
       try {
         await apiClient.post('/player/skill', { player: player, skill: skill, value: value });
@@ -206,7 +205,6 @@ export default {
         console.error(error);
       }
     },
-
     async updateFreePoints(player, skillPoints) {
       try {
         await apiClient.post('/player/skillPoints', { player: player, skillPoints: skillPoints });
@@ -216,6 +214,7 @@ export default {
       }
     },
 
+    // fetch the players data from the database
     async fetchData() {
       try {
         const response = await apiClient.get('/players');

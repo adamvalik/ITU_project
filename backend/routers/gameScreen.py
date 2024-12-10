@@ -5,7 +5,7 @@ from models.missile import Missile, MissileComputationData, MissileComputationRe
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
 from pydantic import BaseModel
-from models.mapcreator import Map
+from models.map import Map
 from redisClient import get_redis_client
 import math
 from typing import List, Tuple

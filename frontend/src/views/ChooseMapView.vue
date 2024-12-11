@@ -6,6 +6,8 @@
     class="flex flex-col items-center bg-cover bg-center"
     :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`, backgroundImage: `url(${backgroundImageUrl})`}"
   >
+
+    <!-- default maps -->
     <div class="flex justify-around items-center h-1/3 w-5/6">
       <div
         v-for="(map, index) in defaultMaps"
@@ -17,29 +19,39 @@
       </div>
     </div>
 
+    <!-- divider -->
     <hr class="w-full border-gray-500" />
 
+    <!-- lower part of the screen -->
     <div class="flex items-center justify-around w-full h-3/5">
+
+      <!-- button to map creator -->
       <div class="w-1/3 flex items-center justify-end pr-10">
         <button @click="createMap" class="px-4 py-4 w-32 h-32 bg-gray-200 font-bold rounded-lg shadow-md hover:bg-gray-300">
           CREATE YOUR MAP
         </button>
       </div>
 
+      <!-- custom maps preview -->
       <div
         :class="['w-1/3 border-4 border-gray-300 rounded-xl', { 'border-green-500': customMapSelected }]"
-        @click="selectCustomMap"
       >
-        <img src="/assets/bg.png" alt="Custom map" class="w-full h-full rounded-lg" />
+        <img
+          :src="selectedCustomMapImage"
+          alt="Custom map"
+          id="customMap"
+          class="w-full h-full rounded-lg"
+          :class="{'opacity-50' : !anyCustomMap || selectedCustomMap == null}"/>
       </div>
 
+      <!-- custom map names -->
       <div class="text-left w-1/3 pl-10">
-        <h3 class="font-semibold text-gray-700 mb-1">YOUR MAPS:</h3>
+        <h3 class="font-semibold text-gray-900 mb-1">YOUR MAPS:</h3>
         <ul>
           <li
             v-for="(mapName, index) in customMapNames"
             :key="index"
-            :class="['cursor-pointer', { 'font-bold text-green-600': selectedMap === mapName }]"
+            :class="['cursor-pointer', { 'font-bold text-green-600': selectedCustomMap === mapName }]"
             @click="selectCustomMap(mapName)"
           >
             {{ mapName }}
@@ -84,6 +96,8 @@
 </template>
 
 <script>
+import apiClient from '@/api';
+
 export default {
   props: {
     gameWidth: Number,
@@ -93,12 +107,14 @@ export default {
     return {
       defaultMaps: [
         { name: '__forest', image: '/assets/bg.png' },
-        { name: '__desert', image: '/assets/bg.png' },
-        { name: '__mountains', image: '/assets/bg.png' },
+        { name: '__desert', image: '/assets/bg2.png' },
+        { name: '__mountains', image: '/assets/bg3-sunny.png' },
       ],
       selectedMap: '__forest',
-      customMapNames: ['map1', 'map2', 'map3', 'map4'],
+      selectedCustomMap: null,
+      customMapNames: [],
       customMapSelected: false,
+      selectedCustomMapImage: '/assets/bg.png',
 
       weathers: [
         { label: 'Sunny', icon: '/assets/sunny-icon.png' },
@@ -118,7 +134,13 @@ export default {
         default:
           return '/assets/bg3-cloudy.png';
       }
+    },
+    anyCustomMap() {
+      return this.customMapNames.length > 0;
     }
+  },
+  async mounted() {
+    await this.fetchCustomMapNames();
   },
   methods: {
     selectWeather(weather) {
@@ -128,9 +150,30 @@ export default {
       this.selectedMap = map.name;
       this.customMapSelected = false;
     },
-    selectCustomMap(map) {
+    async selectCustomMap(map) {
       this.selectedMap = map;
+      this.selectedCustomMap = map;
       this.customMapSelected = true;
+      try {
+        const response = await apiClient.get(`/map/type/${map}`);
+        if (response.data == 'forest') {
+          this.selectedCustomMapImage = '/assets/bg.png';
+        } else if (response.data == 'beach') {
+          this.selectedCustomMapImage = '/assets/bg2.png';
+        } else if (response.data == 'winter') {
+          this.selectedCustomMapImage = '/assets/bg3-sunny.png';
+        }
+      } catch (error) {
+        console.error('Failed to fetch custom map:', error);
+      }
+    },
+    async fetchCustomMapNames() {
+      try {
+        const response = await apiClient.get('/map/names');
+        this.customMapNames = response.data;
+      } catch (error) {
+        console.error('Failed to fetch custom map names:', error);
+      }
     },
     createMap() {
       this.$router.push({ path: '/mapCreator', query: { fromMapSelector: true } });

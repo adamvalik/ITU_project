@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from redisClient import get_redis_client
 
-from routers import mapCreator, players, tanks, settings, game, gameScreen, debug
+from routers import mapCreator, players, tanks, settings, game, gameScreen, debug, mapSelector
 from managers import playerManager, gameManager, missileManager
 from managers.mapCreatorManager import MapCreatorManager
 
@@ -11,7 +11,7 @@ app = FastAPI()
 
 # Define allowed origins
 origins = [
-    "http://localhost:8080",  # Your frontend URL
+    "http://localhost:8080",
 ]
 
 # Add CORS middleware
@@ -31,6 +31,7 @@ app.include_router(settings.router)
 app.include_router(game.router)
 app.include_router(gameScreen.router)
 app.include_router(debug.router)
+app.include_router(mapSelector.router)
 
 redis_client = get_redis_client()
 

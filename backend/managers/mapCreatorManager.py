@@ -91,6 +91,13 @@ class MapCreatorManager:
         else:
             return None
 
+    def get_type(self, map_name: str):
+        mapa = self.get_map(map_name)
+        if mapa:
+            return mapa.type
+        else:
+            return None
+
     def add_player_position(self, map_name: str, player: int, position: Tuple[float, float]):
         """Add a player's position to the map."""
         mapa = self.get_map(map_name)
@@ -131,3 +138,11 @@ class MapCreatorManager:
     def retrieve_num_of_maps(self):
         """Retrieve the number of maps stored in Redis."""
         return len(self.redis_client.keys())
+
+    def get_map_names(self) -> List[str]:
+        """Retrieve the names of all maps stored in Redis."""
+        return [
+            key for key in self.redis_client.keys() if key not in [
+                'game', 'player1', 'player2', 'missile0', 'missile1', 'missile2', 'map1'
+            ]
+        ]

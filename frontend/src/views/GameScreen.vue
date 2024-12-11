@@ -263,6 +263,7 @@ import apiClient from '@/api';
           try {
             await apiClient.post('/player/skillPointsInc', { player: 1});
             await apiClient.post('/player/skillPointsInc', { player: 2});
+            await apiClient.delete('/players/reset-health');
           } catch (error) {
             console.error(error);
           }
@@ -619,36 +620,6 @@ import apiClient from '@/api';
         .catch((error) => {
           console.error(error);
         });
-        // Update values based on the key pressed
-
-        // if(event.key === 'd'){
-
-        //   if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord <  this.canvasWidth - 25){
-        //     this.currentPlayer.fuel -= 5;
-        //     this.currentPlayer.xCord += 5;
-        //     this.currentAimCircle.aimLaserXCord += 5;
-        //   }
-
-        // } else if(event.key === 'a'){
-
-        //   if(this.currentPlayer.fuel > 0 && this.currentPlayer.xCord > 25){
-        //     this.currentPlayer.fuel -= 5;
-        //     this.currentPlayer.xCord -= 5;
-        //     this.currentAimCircle.aimLaserXCord -= 5;
-        //   }
-
-        // } else if(event.key === 'ArrowRight'){
-        //     this.currentAimCircle.power = Math.min(100, this.currentAimCircle.power + 1);
-        // } else if(event.key === 'ArrowLeft'){
-        //     this.currentAimCircle.power = Math.max(1, this.currentAimCircle.power - 1);
-        // } else if(event.key === 'ArrowUp'){
-        //     this.currentAimCircle.angle += 1;
-        // } else if(event.key === 'ArrowDown'){
-        //     this.currentAimCircle.angle -= 1;
-        // } else if(event.key === ' '){
-        //     this.fireMissile();
-        // }
-        // this.drawGame();
       },
 
       onMouseDown(event) {

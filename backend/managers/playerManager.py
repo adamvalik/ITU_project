@@ -98,3 +98,13 @@ class PlayerManager:
         self.delete_player(1)
         self.delete_player(2)
         self.initialize_players()
+
+    def reset_health(self):
+        player1 = self.get_player(1)
+        player2 = self.get_player(2)
+        if player1:
+            player1.health = 100
+            self.create_player(player1)
+        if player2:
+            player2.health = 100
+            self.create_player(player2)

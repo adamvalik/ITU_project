@@ -344,6 +344,8 @@ const clearMap = async () => {
  // arrayArray.value = [];
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
   // await updateMapArea();
+  await addPlayerPosition(mapName, 1, [0.0, 0.0]);
+  await addPlayerPosition(mapName, 2, [0.0, 0.0]);
   await deleteMap("map1");
   await createMap(mapName);
 };
@@ -501,13 +503,13 @@ const onDragStart = (event, tankNumber) => {
 
       <div class="absolute top-7 right-[25%] transform translate-x-1/2 flex gap-4">
         <div v-if="tank1"
-             :class="['w-24 h-24 rounded-full overflow-hidden', focusedTank === 1 ? 'border-8 border-black' : 'border-8 border-gray-300']"
+             :class="['w-24 h-24 rounded-full overflow-hidden hover:scale-110 transition-transform duration-300', focusedTank === 1 ? 'border-8 border-black' : 'border-8 border-gray-300']"
              style="background-color: #16b4d8;"
              @click="focusTank(1)">
           <img :src="tank1Dropped ? backicon : tank1" class="w-full h-full p-2" draggable="true" @dragstart="onDragStart($event, 1)"/>
         </div>
         <div v-if="tank2"
-             :class="['w-24 h-24 rounded-full overflow-hidden', focusedTank === 2 ? 'border-8 border-black' : 'border-8 border-gray-300']"
+             :class="['w-24 h-24 rounded-full overflow-hidden hover:scale-110 transition-transform duration-300', focusedTank === 2 ? 'border-8 border-black' : 'border-8 border-gray-300']"
              style="background-color: #ffcc99;"
              @click="focusTank(2)">
           <img :src="tank2Dropped ? backicon : tank2" class="w-full h-full p-2" draggable="true" @dragstart="onDragStart($event, 2)"/>
@@ -520,7 +522,9 @@ const onDragStart = (event, tankNumber) => {
 </template>
 
 <style scoped>
-
+.hover\:scale-110:hover {
+  transform: scale(1.10);
+}
 .extra-margin {
   margin-top: 10px; /* Adjust the value as needed */
 }

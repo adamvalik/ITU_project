@@ -106,9 +106,9 @@ export default {
   data() {
     return {
       defaultMaps: [
-        { name: '__forest', image: '/assets/bg.png' },
-        { name: '__desert', image: '/assets/bg2.png' },
-        { name: '__mountains', image: '/assets/bg3-sunny.png' },
+        { name: '__forest', image: '/assets/forest.png' },
+        { name: '__desert', image: '/assets/beach.png' },
+        { name: '__mountains', image: '/assets/winter.png' },
       ],
       selectedMap: '__forest',
       selectedCustomMap: null,
@@ -157,11 +157,11 @@ export default {
       try {
         const response = await apiClient.get(`/map/type/${map}`);
         if (response.data == 'forest') {
-          this.selectedCustomMapImage = '/assets/bg.png';
+          this.selectedCustomMapImage = '/assets/forest.png';
         } else if (response.data == 'beach') {
-          this.selectedCustomMapImage = '/assets/bg2.png';
+          this.selectedCustomMapImage = '/assets/beach.png';
         } else if (response.data == 'winter') {
-          this.selectedCustomMapImage = '/assets/bg3-sunny.png';
+          this.selectedCustomMapImage = '/assets/winter.png';
         }
       } catch (error) {
         console.error('Failed to fetch custom map:', error);

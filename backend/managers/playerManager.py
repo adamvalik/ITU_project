@@ -108,3 +108,47 @@ class PlayerManager:
         if player2:
             player2.health = 100
             self.create_player(player2)
+
+    def buy_ammo(self, player_id: int, ammo_type: int, price: int):
+        player = self.get_player(player_id)
+        if player:
+
+            if player.ammunitionCount[ammo_type] == -1:
+                player.ammunitionCount[ammo_type] = 0
+            player.ammunitionCount[ammo_type] += 1
+            player.money -= price
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+    
+    def upgrade_skill(self, player_id: int, skill: str):
+        player = self.get_player(player_id)
+        if player:
+            if skill == "armor":
+                player.armorSkill += 1
+            elif skill == "power":
+                player.powerSkill += 1
+            elif skill == "speed":
+                player.speedSkill += 1
+            else:
+                raise ValidationError(f"Invalid skill: {skill}")
+            player.skillPoints -= 1
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")
+        
+    def downgrade_skill(self, player_id: int, skill: str):
+        player = self.get_player(player_id)
+        if player:
+            if skill == "armor":
+                player.armorSkill -= 1
+            elif skill == "power":
+                player.powerSkill -= 1
+            elif skill == "speed":
+                player.speedSkill -= 1
+            else:
+                raise ValidationError(f"Invalid skill: {skill}")
+            player.skillPoints += 1
+            self.create_player(player)
+        else:
+            raise ValidationError(f"Player with id {player_id} not found")

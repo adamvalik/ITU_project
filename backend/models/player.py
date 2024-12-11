@@ -45,3 +45,8 @@ class UpdateSkillPoints(BaseModel):
 
 class IncreaseSkillPoints(BaseModel):
   player: int
+
+class BuyAmmo(BaseModel):
+  player: int
+  ammo_type: int
+  price: int

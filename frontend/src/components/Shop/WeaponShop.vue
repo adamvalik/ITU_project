@@ -1,6 +1,7 @@
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, defineEmits, onMounted } from 'vue';
 import WeaponShopItem from './WeaponShopItem.vue';
+import apiClient from '@/api';
 
 const props = defineProps({
   weapon1: {
@@ -23,14 +24,16 @@ const props = defineProps({
 
 const spentCash = ref(0);
 const showSpent = ref(false);
-const shakeCash = ref(false); // New state for shaking cash display
+const shakeCash = ref(false);
+
+const missiles = ref([]);
 
 
-const emit = defineEmits(['updateCash']); 
+const emit = defineEmits(['buy']); 
 
-function updateCash(price, name, quantity) {
+const buyAmmo = (data) => {
   
-  if (price > props.cash) {
+  if (data.price > props.cash) {
     shakeCash.value = true;
     setTimeout(() => {
       shakeCash.value = false; 
@@ -39,18 +42,27 @@ function updateCash(price, name, quantity) {
     return; 
   }
 
-
-  
-  spentCash.value = price;
+  spentCash.value = data.price;
   showSpent.value = true;
 
-  emit('updateCash', props.cash - price, name, quantity);
+  emit('buy', {ammo_type: data.ammo_type, price: data.price});
 
   setTimeout(() => {
     showSpent.value = false;
   }, 1000); 
 }
 
+const getMissiles = async () => {
+  try {
+    const response = await apiClient.get(`/missiles`);
+    missiles.value = response.data;
+
+  } catch (error) {
+    console.error('Error getting missiles:', error);
+  }
+}
+
+onMounted(getMissiles);
 
 </script>
 
@@ -77,16 +89,16 @@ function updateCash(price, name, quantity) {
 
     <!-- Weapon Shop Items -->
     <div class="flex">
-      <WeaponShopItem :image="require('@/assets/weapon1.png')" price="200" :quantity="props.weapon1" :cash="props.cash" name="Striker" class="m-3" @updateCash="updateCash"></WeaponShopItem>
-      <WeaponShopItem :image="require('@/assets/weapon2.png')" price="400" :quantity="props.weapon2" :cash="props.cash" name="Devastator" class="m-3" @updateCash="updateCash"></WeaponShopItem>
-      <WeaponShopItem :image="require('@/assets/weapon3.png')" price="600" :quantity="props.weapon3" :cash="props.cash" name="Phantom" class="m-3" @updateCash="updateCash"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon1.png')" :missile="missiles[0]" :quantity="props.weapon1" class="m-3" @buy="buyAmmo"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon2.png')" :missile="missiles[1]" :quantity="props.weapon2" class="m-3" @buy="buyAmmo"></WeaponShopItem>
+      <WeaponShopItem :image="require('@/assets/weapon3.png')" :missile="missiles[2]" :quantity="props.weapon3" class="m-3" @buy="buyAmmo"></WeaponShopItem>
     </div>
   </div>
 </template>
 
 <style scoped>
 .shake {
-  animation: shake 0.8s; /* Adjust duration to match keyframe animation */
+  animation: shake 0.8s;
 }
 
 @keyframes shake {

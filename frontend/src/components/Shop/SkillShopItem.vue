@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed} from 'vue';
+import { defineProps, defineEmits, computed} from 'vue';
 import SkillDetail from './SkillDetail.vue';
 
 // Props
@@ -23,36 +23,30 @@ const props = defineProps({
   }
 });
 
-// Reactive current level, initialized from props.level
-const currentLevel = ref(props.level);
 
-const emit = defineEmits(['updatePoints']); // Define custom event
+const emit = defineEmits(['upgrade', 'downgrade']); 
 
-
-// Functions to upgrade/downgrade the level
 function upgradeSkill() {
-  if (currentLevel.value < maxLevel && props.availablePoints > 0) {
-    currentLevel.value += 1;
-    emit('updatePoints', -1, props.name);
+  if (props.level < maxLevel && props.availablePoints > 0) {
+    emit('upgrade', {name: props.name});
   }
 }
 
 function downgradeSkill() {
-  if (currentLevel.value > 0) {
-    currentLevel.value -= 1;
-    emit('updatePoints', 1, props.name);
+  if (props.level > 0) {
+    emit('downgrade', {name: props.name});
 
   }
 }
 
 function getDescription(){
-  if(props.name == "Armor"){
+  if(props.name == "armor"){
     return "Tank has more hp";
 
-  }else if(props.name == "Power"){
+  }else if(props.name == "power"){
     return "Missiles deal more damage";
 
-  }else if(props.name == "Speed"){
+  }else if(props.name == "speed"){
     return "Tank drives further on less fuel";
   }
 }
@@ -63,7 +57,7 @@ const maxLevel = 5;
 
 // Computed property for effectiveLevel
 const effectiveLevel = computed(() => {
-  return Math.max(0, Math.min(currentLevel.value, maxLevel));
+  return Math.max(0, Math.min(props.level, maxLevel));
 });
 </script>
 

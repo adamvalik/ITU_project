@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Response
 from models.svgTemplates import SVG_TEMPLATES
 
-from models.player import Player, UpdateName, UpdateTankType, UpdateColor, UpdateSkill, UpdateSkillPoints, IncreaseSkillPoints
+from models.player import Player, UpdateName, UpdateTankType, UpdateColor, UpdateSkill, UpdateSkillPoints, IncreaseSkillPoints, BuyAmmo
 from managers.playerManager import PlayerManager
 from redisClient import get_redis_client
 
@@ -82,3 +82,17 @@ async def reset_health(redis_client = Depends(get_redis_client)):
 
 
 
+@router.post("/player/buyAmmo")
+async def buy_ammo(data: BuyAmmo, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.buy_ammo(data.player, data.ammo_type, data.price)
+
+@router.post("/player/upgradeSkill")
+async def upgrade_skill(data: UpdateSkill, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.upgrade_skill(data.player, data.skill)
+
+@router.post("/player/downgradeSkill")
+async def upgrade_skill(data: UpdateSkill, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    player_manager.downgrade_skill(data.player, data.skill)

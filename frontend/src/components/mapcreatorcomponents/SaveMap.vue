@@ -8,9 +8,9 @@
         <button @click="saveMap" class="bg-green-300 hover:bg-green-400 text-green-700 font-bold py-2 px-4 rounded">
           Save
         </button>
-        <router-link @click="saveAndReturn" to="/" class="bg-green-300 hover:bg-green-400 text-green-700 font-bold py-2 px-4 rounded">
-          Save and Exit
-        </router-link>
+<!--        <router-link @click="saveAndReturn" to="/" class="bg-green-300 hover:bg-green-400 text-green-700 font-bold py-2 px-4 rounded">-->
+<!--          Save and Exit-->
+<!--        </router-link>-->
       </div>
     </div>
   </div>
@@ -22,7 +22,7 @@ import { ref } from 'vue';
 const props = defineProps({
   visible: Boolean,
   onSave: Function,
-  onSaveAndReturn: Function,
+  //onSaveAndReturn: Function,
   onClose: Function,
 });
 
@@ -33,10 +33,10 @@ const saveMap = () => {
   props.onClose();
 };
 
-const saveAndReturn = () => {
-  props.onSaveAndReturn(mapName.value);
-  props.onClose();
-};
+// const saveAndReturn = () => {
+//   props.onSaveAndReturn(mapName.value);
+//   props.onClose();
+// };
 
 const handleOverlayClick = () => {
   props.onClose();

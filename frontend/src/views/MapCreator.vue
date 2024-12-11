@@ -1,6 +1,7 @@
 <script setup>
 
 import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue';
+
 import {
   erasePath,
   setMapType,
@@ -10,6 +11,8 @@ import {
   retrieveMap,
   deleteMap,
   addPlayerPosition,
+  copyMap,
+  retrieveNumOfMaps,
   //retrievePlayerPosition,
 } from '@/components/mapcreatorcomponents/BackendOperations.js';
 
@@ -18,7 +21,7 @@ import OperationSelector from '../components/mapcreatorcomponents/OperationSelec
 import SaveMap from '@/components/mapcreatorcomponents/SaveMap.vue';
 const showModal = ref(false);
 import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.vue";
-import { useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import playerA from '../../public/assets/player_a.svg';
 import playerB from '../../public/assets/player_b.svg';
 import back from '../../public/assets/back.svg';
@@ -28,6 +31,8 @@ const props = defineProps({
   gameHeight: Number,
   scaleFactor: Number,
 });
+
+const router = useRouter();
 
 const activeTheme = ref('forest'); // Default theme
 const cursorType = ref(''); // Default cursor type
@@ -338,12 +343,11 @@ const animateImage = (img, startX, startY, width, height) => {
 };
 
 const clearMap = async () => {
-  // storedGreenCoordinates.value = [];
-  // imageArray.value = [];
-  // eraserArray.value = [];
- // arrayArray.value = [];
-  ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
-  // await updateMapArea();
+  if (canvasRef.value) {
+    ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+  } else {
+    console.error('Canvas reference is null');
+  }
   await addPlayerPosition(mapName, 1, [0.0, 0.0]);
   await addPlayerPosition(mapName, 2, [0.0, 0.0]);
   await deleteMap("map1");
@@ -394,15 +398,36 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-const saveMap = (name) => {
+const saveMap = async (name) => {
   // Implement save map logic here
   console.log('Saving map:', name);
+  let new_name
+  if (name === ''){
+    let name_num;
+    name_num = await retrieveNumOfMaps();
+    new_name = `map${name_num.numOfMaps + 1}`;
+  } else {
+    new_name = name;
+  }
+  await copyMap(new_name, mapName);
 };
 
-const saveAndReturn = (name) => {
-  // Implement save and return logic here
-  console.log('Saving and returning map:', name);
-  // Add logic to return to the previous page or state
+// const saveAndReturn = async (name) => {
+//   // Implement save and return logic here
+//   console.log('Saving and returning map:', name);
+//   // Add logic to return to the previous page or state
+//   await copyMap(name, mapName);
+//   await clearMap();
+// };
+
+const startPlaying = async () => {
+  // Implement logic to start playing the game
+  console.log('Starting the game');
+  let name_num;
+  name_num = await retrieveNumOfMaps();
+  let new_name = `map${name_num.numOfMaps + 1}`;
+  await copyMap(new_name, mapName);
+  // await clearMap();
 };
 
 const focusTank = async (tankNumber) => {
@@ -455,12 +480,21 @@ const onDragStart = (event, tankNumber) => {
   console.log(`Dragging tank ${tankNumber}`);
 };
 
+const goBack = () => {
+  clearMap()
+  router.back();
+};
+
 </script>
 
 <template>
   <div :style="{ width: `${gameWidth}px`, height: `${gameHeight}px`}">
 
     <div class="bg-beige flex flex-col items-center relative custom-cursor">
+
+      <button @click="goBack" class="back-button border-4 border-blue-700 bg-blue-300 hover:bg-blue-400 font-bold text-xl py-2 px-4 rounded-2xl">
+        GO BACK
+      </button>
 
       <ThemeSelector :activeTheme="activeTheme" @theme-change="updateTheme" class="theme-selector"/>
 
@@ -492,7 +526,6 @@ const onDragStart = (event, tankNumber) => {
         <SaveMap
           :visible="showModal"
           :onSave="saveMap"
-          :onSaveAndReturn="saveAndReturn"
           :onClose="closeModal"
         />
 
@@ -587,6 +620,13 @@ const onDragStart = (event, tankNumber) => {
   pointer-events: none; /* Ensure the circle doesn’t interfere with events */
   display: none; /* Hidden until the eraser is active */
 }
+
+.back-button {
+  position: absolute;
+  top: 50px; /* Align with tank buttons */
+  left: 220px; /* Adjust as needed */
+}
+
 </style>
 
 

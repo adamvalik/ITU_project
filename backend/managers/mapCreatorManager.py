@@ -105,4 +105,29 @@ class MapCreatorManager:
             return None
 
 
+# # function which copies the contents of map1 to map with given name
+# class CopyMapRequest(BaseModel):
+#     map_name: str
+#     map1: str
+#
+# @router.post("/copy_map")
+# def copy_map(request: CopyMapRequest, redis_client = Depends(get_redis_client)):
+#     mapManager = MapCreatorManager(redis_client)
+#     try:
+#         mapManager.copy_map(request.map_name, request.map1)
+#         return {"message": "Map copied successfully"}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
+    def copy_map(self, map_name: str, map1: str):
+        """Create new map with the same data as an existing map."""
+        mapa = self.get_map(map1)
+        if mapa:
+            mapa.name = map_name
+            self.redis_client.set(map_name, mapa.json())
+        else:
+            return None
+
+    def retrieve_num_of_maps(self):
+        """Retrieve the number of maps stored in Redis."""
+        return len(self.redis_client.keys())

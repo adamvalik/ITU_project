@@ -149,3 +149,23 @@ def retrieve_player_position(request: PlayerPositionRetrieveRequest, redis_clien
         return {"position": position}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# function which copies the contents of map1 to map with given name
+class CopyMapRequest(BaseModel):
+    map_name: str
+    map1: str
+
+@router.post("/copy_map")
+def copy_map(request: CopyMapRequest, redis_client = Depends(get_redis_client)):
+    mapManager = MapCreatorManager(redis_client)
+    try:
+        mapManager.copy_map(request.map_name, request.map1)
+        return {"message": "Map copied successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# function which returns the number of maps in the redis database
+@router.get("/retrieve_num_of_maps")
+def retrieve_num_of_maps(redis_client = Depends(get_redis_client)):
+    mapManager = MapCreatorManager(redis_client)
+    return {"numOfMaps": mapManager.retrieve_num_of_maps()}

@@ -90,3 +90,19 @@ class MapCreatorManager:
             self.redis_client.set(map_name, mapa.json())
         else:
             return None
+
+    def add_player_position(self, map_name: str, player: int, position: Tuple[float, float]):
+        """Add a player's position to the map."""
+        mapa = self.get_map(map_name)
+        position = (int(position[0]), int(position[1]))
+        if mapa:
+            if player == 1:
+                mapa.tank1pos = position
+            elif player == 2:
+                mapa.tank2pos = position
+            self.redis_client.set(map_name, mapa.json())
+        else:
+            return None
+
+
+

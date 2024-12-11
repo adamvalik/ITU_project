@@ -120,3 +120,32 @@ def delete_map(request: DeleteMapRequest, redis_client = Depends(get_redis_clien
         return {"message": "Map deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# add new player position
+class PlayerPositionRequest(BaseModel):
+    map_name: str
+    player: int
+    position: Tuple[float, float]
+
+@router.post("/add_player_position")
+def add_player_position(request: PlayerPositionRequest, redis_client = Depends(get_redis_client)):
+    mapManager = MapCreatorManager(redis_client)
+    print(request.player)
+    try:
+        mapManager.add_player_position(request.map_name, request.player, request.position)
+        return {"message": "Player position added successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class PlayerPositionRetrieveRequest(BaseModel):
+    map_name: str
+    player: int
+
+@router.post("/retrieve_player_position")
+def retrieve_player_position(request: PlayerPositionRetrieveRequest, redis_client = Depends(get_redis_client)):
+    mapManager = MapCreatorManager(redis_client)
+    try:
+        position = mapManager.get_map_attribute(request.map_name, f"tank{request.player}pos")
+        return {"position": position}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -9,6 +9,8 @@ import {
   addNewImage,
   retrieveMap,
   deleteMap,
+  addPlayerPosition,
+  //retrievePlayerPosition,
 } from '@/components/mapcreatorcomponents/BackendOperations.js';
 
 import ThemeSelector from '../components/mapcreatorcomponents/ThemeSelector.vue';
@@ -19,6 +21,7 @@ import RenderingScreen from "@/components/mapcreatorcomponents/RenderingScreen.v
 import { useRoute } from 'vue-router';
 import playerA from '../../public/assets/player_a.svg';
 import playerB from '../../public/assets/player_b.svg';
+import back from '../../public/assets/back.svg';
 
 const props = defineProps({
   gameWidth: Number,
@@ -36,8 +39,12 @@ const obstructionIconPath = ref('/assets/tree_icon.svg'); // Default obstruction
 const route = useRoute();
 const showStartPlayingButton = ref(route.query.fromMapSelector === 'true');
 
+const focusedTank = ref(null);
 const tank1 = ref(playerA);
 const tank2 = ref(playerB);
+const backicon = ref(back);
+const tank1Dropped = ref(false);
+const tank2Dropped = ref(false);
 
 const canvasRef = ref(null);
 let ctx = null;
@@ -207,6 +214,24 @@ const updateMapArea = async () => {
       console.warn(`Unexpected data type or structure for type: ${type}`, data);
     }
   });
+
+  console.log('Tank1:', result.tank1pos);
+  console.log('Tank2:', result.tank2pos);
+  if (result.tank1pos[0] !== 0 || result.tank1pos[1] !== 0) {
+    const newTank1 = new Image();
+    newTank1.src = tank1.value;
+    newTank1.onload = () => {
+      ctx.drawImage(newTank1, result.tank1pos[0] - 12, result.tank1pos[1] - 12, 24, 24);
+    };
+  }
+  if (result.tank2pos[0] !== 0 || result.tank2pos[1] !== 0) {
+    const newTank2 = new Image();
+    newTank2.src = tank2.value;
+    newTank2.onload = () => {
+      ctx.drawImage(newTank2, result.tank2pos[0] - 12, result.tank2pos[1] - 12, 24, 24);
+    };
+  }
+
 };
 
 const updateBrushCircle = (event) => {
@@ -231,7 +256,7 @@ const onDrop = (event) => {
   event.preventDefault();
   console.log('onDrop event triggered');
 
-  if (cursorType.value !== 'obstruction') return;
+  //if (cursorType.value !== 'obstruction') return;
 
   // Get the drop coordinates
   const rect = canvasRef.value.getBoundingClientRect();
@@ -240,7 +265,18 @@ const onDrop = (event) => {
   console.log(`Drop coordinates: x=${x}, y=${y}`);
 
   // Get the dragged image URL
-  const imgUrl = obstructionIconPath.value;
+  let imgUrl;
+  if (focusedTank.value === 1) {
+    imgUrl = tank1.value;
+    tank1Dropped.value = true; // Mark tank1 as dropped
+    //focusedTank.value = null;
+  } else if (focusedTank.value === 2) {
+    imgUrl = tank2.value;
+    tank2Dropped.value = true; // Mark tank2 as dropped
+    //focusedTank.value = null;
+  } else {
+    imgUrl = obstructionIconPath.value;
+  }
   console.log(`Image URL: ${imgUrl}`);
 
   // Create a new image element to draw on the canvas
@@ -259,7 +295,7 @@ const animateImage = (img, startX, startY, width, height) => {
   let y = startY;
   const gravity = 1; // Gravity effect
 
-  const step = () => {
+  const step = async () => {
     ctx.clearRect(startX - width / 2, y - height / 2, width, height); // Clear previous image position
 
     // Check for collision with any non-transparent color TODO: CHANGE THIS MAGIC THING
@@ -281,9 +317,20 @@ const animateImage = (img, startX, startY, width, height) => {
     } else {
       ctx.drawImage(img, startX - width / 2, y - height / 2, width, height); // Draw image at final position
       // imageArray.value.push({ x: startX, y, desiredWidth: width, desiredHeight: height }); // Store final position
-    //  arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
-      addNewImage(mapName, startX, y);
-      updateMapArea();
+      //  arrayArray.value.push({type: "image", data: { x: startX, y, desiredWidth: width, desiredHeight: height }}); // Store final position
+
+      if (focusedTank.value === 1) {
+        await addPlayerPosition(mapName, 1, [startX, y]);
+        focusedTank.value = null;
+      } else if (focusedTank.value === 2) {
+        await addPlayerPosition(mapName, 2, [startX, y]);
+        focusedTank.value = null;
+      } else {
+        console.log('Adding new image to the map');
+        await addNewImage(mapName, startX, y);
+      }
+
+      await updateMapArea();
     }
   };
 
@@ -356,6 +403,56 @@ const saveAndReturn = (name) => {
   // Add logic to return to the previous page or state
 };
 
+const focusTank = async (tankNumber) => {
+  if (tankNumber === 1 && tank1Dropped.value) {
+    await addPlayerPosition(mapName, 1, [0.0, 0.0]);
+    tank1Dropped.value = false;
+    focusedTank.value = null;
+    tank1.value = playerA;
+    isLoading.value = true;  // Show the loading popup
+    try {
+      ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+      await updateMapArea();
+    } catch (error) {
+      console.error('Error updating map area:', error);
+    } finally {
+      isLoading.value = false;  // Hide the loading popup
+    }
+  } else if (tankNumber === 2 && tank2Dropped.value) {
+    await addPlayerPosition(mapName, 2, [0.0, 0.0]);
+    tank2Dropped.value = false;
+    focusedTank.value = null;
+    tank2.value = playerB;
+    isLoading.value = true;  // Show the loading popup
+    try {
+      ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
+      await updateMapArea();
+    } catch (error) {
+      console.error('Error updating map area:', error);
+    } finally {
+      isLoading.value = false;  // Hide the loading popup
+    }
+  } else {
+    if (focusedTank.value === tankNumber) {
+      focusedTank.value = null; // Unfocus if already focused
+    } else {
+      focusedTank.value = tankNumber; // Focus the clicked tank
+    }
+  }
+  console.log(`Tank ${tankNumber} ${focusedTank.value === tankNumber ? 'focused' : 'unfocused'}`);
+};
+
+const onDragStart = (event, tankNumber) => {
+  cursorType.value = '';
+  if ((tankNumber === 1 && tank1Dropped.value) || (tankNumber === 2 && tank2Dropped.value)) {
+    event.preventDefault(); // Prevent dragging if the tank has been dropped
+    return;
+  }
+  event.dataTransfer.setData('tankNumber', tankNumber);
+  focusedTank.value = tankNumber;
+  console.log(`Dragging tank ${tankNumber}`);
+};
+
 </script>
 
 <template>
@@ -403,11 +500,17 @@ const saveAndReturn = (name) => {
       </div>
 
       <div class="absolute top-7 right-[25%] transform translate-x-1/2 flex gap-4">
-        <div v-if="tank1" class="w-24 h-24 rounded-full overflow-hidden border-8 border-black" style="background-color: #16b4d8;">
-          <img :src="tank1" class="w-full h-full p-2"/>
+        <div v-if="tank1"
+             :class="['w-24 h-24 rounded-full overflow-hidden', focusedTank === 1 ? 'border-8 border-black' : 'border-8 border-gray-300']"
+             style="background-color: #16b4d8;"
+             @click="focusTank(1)">
+          <img :src="tank1Dropped ? backicon : tank1" class="w-full h-full p-2" draggable="true" @dragstart="onDragStart($event, 1)"/>
         </div>
-        <div v-if="tank2" class="w-24 h-24 rounded-full overflow-hidden border-8 border-black" style="background-color: #ffcc99;">
-          <img :src="tank2" class="w-full h-full p-2"/>
+        <div v-if="tank2"
+             :class="['w-24 h-24 rounded-full overflow-hidden', focusedTank === 2 ? 'border-8 border-black' : 'border-8 border-gray-300']"
+             style="background-color: #ffcc99;"
+             @click="focusTank(2)">
+          <img :src="tank2Dropped ? backicon : tank2" class="w-full h-full p-2" draggable="true" @dragstart="onDragStart($event, 2)"/>
         </div>
       </div>
 

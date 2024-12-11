@@ -69,3 +69,21 @@ export const deleteMap = async (mapName) => {
     console.error('Error in deleteMap:', error);
   }
 }
+
+export const addPlayerPosition = async (mapName, player, position) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/add_player_position`, { map_name: mapName, player, position });
+    return response.data;
+  } catch (error) {
+    console.error('Error in addPlayerPosition:', error);
+  }
+}
+
+export const retrievePlayerPosition = async (mapName, player) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/retrieve_player_position`, { map_name: mapName, player });
+    return response.data;
+  } catch (error) {
+    console.error('Error in retrievePlayerPosition:', error);
+  }
+}

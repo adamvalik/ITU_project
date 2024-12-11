@@ -9,7 +9,7 @@ class Player(BaseModel):
   powerSkill: int = 0
   speedSkill: int = 0
   skillPoints: int = 6
-  wins: int = 1
+  wins: int = 0
   money: int = 2000
   fuel: int = 250
   fuelMax: int = 250

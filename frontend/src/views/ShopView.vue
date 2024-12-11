@@ -33,7 +33,14 @@ onMounted(getPlayers)
     <div class="flex flex-col items-center bg-cover bg-center" :style="{ width: `${props.gameWidth}px`, height: `${props.gameHeight}px`, backgroundImage: `url('/assets/bg-shop.png')`}">
     <div class="flex justify-center">
     <PlayerShopCard :player="players[0]"></PlayerShopCard>
-    <h1 class="text-8xl space-x-4 font-black">1:0</h1>
+    <div class="flex justify-center">
+      <h1 v-if="players[0]" class="text-8xl space-x-4 font-black">{{ players[0].wins }}</h1>
+      <h1 class="text-8xl space-x-4 font-black mx-6">:</h1>
+
+      <h1 v-if="players[1]" class="text-8xl space-x-4 font-black">{{ players[1].wins }}</h1>
+
+    </div>
+
     <PlayerShopCard :player="players[1]" side="r"></PlayerShopCard>
     </div>
     <div class="flex justify-around w-full mt-8">

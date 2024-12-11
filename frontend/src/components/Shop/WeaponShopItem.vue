@@ -42,7 +42,7 @@ const buyAmmo = () => {
 
   <!-- The div that appears when hovering on the "?" -->
   <div class="absolute bottom-10 -right-8 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
-    <WeaponDetail :name="props.missile ? props.missile.name : 'Loading...'"/> 
+    <WeaponDetail :missile="props.missile"/> 
   </div>
 </div>
       </div>

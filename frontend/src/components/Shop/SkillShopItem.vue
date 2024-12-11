@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed} from 'vue';
+import { defineProps, defineEmits, computed, ref} from 'vue';
 import SkillDetail from './SkillDetail.vue';
 
 // Props
@@ -26,9 +26,26 @@ const props = defineProps({
 
 const emit = defineEmits(['upgrade', 'downgrade']); 
 
+const showMaxUpgrade = ref(false);
+const showNoPoints = ref(false);
+const showSkillIsZero = ref(false);
+
 function upgradeSkill() {
   if (props.level < maxLevel && props.availablePoints > 0) {
     emit('upgrade', {name: props.name});
+
+  } else if(props.availablePoints == 0){
+    showNoPoints.value = true;
+    setTimeout(() => {
+      showNoPoints.value = false;
+    }, 1500);
+
+  }else if(props.level == maxLevel){
+    showMaxUpgrade.value = true;
+    setTimeout(() => {
+      showMaxUpgrade.value = false;
+    }, 1500);
+  
   }
 }
 
@@ -36,6 +53,11 @@ function downgradeSkill() {
   if (props.level > 0) {
     emit('downgrade', {name: props.name});
 
+  }else{
+    showSkillIsZero.value = true;
+    setTimeout(() => {
+      showSkillIsZero.value = false;
+    }, 1500);
   }
 }
 
@@ -66,7 +88,7 @@ const effectiveLevel = computed(() => {
     <!-- Armor Label and Icon -->
 
     <!-- Armor Status Bars -->
-    <div class="flex items-center">
+    <div class="flex items-center relative">
       
         <div class="relative group">
           <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
@@ -121,6 +143,36 @@ const effectiveLevel = computed(() => {
         <p class="text-white font-black text-2xl">-</p>
       </div>
 
+      <transition name="fade">
+      <div v-if="showMaxUpgrade" class=" bg-gray-300 border-4 rounded-xl opacity-75 border-gray-400 p-2 font-bold absolute left-24">
+        {{ props.name }} is on maximum level
+      </div>
+    </transition>
+
+    <transition name="fade">
+      <div v-if="showNoPoints" class=" bg-gray-300 border-4 rounded-xl opacity-75 border-gray-400 p-2 font-bold absolute left-32">
+        no free skill points
+      </div>
+    </transition>
+
+    <transition name="fade">
+      <div v-if="showSkillIsZero" class=" bg-gray-300 border-4 rounded-xl opacity-75 border-gray-400 p-2 font-bold absolute left-28">
+        no points to be removed
+      </div>
+    </transition>
+
     </div>
+    
   </div>
 </template>
+
+<style scoped>
+/* Fade transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>

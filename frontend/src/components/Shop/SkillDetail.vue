@@ -17,7 +17,7 @@ const props = defineProps({
 <template>
   <div class="absolute -top-10 rounded-lg right-0 border-2 bg-gray-100 border-gray-500 p-2 w-48">
     <div class="flex flex-col items-center ">
-      <h1 class="font-bold text-lg">{{ props.skillName }}</h1>
+      <h1 class="font-bold text-lg">{{ props.skillName.charAt(0).toUpperCase() + props.skillName.slice(1)}}</h1>
       <p class="text-sm text-center">{{ props.description }}</p>
     </div>
   </div>

@@ -1,4 +1,9 @@
+<!--
+  File: OperationSelector.vue
+  Author: Marek Effenberger (xeffen00)
+-->
 <template>
+  <!-- A button group that allows the user to select an operation for the map. -->
   <div :class="['container', activeButton + '-cursor']">
     <button
         class="icon-button pen"
@@ -34,37 +39,40 @@ const props = defineProps({
   activeTheme: String
 });
 
+// The currently active button (operation)
 const activeButton = ref('');
 const emit = defineEmits(['cursor-change']);
 
+// Drag start event handler
 const onDragStart = (event) => {
-  console.log("Drag start event"); // Debug log
-  setActiveButton('obstruction'); // Automatically select the obstruction button
-  event.dataTransfer.setData('text/plain', obstructionIcon.value); // Pass the icon URL or ID
+  setActiveButton('obstruction');
+  event.dataTransfer.setData('text/plain', obstructionIcon.value);
 };
 
+// Set the active button
 const setActiveButton = (button) => {
   if (activeButton.value === button) {
-    activeButton.value = ''; // Unclick the button if it's already active
+    activeButton.value = '';
   } else {
-    activeButton.value = button; // Set the button as active
+    activeButton.value = button;
   }
-  console.log(`Active button set to: ${activeButton.value}`); // Debug log
 };
 
+// Watch the active button and emit the cursor change event
 watch(activeButton, (newVal) => {
   emit('cursor-change', newVal);
 });
 
+// Computed property for the obstruction icon
 const obstructionIcon = computed(() => {
   switch (props.activeTheme) {
     case 'beach':
-      return '/assets/cactus_icon.svg'; // Cactus for beach theme
+      return '/assets/cactus_icon.svg';
     case 'winter':
-      return '/assets/snowman_icon.svg'; // Snowman for winter theme
+      return '/assets/snowman_icon.svg';
     case 'forest':
     default:
-      return '/assets/tree_icon.svg'; // Tree for forest theme (default)
+      return '/assets/tree_icon.svg';
   }
 });
 </script>
@@ -72,23 +80,23 @@ const obstructionIcon = computed(() => {
 <style scoped>
 .container {
   display: flex;
-  flex-direction: column; /* Makes buttons stack vertically */
+  flex-direction: column;
   align-items: center;
-  width: auto; /* Auto width to hug the content */
+  width: auto;
   padding: 5px;
-  background-color: #1ae4ff; /* Dark background color */
+  background-color: #1ae4ff;
   border-radius: 12px;
-  border: 8px solid #000000; /* Dark border color */
+  border: 8px solid #000000;
 }
 
 .icon-button {
-  border: 8px solid #cbd5e0; /* Light border color */
+  border: 8px solid #cbd5e0;
   border-radius: 50%;
   padding: 10px;
   cursor: pointer;
-  margin-bottom: 10px; /* Adds space between buttons */
+  margin-bottom: 10px;
   transition: transform 0.2s, border-color 0.2s;
-  width: auto; /* Remove fixed width so the buttons aren't too big */
+  width: auto;
   display: flex;
 }
 
@@ -102,23 +110,23 @@ const obstructionIcon = computed(() => {
 }
 
 .icon-button.pen {
-  background-color: #f44141; /* Light yellow */
+  background-color: #f44141;
 }
 
 .icon-button.eraser {
-  background-color: #0ef6b8; /* Light green */
+  background-color: #0ef6b8;
 }
 
 .icon-button.obstruction {
-  background-color: #fd7e15; /* Light blue */
+  background-color: #fd7e15;
 }
 
 .icon-button.active {
-  border-color: #2d3748; /* Darker border color for active button */
+  border-color: #2d3748;
 }
 
 .icon-button:not(.active) {
-  border-color: #e2e8f0; /* Lighter border color for inactive buttons */
+  border-color: #e2e8f0;
 }
 
 </style>

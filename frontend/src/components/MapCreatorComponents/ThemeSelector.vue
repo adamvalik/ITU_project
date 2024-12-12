@@ -1,4 +1,9 @@
+<!--
+  File: ThemeSelector.vue
+  Author: Marek Effenberger (xeffen00)
+-->
 <template>
+<!--  A button group that allows the user to select a theme for the map.-->
   <div class="flex justify-around items-center w-auto bg-teal-200 rounded-lg border-8 border-black">
     <button
       class="icon-button beach border-8 rounded-lg p-1 transition-transform transform hover:scale-110"
@@ -36,13 +41,17 @@
 <script setup>
 import { ref, watch, defineEmits } from 'vue';
 
+// The currently active button (theme)
 const activeButton = ref('forest');
+// Emit the theme change event
 const emit = defineEmits(['theme-change']);
 
+// Set the active button
 const setActiveButton = (button) => {
   activeButton.value = button;
 };
 
+// Watch the active button and emit the theme change event
 watch(activeButton, (newVal) => {
   emit('theme-change', newVal);
 });
@@ -51,7 +60,7 @@ watch(activeButton, (newVal) => {
 <style scoped>
 
 .icon-button {
-  margin: 10px; /* Add margin around each button */
+  margin: 10px;
 }
 
 .icon-button.beach {

@@ -1,3 +1,7 @@
+# File: mapcreator.py
+# Description: Base model for the map creator module.
+# Author: Marek Effenberger (xeffen00)
+
 from pydantic import BaseModel
 from typing import Tuple, List
 
@@ -14,7 +18,8 @@ class Map(BaseModel):
     eraserArray : List[List[Tuple[int, int]]] = [[]]
     groundArray : List[List[Tuple[int, int]]] = [[]]
 
-    arrayArray: List[dict] = []  # New field to store relative additions
+    # Array of the previous three lists
+    arrayArray: List[dict] = []
 
 
 

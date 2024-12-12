@@ -1,5 +1,10 @@
+<!--
+  File: RenderingScreen.vue
+  Author: Marek Effenberger (xeffen00)
+-->
 <template>
   <div v-if="visible" class="loading-popup">
+    <!-- Loading wheels - images which rotate, indicating that the map is rendering -->
   <div class="loading-container">
       <img src="/assets/loading_wheel.png" alt="Loading" class="loading-wheel large-wheel" />
       <img src="/assets/loading_wheel.png" alt="Loading" class="loading-wheel medium-wheel" />
@@ -25,6 +30,10 @@ export default {
 </script>
 
 <style scoped>
+
+// Styles for the loading popup (b4 tailwind usage, dont want to mess with it)
+// The wheeling images are rotating, indicating that the map is rendering and their positions
+// are relative to each other.
 .loading-popup {
   position: fixed;
   top: 0;
@@ -39,14 +48,14 @@ export default {
 }
 
 .loading-container {
-  background: #01fd9b; /* Pinkish background */
-  padding: 40px; /* Increased padding */
-  border-radius: 15px; /* Rounded corners */
-  border: 5px solid #000000; /* Thick border */
+  background: #01fd9b;
+  padding: 40px;
+  border-radius: 15px;
+  border: 5px solid #000000;
   text-align: left;
   position: relative;
-  width: 220px; /* Set a fixed width */
-  height: 100px; /* Set a fixed height */
+  width: 220px;
+  height: 100px;
 }
 
 .loading-wheel {
@@ -57,7 +66,7 @@ export default {
 .large-wheel {
   width: 50px;
   height: 50px;
-  top: 5px; /* Adjusted position */
+  top: 5px;
   left: 70%;
   transform: translateX(-50%);
   animation-duration: 1s;
@@ -67,7 +76,7 @@ export default {
 .medium-wheel {
   width: 40px;
   height: 40px;
-  top: 38px; /* Adjusted position */
+  top: 38px;
   left: 65%;
   transform: translateX(-50%);
   animation-duration: 1.5s;
@@ -77,7 +86,7 @@ export default {
 .small-wheel {
   width: 35px;
   height: 35px;
-  top: 42px; /* Adjusted position */
+  top: 42px;
   left: 82%;
   transform: translateX(-50%);
   animation-duration: 0.75s;
@@ -85,11 +94,11 @@ export default {
 }
 
 .loading-message {
-  font-size: 1.3em; /* Slightly bigger text */
-  font-weight: bold; /* Thicker text */
+  font-size: 1.3em;
+  font-weight: bold;
   position: absolute;
-  top: 50%; /* Middle of the container vertically */
-  left: 10px; /* Slightly left on the x-value */
+  top: 50%;
+  left: 10px;
   transform: translateY(-50%);
   z-index: 3;
 }

@@ -29,11 +29,11 @@ export default {
 };
 </script>
 
+<!--//Styles for the loading popup (b4 tailwind usage, dont want to mess with it)-->
+<!--//The wheeling images are rotating, indicating that the map is rendering and their positions-->
+<!--//are relative to each other.-->
 <style scoped>
 
-// Styles for the loading popup (b4 tailwind usage, dont want to mess with it)
-// The wheeling images are rotating, indicating that the map is rendering and their positions
-// are relative to each other.
 .loading-popup {
   position: fixed;
   top: 0;

@@ -4,34 +4,36 @@
       <div class="h-44 bg-opacity-80 bg-neutral-900 text-white items-center justify-center flex flex-rows space-x-8">
 
         <!-- Weapon menu button -->
-        <div class="flex flex-col space-y-1 w-1/3 relative">
-          <div>
-            <button
-              @mouseover="showSelectorHelp"
-              @mouseleave="hideSelectorHelp"
-              @click="toggleWeaponMenu"
-              class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl relative">
-              WEAPON SELECTOR
-              <span v-if="selectorHelpVisible" class="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl">
-              Click to select weapon!
-            </span>
-            </button>
-          </div>
+        <div class="w-1/3 relative">
+          <div class="flex flex-col space-y-1" :class="{'-mt-16' : toggleDropDownMenu}">
+            <div>
+              <button
+                @mouseover="showSelectorHelp"
+                @mouseleave="hideSelectorHelp"
+                @click="toggleWeaponMenu"
+                class="h-16 w-full bg-blue-300 bg-opacity-50 text-black rounded-lg border-4 border-black hover:bg-blue-400 font-bold text-4xl relative">
+                WEAPON SELECTOR
+                <span v-if="selectorHelpVisible" class="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl">
+                Click to select weapon!
+              </span>
+              </button>
+            </div>
 
-          <!-- Active missile -->
-          <div v-if="!toggleDropDownMenu && activeMissile">
-            <button
-              class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
-              <div class="flex flex-row justify-center space-x-8">
-                <div class="text-black font-bold text-3xl">{{ activeMissile.name }}</div>
-                <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.activeMissileId] }}</div>
-              </div>
-            </button>
+            <!-- Active missile -->
+            <div v-if="!toggleDropDownMenu && activeMissile">
+              <button
+                class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
+                <div class="flex flex-row justify-center space-x-8">
+                  <div class="text-black font-bold text-3xl">{{ activeMissile.name }}</div>
+                  <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
+                  <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.activeMissileId] }}</div>
+                </div>
+              </button>
+            </div>
           </div>
 
           <!-- Drop down menu with missiles -->
-          <div v-if="toggleDropDownMenu" class="absolute top-full mt-2 bg-gray-600 border-4 border-gray-700 space-y-2">
+          <div v-if="toggleDropDownMenu" class="absolute top-1/2 bg-gray-600 border-4 border-gray-700 space-y-2">
             <button
               v-for="(missile) in currentPlayerMissiles"
               :key="missile.id"

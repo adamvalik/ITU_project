@@ -41,3 +41,35 @@ class GameManager:
         """Reset the game to default values."""
         self.delete_game()
         self.initialize_game()
+
+    def set_weather(self, weather: str):
+        game = self.get_game()
+        if game:
+            if weather not in ["Sunny", "Cloudy", "Extreme"]:
+                raise ValidationError("Invalid weather type")
+            game.weather = weather
+            self.create_game(game)
+        else:
+            raise ValidationError("Game not found")
+
+    def get_weather(self):
+        game = self.get_game()
+        if game:
+            return game.weather
+        else:
+            raise ValidationError("Game not found")
+
+    def set_map(self, map_name: str):
+        game = self.get_game()
+        if game:
+            game.mapName = map_name
+            self.create_game(game)
+        else:
+            raise ValidationError("Game not found")
+
+    def get_map(self):
+        game = self.get_game()
+        if game:
+            return game.mapName
+        else:
+            raise ValidationError("Game not found")

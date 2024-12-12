@@ -3,9 +3,11 @@
 
 <template>
   <div class="flex gap-1 items-center my-1">
+    <!-- hint about the meaning of the skill -->
     <SkillHint :name="name" class="pr-2 cursor-pointer">
       <img :src="image" :alt="name" class="w-8 h-8" />
     </SkillHint>
+    <!-- 5 levels of skill -->
     <div
       v-for="n in 5"
       :key="n"

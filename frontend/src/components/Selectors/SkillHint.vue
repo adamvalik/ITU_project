@@ -6,6 +6,7 @@
     <div class="group">
       <slot></slot>
 
+      <!-- hint text -->
       <div
         v-if="text"
         class="absolute bottom-full transform -translate-x-full w-40 p-2 text-white bg-gray-700

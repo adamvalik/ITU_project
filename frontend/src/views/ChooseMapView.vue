@@ -41,13 +41,16 @@
           alt="Custom map"
           id="customMap"
           class="w-full h-full rounded-lg"
-          :class="{'opacity-50' : !anyCustomMap || selectedCustomMap == null}"/>
+          :class="[{'opacity-50' : !anyCustomMap || selectedCustomMap == null}]"/>
       </div>
 
       <!-- custom map names -->
       <div class="text-left w-1/3 pl-10">
         <h3 class="font-semibold text-gray-900 mb-1">YOUR MAPS:</h3>
-        <ul>
+        <ul
+          v-if="customMapNames.length > 0"
+          class="max-h-72 overflow-y-auto"
+          >
           <li
             v-for="(mapName, index) in customMapNames"
             :key="index"
@@ -57,16 +60,35 @@
             {{ mapName }}
           </li>
         </ul>
+        <p v-else>No custom maps created</p>
       </div>
     </div>
 
     <!-- weather selection -->
-    <div class="flex flex-col items-center justify-normal mb-8 z-10">
-      <div class="flex gap-8">
+    <div class="flex flex-col items-center justify-normal mb-8 z-10 relative">
+      <div class="flex items-center space-x-2">
         <span class="font-bold text-lg">WEATHER:</span>
-        <span class="font-bold">{{ selectedWeather }}</span>
+        <!-- tooltip trigger -->
+        <div
+          class="relative flex items-center justify-center w-6 h-6 bg-gray-700 rounded-full cursor-pointer"
+          @mouseover="showTooltip = true"
+          @mouseleave="showTooltip = false"
+        >
+          <span class="font-bold text-sm text-white">?</span>
+          <!-- tooltip -->
+          <div
+            v-show="showTooltip"
+            class="absolute mt-2 transform translate-x-2/3 bg-gray-700 text-white text-sm rounded p-2 shadow-lg w-48 transition-opacity duration-300 opacity-0"
+            :class="{ 'opacity-100': showTooltip, 'opacity-0': !showTooltip }"
+          >
+            <p>Changing the weather affects the wind probability in the game!</p>
+          </div>
+        </div>
       </div>
-      <div class="flex space-x-2">
+      <!-- weather  -->
+      <span class="font-bold mb-4">{{ selectedWeather }}</span>
+      <!-- radio buttons -->
+      <div class="flex space-x-2 relative">
         <button
           v-for="(weather, index) in weathers"
           :key="index"
@@ -77,7 +99,7 @@
           ]"
           @click="selectWeather(weather.label)"
         >
-          <img :src="weather.icon" :alt="weather.label" class="w-6 h-6" />
+          <img :src="weather.icon" :alt="weather.label" class="w-6" />
         </button>
       </div>
     </div>
@@ -107,21 +129,22 @@ export default {
     return {
       defaultMaps: [
         { name: '__forest', image: '/assets/forest.png' },
-        { name: '__desert', image: '/assets/beach.png' },
-        { name: '__mountains', image: '/assets/winter.png' },
+        { name: '__beach', image: '/assets/beach.png' },
+        { name: '__winter', image: '/assets/winter.png' },
       ],
       selectedMap: '__forest',
       selectedCustomMap: null,
       customMapNames: [],
       customMapSelected: false,
-      selectedCustomMapImage: '/assets/bg.png',
+      selectedCustomMapImage: '/assets/placeholder.png',
 
       weathers: [
         { label: 'Sunny', icon: '/assets/sunny-icon.png' },
         { label: 'Cloudy', icon: '/assets/cloudy-icon.png' },
         { label: 'Extreme', icon: '/assets/extreme-icon.png' },
       ],
-      selectedWeather: 'Extreme',
+      selectedWeather: '',
+      showTooltip: false,
     };
   },
   computed: {
@@ -141,20 +164,61 @@ export default {
   },
   async mounted() {
     await this.fetchCustomMapNames();
+    await this.fetchWeather();
+    await this.fetchMap();
   },
   methods: {
-    selectWeather(weather) {
-      this.selectedWeather = weather;
+    // get & post weather
+    async fetchWeather() {
+      try {
+        const response = await apiClient.get('/weather');
+        this.selectedWeather = response.data;
+      } catch (error) {
+        console.error('Failed to fetch weather:', error);
+      }
     },
-    selectMap(map) {
+    async selectWeather(weather) {
+      this.selectedWeather = weather;
+      try {
+        await apiClient.post('/weather', { weather: weather });
+      } catch (error) {
+        console.error('Failed to set weather:', error);
+      }
+    },
+
+    // get & post mapName
+    async fetchMap() {
+      try {
+        const response = await apiClient.get('/map/mapName');
+        if (response.data === '') {
+          return;
+        }
+        if (response.data !== '__forest' && response.data !== '__beach' && response.data !== '__winter') {
+          this.selectCustomMap(response.data);
+        } else {
+          this.selectMap(this.defaultMaps.find((map) => map.name === response.data));
+        }
+      } catch (error) {
+        console.error('Failed to fetch map:', error);
+      }
+    },
+    async selectMap(map) {
       this.selectedMap = map.name;
       this.customMapSelected = false;
+      try {
+        await apiClient.post('/map/mapName', { mapName: map.name });
+      } catch (error) {
+        console.error('Failed to set map:', error);
+      }
     },
     async selectCustomMap(map) {
       this.selectedMap = map;
       this.selectedCustomMap = map;
       this.customMapSelected = true;
       try {
+        await apiClient.post('/map/mapName', { mapName: map });
+        // get the type of the terrain and set the image accordingly
+        // (this was intended to be used for the map preview, but it was too complicated to implement)
         const response = await apiClient.get(`/map/type/${map}`);
         if (response.data == 'forest') {
           this.selectedCustomMapImage = '/assets/forest.png';
@@ -167,6 +231,8 @@ export default {
         console.error('Failed to fetch custom map:', error);
       }
     },
+
+    // get custom map names
     async fetchCustomMapNames() {
       try {
         const response = await apiClient.get('/map/names');
@@ -175,6 +241,8 @@ export default {
         console.error('Failed to fetch custom map names:', error);
       }
     },
+
+    // into the map creator
     createMap() {
       this.$router.push({ path: '/mapCreator', query: { fromMapSelector: true } });
     },

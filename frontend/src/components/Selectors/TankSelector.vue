@@ -4,6 +4,7 @@
 <template>
   <div class="flex flex-col items-center mb-6">
     <div class="flex gap-4 items-center justify-between">
+      <!-- left triangle -->
       <svg
         @click="swapTank('left')"
         class="cursor-pointer "
@@ -16,8 +17,10 @@
        <path d="M3 26.7162C-0.999998 24.4068 -1 18.6333 3 16.3239L29.28 1.15112C33.28 -1.15828 38.28 1.72847 38.28 6.34727L38.28 36.6928C38.28 41.3116 33.28 44.1984 29.28 41.889L3 26.7162Z" fill="#EF4446"/>
       </svg>
 
+      <!-- tank svg -->
       <div ref="svgContainer" class="w-64 h-64 mb-4 shadow-xl" :class="{ 'transform -scale-x-100': isFlipped }"></div>
 
+      <!-- right triangle -->
       <svg
         @click="swapTank('right')"
         class="cursor-pointer transform rotate-180"
@@ -57,7 +60,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '@/api';
 
 export default {
   props: {
@@ -131,7 +134,7 @@ export default {
 
     async loadTank() {
       try {
-        const response = await axios.get(`http://localhost:8000/selector/${this.tankType}`);
+        const response = await apiClient.get(`/selector/${this.tankType}`);
         this.$refs.svgContainer.innerHTML = response.data;
 
         await this.$nextTick();

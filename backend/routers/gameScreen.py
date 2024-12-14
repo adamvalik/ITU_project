@@ -4,6 +4,8 @@ from models.player import PlayersData
 from models.missile import Missile, MissileComputationData, MissileComputationResponse, Laser, Movement, MovementResponse
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
+from managers.gameManager import GameManager
+from managers.mapCreatorManager import MapCreatorManager
 from pydantic import BaseModel
 from models.map import Map
 from redisClient import get_redis_client
@@ -79,15 +81,46 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     return responseModel
 
 # Generate terrain for the game
-@router.get("/generate-terrain", response_model=Map)
-async def generate_terrain(canvasWidth: int, canvasHeight: int):
+@router.get("/obtain-terrain-data", response_model=Map)
+async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = Depends(get_redis_client)):
+    
+    gameManager = GameManager(redis_client)
+    mapManager = MapCreatorManager(redis_client)
+
+    game = gameManager.get_game()
+
+    # Default color
+    mapColor = "#0D8747"
+    mapBackground = "#D5EFF4"
+
+    if game.weather == "Cloudy:":
+        mapBackground = "#CCCCCC"
+    elif game.weather == "Extreme":
+        mapBackground = "#545454"
+
+    if game.mapName == "__forest":
+        mapColor = "#0D8747"
+    elif game.mapName == "__beach":
+        mapColor = "#E8BD3A"
+    elif game.mapName =="__winter":
+        mapColor = "#9EDFFA"
+    else:
+        savedMap = mapManager.get_map(game.mapName)
+        if savedMap:
+            if savedMap.type == "forest":
+                mapColor = "#0D8747"
+            elif savedMap.type  == "beach":
+                mapColor = "#E8BD3A"
+            else:
+                mapColor = "#9EDFFA"
+    
     maxTerrainHeight = (canvasHeight * 2) / 3
     terrain = []
     for x in range(canvasWidth):
         baseHeight = maxTerrainHeight
         variation = (math.sin(x * 0.06) * 15 + math.sin(x * 0.1) * 10 + math.sin(x * 0.01) * 50)
         terrain.append(baseHeight + variation)
-    newMap = Map(name="mapka", type="mud", data=terrain)
+    newMap = Map(name=game.mapName, type=mapColor, data=terrain, background=mapBackground)
     return newMap
 
 # Save both players data to the database

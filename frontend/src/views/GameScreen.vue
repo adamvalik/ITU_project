@@ -98,7 +98,7 @@
 
           <div class ="flex flex-col space-y-3 items-center">
             <div class="font-bold text-white text-2xl">
-              <h1>{{ currentPlayer.wins }}win</h1>
+              <h1>{{ currentPlayer.wins }}wins</h1>
             </div>
             <div class = "w-16 h-16" style="background: url('assets/trophy_icon.png') no-repeat center center; background-size: cover;"></div>
           </div>
@@ -168,6 +168,7 @@ import apiClient from '@/api';
         // Map data
         terrain: [],
         terrainType: "",
+        terrainBgColor: "",
 
         // PLayer data
         player1: {
@@ -254,9 +255,8 @@ import apiClient from '@/api';
     },
     mounted() {
       this.loadMissiles();
-      this.generateTerrain();
-      this.loadPlayerData();
       this.loadGameData();
+      this.loadPlayerData();
       window.addEventListener('keydown', this.onKeyPressed);
     },
     watch: {
@@ -329,6 +329,22 @@ import apiClient from '@/api';
         .catch((error) => {
           console.error(error);
         });
+        await axios.get('http://localhost:8000/obtain-terrain-data', {
+          params: {
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
+          }
+        })
+        .then((response) => {
+
+          //Obtain terrain data and type
+          this.terrain = response.data.data;
+          this.terrainType = response.data.type;
+          this.terrainBgColor = response.data.background;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     },
 
     validateTimer() {
@@ -380,22 +396,6 @@ import apiClient from '@/api';
         // Calculate laser's endpoint x and y coordinates based on the angle and distance
         playerAimCircle.aimLaserXCord = player.xCord + distance * Math.cos(angleInRadians);
         playerAimCircle.aimLaserYCord = player.yCord + distance * Math.sin(angleInRadians);
-
-        // await axios.post('http://localhost:8000/calculate-laser-pos', {
-        //   angle: playerAimCircle.angle,
-        //   power: playerAimCircle.power,
-        //   playerXCord: player.xCord,
-        //   playerYCord: player.yCord,
-        //   aimCircleRadius: this.aimCircleRadius,
-        //   p1Turn: this.p1Turn,
-        // })
-        // .then((response) => {
-        //   playerAimCircle.aimLaserXCord = response.data[0];
-        //   playerAimCircle.aimLaserYCord = response.data[1];
-        // })
-        // .catch((error) => {
-        //   console.error(error);
-        // });
       },
 
       drawPlayerNames(ctx) {
@@ -474,25 +474,6 @@ import apiClient from '@/api';
 
         ctx.restore();
       },
-
-      async generateTerrain() {
-        await axios.get('http://localhost:8000/generate-terrain', {
-          params: {
-            canvasWidth: this.canvasWidth,
-            canvasHeight: this.canvasHeight,
-          }
-        })
-        .then((response) => {
-
-          //Obtain terrain data and type
-          this.terrain = response.data.data;
-          this.terrainType = response.data.type;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      },
-
       async fireMissile() {
 
         // Disable firing until the animation is finished
@@ -575,6 +556,11 @@ import apiClient from '@/api';
         }
       },
       drawTerrain(ctx) {
+
+        ctx.fillStyle = this.terrainBgColor;
+        ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+
         ctx.beginPath();
         ctx.moveTo(0, this.canvasHeight);
         for (let x = 0; x < this.terrain.length; x++) {
@@ -582,11 +568,7 @@ import apiClient from '@/api';
         }
         ctx.lineTo(this.canvasWidth, this.canvasHeight);
         ctx.closePath();
-        if(this.terrainType === "mud"){
-          ctx.fillStyle = "#0D8747";
-        } else {
-          ctx.fillStyle = "green";
-        }
+        ctx.fillStyle = this.terrainType;
 
         ctx.fill();
       },

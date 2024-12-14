@@ -5,8 +5,6 @@ from pydantic import BaseModel
 class MissileComputationData(BaseModel):
     canvasWidth: int
     canvasHeight: int
-    playerId: int
-    terrain: list[float]
     angle: float
     power: float
     wind: int
@@ -15,7 +13,6 @@ class MissileComputationData(BaseModel):
 # Response data for missile computation
 class MissileComputationResponse(BaseModel):
     ammunitionCount: int = 0
-    newTerrain: list[float] = []
     missileTrajectory: list[tuple[float, float]] = []
     gameOver: bool = False
     noAmmunition: bool = False
@@ -38,7 +35,6 @@ class Laser(BaseModel):
     aimCircleRadius: int
 
 class Movement(BaseModel):
-    playerId: int
     key: str
     canvasWidth: int
     canvasHeight: int

@@ -9,6 +9,7 @@ class Game(BaseModel):
   wind: int = 0
   mapName: str = "" # "__forest", "__beach", "__winter"
   weather: str = "Cloudy" # "Sunny", "Cloudy", "Extreme"
+  p1Turn: bool = True
 
 class CustomMode(BaseModel):
   isTimer: bool

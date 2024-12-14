@@ -6,6 +6,7 @@ from redisClient import get_redis_client
 from routers import mapCreator, players, tanks, settings, game, gameScreen, debug, mapSelector
 from managers import playerManager, gameManager, missileManager
 from managers.mapCreatorManager import MapCreatorManager
+from managers.mapManager import MapManager
 
 app = FastAPI()
 
@@ -45,5 +46,8 @@ missileManager = missileManager.MissileManager(redis_client)
 missileManager.initialize_missile()
 
 mapCreatorManager = MapCreatorManager(redis_client)
+
+MapManager = MapManager(redis_client)
+MapManager.initialize_map()
 
 

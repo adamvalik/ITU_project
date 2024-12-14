@@ -166,9 +166,9 @@ import apiClient from '@/api';
         showMissileInfo: null,
 
         // Map data
-        terrain: [],
-        terrainType: "",
-        terrainBgColor: "",
+        terrainData: {
+          terrain: [],
+        },
 
         // PLayer data
         player1: {
@@ -337,10 +337,10 @@ import apiClient from '@/api';
         })
         .then((response) => {
 
-          //Obtain terrain data and type
-          this.terrain = response.data.data;
-          this.terrainType = response.data.type;
-          this.terrainBgColor = response.data.background;
+          //Obtain terrain, color and background color
+          this.terrainData.terrain = response.data.data;
+          this.terrainData.terrainType = response.data.type;
+          this.terrainData.terrainBgColor = response.data.background;
         })
         .catch((error) => {
           console.error(error);
@@ -498,8 +498,6 @@ import apiClient from '@/api';
         await axios.post('http://localhost:8000/compute-missile-data', {
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          playerId: this.currentPlayer.id,
-          terrain: this.terrain,
           angle: this.currentAimCircle.angle,
           power: this.currentAimCircle.power,
           wind: this.wind,
@@ -513,11 +511,17 @@ import apiClient from '@/api';
             this.toggleDisableFire = false;
             return;
           }
-
           this.missileTrajectory = response.data.missileTrajectory;
-          this.terrain = response.data.newTerrain;
           this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
           this.responseGameOver = response.data.gameOver;
+
+        });
+        await axios.get('http://localhost:8000/obtain-updated-map')
+        .then((response) => {
+          //Obtain updated terrain, color and background color
+          this.terrainData.terrain = response.data.data;
+          this.terrainData.terrainType = response.data.type;
+          this.terrainData.terrainBgColor = response.data.background;
           this.animateMissile();
         })
         .catch((error) => {
@@ -557,18 +561,18 @@ import apiClient from '@/api';
       },
       drawTerrain(ctx) {
 
-        ctx.fillStyle = this.terrainBgColor;
+        ctx.fillStyle = this.terrainData.terrainBgColor;
         ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
 
         ctx.beginPath();
         ctx.moveTo(0, this.canvasHeight);
-        for (let x = 0; x < this.terrain.length; x++) {
-          ctx.lineTo(x, this.terrain[x]);
+        for (let x = 0; x < this.terrainData.terrain.length; x++) {
+          ctx.lineTo(x, this.terrainData.terrain[x]);
         }
         ctx.lineTo(this.canvasWidth, this.canvasHeight);
         ctx.closePath();
-        ctx.fillStyle = this.terrainType;
+        ctx.fillStyle = this.terrainData.terrainType;
 
         ctx.fill();
       },
@@ -581,7 +585,6 @@ import apiClient from '@/api';
         }
 
         await axios.post('http://localhost:8000/keyboard-movement', {
-          playerId: this.currentPlayer.id,
           key: event.key,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
@@ -681,13 +684,13 @@ import apiClient from '@/api';
 
         // Calculate the distance between the tank and the mouse
         let dx, dy;
-          if(this.p1Turn){
-            dx = this.mousePosition.x - this.player1.xCord;
-            dy = this.mousePosition.y - this.player1.yCord;
-          } else {
-            dx = this.mousePosition.x - this.player2.xCord;
-            dy = this.mousePosition.y - this.player2.yCord;
-          }
+        if(this.p1Turn){
+          dx = this.mousePosition.x - this.player1.xCord;
+          dy = this.mousePosition.y - this.player1.yCord;
+        } else {
+          dx = this.mousePosition.x - this.player2.xCord;
+          dy = this.mousePosition.y - this.player2.yCord;
+        }
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Toggle hovering if the mouse is within the aim circle range
@@ -718,14 +721,13 @@ import apiClient from '@/api';
         ctx.save();
 
         // Update the player's yCord based on the terrain so tank is on the ground
-        player.yCord = this.terrain[Math.floor(player.xCord)] - 40 / 4;
+        player.yCord = this.terrainData.terrain[Math.floor(player.xCord)] - 40 / 4;
 
         // Move to player's position
         ctx.translate(player.xCord, player.yCord);
 
         // Color for outline
         ctx.strokeStyle = "black";
-
 
         // Draw the tank body
         ctx.fillStyle = player.color;

@@ -10,18 +10,16 @@ from managers.mapManager import MapManager
 
 app = FastAPI()
 
-# Define allowed origins
 origins = [
     "http://localhost:8080",
 ]
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # Allow requests from this list of origins
-    allow_credentials=True,            # Allow cookies to be included in requests
-    allow_methods=["*"],               # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],               # Allow all headers
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

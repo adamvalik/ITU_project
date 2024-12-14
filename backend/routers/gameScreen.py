@@ -96,7 +96,8 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
     mapManager = MapManager(redis_client)
 
     game = gameManager.get_game()
-    currentMap = mapManager.get_map()
+
+
     # Default color
     mapColor = "#0D8747"
     mapBackground = "#D5EFF4"

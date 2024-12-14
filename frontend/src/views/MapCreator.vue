@@ -453,6 +453,7 @@ const startPlaying = async () => {
   name_num = await retrieveNumOfMaps();
   let new_name = `map${name_num.numOfMaps + 1}`;
   await copyMap(new_name, mapName);
+  router.back();
 };
 
 // Function to focus the tank (1 or 2) -> utilized for the dragging
@@ -565,9 +566,9 @@ const goBack = async () => {
           :onClose="closeModal"
         />
 
-        <router-link v-if="showStartPlayingButton" to="/chooseMap" @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
+        <button v-if="showStartPlayingButton" @click="startPlaying" class="border-4 border-blue-700 text-center bg-blue-300 hover:bg-blue-400 font-bold text-xl py-4 px-4 rounded-2xl w-1/5">
           START PLAYING
-        </router-link>
+        </button>
       </div>
 
 <!--      Tank images (player A, player B)-->

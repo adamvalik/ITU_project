@@ -1,6 +1,5 @@
 // File: BackendOperations.js
 // Author: Marek Effenberger (xeffen00)
-// Description: File which contains functions for communication with the backend
 
 import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8000';

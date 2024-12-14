@@ -16,7 +16,7 @@ class Player(BaseModel):
   health: int = 100
   ammunitionCount: list[int] = [30,-1, 20]
   xCord: float = 0
-  yCord: float = 140
+  yCord: float = 0
 
 class PlayersData(BaseModel):
   player1: Player

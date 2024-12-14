@@ -4,6 +4,9 @@ from models.player import PlayersData
 from models.missile import Missile, MissileComputationData, MissileComputationResponse, Laser, Movement, MovementResponse
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
+from managers.gameManager import GameManager
+from managers.mapCreatorManager import MapCreatorManager
+from managers.mapManager import MapManager
 from pydantic import BaseModel
 from models.map import Map
 from redisClient import get_redis_client
@@ -41,7 +44,13 @@ async def calculate_laser_pos(laserData: Laser):
 @router.post("/keyboard-movement", response_model=MovementResponse)
 async def keyboard_movement(movementData: Movement, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
-    currentPlayer = player_manager.get_player(movementData.playerId)
+    game_manager = GameManager(redis_client)
+    currentGame = game_manager.get_game()
+    currentPlayer = None
+    if currentGame.p1Turn:
+        currentPlayer = player_manager.get_player(1)
+    else:
+        currentPlayer = player_manager.get_player(2)
     if not currentPlayer:
         raise HTTPException(status_code=404, detail="Player not found")
 
@@ -74,21 +83,63 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     elif movementData.key == " ":
         responseModel.shoot = True
 
-    player_manager.delete_player(movementData.playerId)
+    player_manager.delete_player(currentPlayer.id)
     player_manager.create_player(currentPlayer)
     return responseModel
 
 # Generate terrain for the game
-@router.get("/generate-terrain", response_model=Map)
-async def generate_terrain(canvasWidth: int, canvasHeight: int):
+@router.get("/obtain-terrain-data", response_model=Map)
+async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = Depends(get_redis_client)):
+    
+    gameManager = GameManager(redis_client)
+    mapCreatorManager = MapCreatorManager(redis_client)
+    mapManager = MapManager(redis_client)
+
+    game = gameManager.get_game()
+
+
+    # Default color
+    mapColor = "#0D8747"
+    mapBackground = "#D5EFF4"
+
+    if game.weather == "Cloudy:":
+        mapBackground = "#CCCCCC"
+    elif game.weather == "Extreme":
+        mapBackground = "#545454"
+
+    if game.mapName == "__forest":
+        mapColor = "#0D8747"
+    elif game.mapName == "__beach":
+        mapColor = "#E8BD3A"
+    elif game.mapName =="__winter":
+        mapColor = "#9EDFFA"
+    else:
+        savedMap = mapCreatorManager.get_map(game.mapName)
+        if savedMap:
+            if savedMap.type == "forest":
+                mapColor = "#0D8747"
+            elif savedMap.type  == "beach":
+                mapColor = "#E8BD3A"
+            else:
+                mapColor = "#9EDFFA"
+                
     maxTerrainHeight = (canvasHeight * 2) / 3
+    
     terrain = []
     for x in range(canvasWidth):
         baseHeight = maxTerrainHeight
         variation = (math.sin(x * 0.06) * 15 + math.sin(x * 0.1) * 10 + math.sin(x * 0.01) * 50)
         terrain.append(baseHeight + variation)
-    newMap = Map(name="mapka", type="mud", data=terrain)
+    newMap = Map(name=game.mapName, type=mapColor, data=terrain, background=mapBackground)
+    mapManager.delete_map()
+    mapManager.create_map(newMap)
     return newMap
+
+@router.get("/obtain-updated-map")
+async def obtain_updated_map(redis_client = Depends(get_redis_client)):
+    mapManager = MapManager(redis_client)
+    currentMap = mapManager.get_map()
+    return currentMap
 
 # Save both players data to the database
 @router.post("/save-current-players-data")
@@ -108,18 +159,23 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     # Obtain shooting player model and active missile from the database
     player_manager = PlayerManager(redis_client)
     missile_manager = MissileManager(redis_client)
-    playerShooter = player_manager.get_player(missileData.playerId)
-    activeMissile = missile_manager.get_missile(missileData.weaponSelected)
+    map_manager = MapManager(redis_client)
+    game_manager = GameManager(redis_client)
+    p1Turn = game_manager.get_game().p1Turn
 
-    # Obtain target player
+    playerShooter = None
     playerTarget = None
-    if(missileData.playerId == 1):
+
+    if p1Turn:
+        playerShooter = player_manager.get_player(1)
         playerTarget = player_manager.get_player(2)
     else:
+        playerShooter = player_manager.get_player(2)
         playerTarget = player_manager.get_player(1)
 
-    if not playerShooter or not playerTarget:
-        raise HTTPException(status_code=404, detail="Player not found")
+    activeMissile = missile_manager.get_missile(missileData.weaponSelected)
+    currentMap = map_manager.get_map()
+    mapData = currentMap.data
 
     # Delete players from the database, so they are added later with updated data
     player_manager.delete_player(playerShooter.id)
@@ -137,7 +193,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         return returnModel
 
     # Recalculate angle for player 2
-    if missileData.playerId == 2:
+    if not p1Turn:
         missileData.angle = 180 - missileData.angle
         if missileData.angle > 180:
             missileData.angle -= 360
@@ -164,7 +220,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         missileTrajectory.append((x, y))
 
         # Check if missile hit terrain
-        if 0 <= math.floor(x) < len(missileData.terrain) and y >= missileData.terrain[math.floor(x)]:
+        if 0 <= math.floor(x) < len(mapData) and y >= mapData[math.floor(x)]:
 
             dx = playerTarget.xCord - x
             dy = playerTarget.yCord - y
@@ -188,19 +244,27 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
                     distance = math.sqrt(i * i)
                     if distance <= explosionRadius:
                         impactDepth = math.sqrt(explosionRadius * explosionRadius - distance * distance)
-                        missileData.terrain[pos] = max(missileData.terrain[pos], y + impactDepth)
+                        mapData[pos] = max(mapData[pos], y + impactDepth)
 
                         # Leave small portion of terrain at the bottom of the canvas
-                        if(missileData.terrain[pos] > missileData.canvasHeight - 10):
-                            missileData.terrain[pos] = missileData.canvasHeight - 10
+                        if(mapData[pos] > missileData.canvasHeight - 10):
+                            mapData[pos] = missileData.canvasHeight - 10
 
             # Break the loop because the explosion should be calculated for just one point
             break
 
 
     # Update return model
-    returnModel.newTerrain = missileData.terrain
     returnModel.missileTrajectory = missileTrajectory
+
+    # Switch turns
+    p1Turn = not p1Turn
+    game_manager.update_game({"p1Turn": p1Turn})
+
+
+    map_manager.delete_map()
+    newMap = Map(name=currentMap.name, type=currentMap.type, data=mapData, background=currentMap.background)
+    map_manager.create_map(newMap)
 
     # Update players data
     player_manager.create_player(playerShooter)

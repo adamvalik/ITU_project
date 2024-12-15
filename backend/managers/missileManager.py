@@ -19,8 +19,8 @@ class MissileManager:
 
     def initialize_missile(self):
         small_missile = Missile(id=0, name="SMALL MISSILE", damage=20, radius=30, price=0, picture="assets/small_missile_icon.png")
-        medium_missile = Missile(id=1, name="MEDIUM MISSILE", damage=30, radius=40, price=100, picture="assets/small_missile_icon.png")
-        big_missile = Missile(id=2, name="BIG MISSILE", damage=40, radius=50, price=200, picture="assets/small_missile_icon.png")
+        medium_missile = Missile(id=1, name="MEDIUM MISSILE", damage=30, radius=40, price=100, picture="assets/medium_missile_icon.png")
+        big_missile = Missile(id=2, name="BIG MISSILE", damage=40, radius=50, price=200, picture="assets/big_missile_icon.png")
 
         self.create_missile(small_missile)
         self.create_missile(medium_missile)

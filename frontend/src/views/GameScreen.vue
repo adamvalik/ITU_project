@@ -642,6 +642,7 @@ import apiClient from '@/api';
 
       // Draw the terrain based on map data
       drawTerrain(ctx) {
+        ctx.save();
 
         // Draw background color
         ctx.fillStyle = this.terrainData.terrainBgColor;
@@ -659,6 +660,8 @@ import apiClient from '@/api';
         // Set the terrain color
         ctx.fillStyle = this.terrainData.terrainType;
         ctx.fill();
+
+        ctx.restore();
       },
 
       // Draw the tank based on player data

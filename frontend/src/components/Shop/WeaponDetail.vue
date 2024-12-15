@@ -82,9 +82,9 @@ watch(
 
         <!-- Explosion -->
         <div
-          class="explosion w-16 h-16 bg-yellow-400 rounded-full absolute top-4 animate-explode"
+          class="explosion w-16 h-16 bg-yellow-400 rounded-full absolute top-4 animate-explode text-red-600 font-bold "
           v-if="exploded"
-        ></div>
+        >-{{props.missile ? props.missile.damage : 'Loading...'}}</div>
 
       </div>
 

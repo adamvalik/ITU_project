@@ -231,6 +231,8 @@ import apiClient from '@/api';
         toggleHovering: false,
         toggleDragging: false,
         aimCircleRadius: 0,
+
+        // Laser coordinates for player circle
         p1Circle: {
           aimLaserXCord: 0,
           aimLaserYCord: 0,
@@ -785,14 +787,14 @@ import apiClient from '@/api';
           return;
         }
 
-        // Compute player movement and aiming based on the key pressed
+        // Compute player movement and aiming based on the key pressed via API
         await axios.post('http://localhost:8000/keyboard-movement', {
           key: event.key,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
           aimLaserXCord: this.currentAimCircle.aimLaserXCord,
-          power: this.currentAimCircle.power,
-          angle: this.currentAimCircle.angle,
+          power: this.currentPlayer.power,
+          angle: this.currentPlayer.angle,
         })
         .then((response) => {
           console.log(response);
@@ -806,8 +808,8 @@ import apiClient from '@/api';
           this.currentPlayer.xCord = response.data.playerXCord;
           this.currentPlayer.fuel = response.data.playerFuel;
           this.currentAimCircle.aimLaserXCord = response.data.aimLaserXCord;
-          this.currentAimCircle.power = response.data.power;
-          this.currentAimCircle.angle = response.data.angle;
+          this.currentPlayer.power = response.data.power;
+          this.currentPlayer.angle = response.data.angle;
 
           // Redraw the game with updated values
           this.drawGame();

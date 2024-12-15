@@ -214,6 +214,10 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
 
     # Obtain active missile and current map data
     activeMissile = missile_manager.get_missile(playerShooter.activeMissileId)
+
+    missileAngle = playerShooter.angle
+    missilePower = playerShooter.power
+
     currentMap = map_manager.get_map()
     mapData = currentMap.data
 
@@ -234,9 +238,9 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
 
     # Recalculate angle for player 2
     if not p1Turn:
-        missileData.angle = 180 - missileData.angle
-        if missileData.angle > 180:
-            missileData.angle -= 360
+        missileAngle = 180 - missileAngle
+        if missileAngle > 180:
+            missileAngle -= 360
 
 
     # Obtain wind
@@ -245,9 +249,9 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     # Define missile trajectory using Bezier curve
     startX = playerShooter.xCord
     startY = playerShooter.yCord - 15
-    controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + wind * 4
-    controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
-    endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + wind * 8
+    controlX = startX + math.cos(missileAngle * (math.pi / 180)) * missilePower * 12 + wind * 4
+    controlY = startY - math.sin(missileAngle * (math.pi / 180)) * missilePower * 12
+    endX = controlX + math.cos(missileAngle * (math.pi / 180)) * missilePower * 12 + wind * 8
 
     # + 20 pixels to be able to have the y size to reach the size of canvas height
     endY = missileData.canvasHeight + 20

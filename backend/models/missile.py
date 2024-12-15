@@ -8,8 +8,6 @@ from pydantic import BaseModel
 class MissileComputationData(BaseModel):
     canvasWidth: int
     canvasHeight: int
-    angle: float
-    power: float
 
 # Response data for missile computation
 class MissileComputationResponse(BaseModel):

@@ -232,14 +232,10 @@ import apiClient from '@/api';
         toggleDragging: false,
         aimCircleRadius: 0,
         p1Circle: {
-          angle: 45,
-          power: 50,
           aimLaserXCord: 0,
           aimLaserYCord: 0,
         },
         p2Circle: {
-          angle: 45,
-          power: 50,
           aimLaserXCord: 0,
           aimLaserYCord: 0,
         },
@@ -459,106 +455,22 @@ import apiClient from '@/api';
       },
 
       // Calculate ending position of the aiming laser based on the angle, power and player's position
-      async calculateLaserPos(playerAimCircle, player) {
+      async calculateLaserPos(playerAimCircle) {
 
         //Calculate the distance based on the power
-        const distance = (playerAimCircle.power / 100) * this.aimCircleRadius;
+        const distance = (this.currentPlayer.power / 100) * this.aimCircleRadius;
 
         // Calculate the angle in radians based on whose turn it is
         let angleInRadians;
         if (this.p1Turn) {
-            angleInRadians = (-playerAimCircle.angle * Math.PI) / 180;
+            angleInRadians = (-this.currentPlayer.angle * Math.PI) / 180;
         } else {
-            angleInRadians = (-(180 - playerAimCircle.angle) * Math.PI) / 180;
+            angleInRadians = (-(180 - this.currentPlayer.angle) * Math.PI) / 180;
         }
 
         // Calculate laser's endpoint x and y coordinates based on the angle and distance
-        playerAimCircle.aimLaserXCord = player.xCord + distance * Math.cos(angleInRadians);
-        playerAimCircle.aimLaserYCord = player.yCord + distance * Math.sin(angleInRadians);
-      },
-
-      // Draw player names at the top of the canvas
-      drawPlayerNames(ctx) {
-        ctx.save();
-
-        // Size of rectangles for healthbars
-        const player1X = 10 + 200 / 2;
-        const player2X = this.canvasWidth - 210 + 200 / 2;
-
-        // Text properties
-        ctx.font = "28px sans-serif";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        // Draw player names
-        ctx.fillText(this.player1.name, player1X, 30);
-        ctx.fillText(this.player2.name, player2X, 30);
-
-        ctx.restore();
-      },
-
-      // Draw player health bars with health values on top of the canvas
-      drawPlayerHealth(ctx){
-        ctx.save();
-
-        // Draw black background for health bars
-        ctx.fillStyle = 'black';
-        ctx.fillRect(10, 50, 200, 40);
-        ctx.fillRect(this.canvasWidth - 210, 50, 200, 40);
-
-        // Draw red background for remaining health
-        ctx.fillStyle = '#FF0000';
-        const player1HealthWidth = this.player1.health * 2;
-        ctx.fillRect(10, 50, player1HealthWidth, 40);
-        const player2HeathWidth = this.player2.health * 2;
-        ctx.fillRect(this.canvasWidth - 210, 50, player2HeathWidth, 40);
-
-        //Draw outline for health bars
-        ctx.strokeStyle = 'gray';
-        ctx.lineWidth = 5; // Border width
-        ctx.strokeRect(10, 50, 200, 40);
-        ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
-
-        // Draw remaining health / 100
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${this.player1.health}/${this.player1.healthMax}`, 110, 70);
-        ctx.fillText(`${this.player2.health}/${this.player2.healthMax}`, this.canvasWidth - 110, 70);
-
-        ctx.restore();
-      },
-
-      // Draw wind value in the middle of the canvas
-      drawWind(ctx){
-        ctx.save();
-
-        // Text properties
-        ctx.fillStyle = 'black';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Wind: ', this.canvasWidth/2, 20);
-        ctx.fillText(this.wind, this.canvasWidth/2 + 40, 20);
-
-        ctx.restore();
-      },
-
-      // Draw angle and power values at the top of the aim circle
-      drawAnglePower(ctx, playerAimCircle, player) {
-        ctx.save();
-
-        // Text properties
-        ctx.fillStyle = 'black';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${Math.round(playerAimCircle.angle)}°,`, player.xCord - 10, player.yCord - 180);
-        ctx.fillText(playerAimCircle.power, player.xCord + 26, player.yCord - 180);
-
-        ctx.restore();
+        playerAimCircle.aimLaserXCord = this.currentPlayer.xCord + distance * Math.cos(angleInRadians);
+        playerAimCircle.aimLaserYCord = this.currentPlayer.yCord + distance * Math.sin(angleInRadians);
       },
 
       // Fire missile after clicking on the fire button or pressing spacebar
@@ -570,7 +482,7 @@ import apiClient from '@/api';
         }
         this.toggleDisableFire = true;
 
-        // Save current players data
+        // Save current players data (angle, power)
         await axios.post('http://localhost:8000/save-current-players-data', {
           player1: this.player1,
           player2: this.player2,
@@ -586,8 +498,6 @@ import apiClient from '@/api';
         await axios.post('http://localhost:8000/compute-missile-data', {
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          angle: this.currentAimCircle.angle,
-          power: this.currentAimCircle.power,
         })
         .then((response) => {
           console.log(response);
@@ -662,6 +572,90 @@ import apiClient from '@/api';
         }
       },
 
+            // Draw player names at the top of the canvas
+            drawPlayerNames(ctx) {
+        ctx.save();
+
+        // Size of rectangles for healthbars
+        const player1X = 10 + 200 / 2;
+        const player2X = this.canvasWidth - 210 + 200 / 2;
+
+        // Text properties
+        ctx.font = "28px sans-serif";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Draw player names
+        ctx.fillText(this.player1.name, player1X, 30);
+        ctx.fillText(this.player2.name, player2X, 30);
+
+        ctx.restore();
+      },
+
+      // Draw player health bars with health values on top of the canvas
+      drawPlayerHealth(ctx){
+        ctx.save();
+
+        // Draw black background for health bars
+        ctx.fillStyle = 'black';
+        ctx.fillRect(10, 50, 200, 40);
+        ctx.fillRect(this.canvasWidth - 210, 50, 200, 40);
+
+        // Draw red background for remaining health
+        ctx.fillStyle = '#FF0000';
+        const player1HealthWidth = this.player1.health * 2;
+        ctx.fillRect(10, 50, player1HealthWidth, 40);
+        const player2HeathWidth = this.player2.health * 2;
+        ctx.fillRect(this.canvasWidth - 210, 50, player2HeathWidth, 40);
+
+        //Draw outline for health bars
+        ctx.strokeStyle = 'gray';
+        ctx.lineWidth = 5; // Border width
+        ctx.strokeRect(10, 50, 200, 40);
+        ctx.strokeRect(this.canvasWidth - 210, 50, 200, 40);
+
+        // Draw remaining health / 100
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${this.player1.health}/${this.player1.healthMax}`, 110, 70);
+        ctx.fillText(`${this.player2.health}/${this.player2.healthMax}`, this.canvasWidth - 110, 70);
+
+        ctx.restore();
+      },
+
+      // Draw wind value in the middle of the canvas
+      drawWind(ctx){
+        ctx.save();
+
+        // Text properties
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Wind: ', this.canvasWidth/2, 20);
+        ctx.fillText(this.wind, this.canvasWidth/2 + 40, 20);
+
+        ctx.restore();
+      },
+
+      // Draw angle and power values at the top of the aim circle
+      drawAnglePower(ctx) {
+        ctx.save();
+
+        // Text properties
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.round(this.currentPlayer.angle)}°,`, this.currentPlayer.xCord - 10, this.currentPlayer.yCord - 180);
+        ctx.fillText(this.currentPlayer.power, this.currentPlayer.xCord + 26, this.currentPlayer.yCord - 180);
+
+        ctx.restore();
+      },
+
       // Draw the terrain based on map data
       drawTerrain(ctx) {
 
@@ -684,7 +678,7 @@ import apiClient from '@/api';
       },
 
       // Draw the tank based on player data
-      drawTank(ctx, player, playerAimCircle) {
+      drawTank(ctx, player) {
         ctx.save();
 
         // Update the player's yCord based on the terrain so tank is always on the terrain
@@ -705,9 +699,9 @@ import apiClient from '@/api';
         const turretLength = 25;
         ctx.translate(0, -7);
         if(player.id === 1){
-          ctx.rotate((-playerAimCircle.angle * Math.PI) / 180);
+          ctx.rotate((-player.angle * Math.PI) / 180);
         } else {
-          ctx.rotate((-(180 - playerAimCircle.angle) * Math.PI) / 180);
+          ctx.rotate((-(180 - player.angle) * Math.PI) / 180);
         }
         ctx.fillStyle = player.color;
         ctx.fillRect(0, -5, turretLength, 10);
@@ -716,13 +710,13 @@ import apiClient from '@/api';
         ctx.restore();
       },
 
-      drawAimCircle(ctx, playerAimCircle, player) {
+      drawAimCircle(ctx, playerAimCircle) {
         ctx.save();
 
         ctx.beginPath();
 
         // Draw the aim circle
-        ctx.arc(player.xCord, player.yCord, this.aimCircleRadius, 0, 2 * Math.PI);
+        ctx.arc(this.currentPlayer.xCord, this.currentPlayer.yCord, this.aimCircleRadius, 0, 2 * Math.PI);
         ctx.fillStyle = 'rgba(128, 128, 128, 0.2)';
         ctx.fill();
 
@@ -734,9 +728,9 @@ import apiClient from '@/api';
         ctx.beginPath();
 
         // Obtain laser start position based on the turret angle
-        let turretAngle = this.p1Turn ?(-playerAimCircle.angle * Math.PI) / 180 : (-(180 - playerAimCircle.angle) * Math.PI) / 180;
-        const laserStartPosX = player.xCord + 25 * Math.cos(turretAngle);
-        const laserStartPosY = player.yCord + 25 * Math.sin(turretAngle);
+        let turretAngle = this.p1Turn ?(-this.currentPlayer.angle * Math.PI) / 180 : (-(180 - this.currentPlayer.angle) * Math.PI) / 180;
+        const laserStartPosX = this.currentPlayer.xCord + 25 * Math.cos(turretAngle);
+        const laserStartPosY = this.currentPlayer.yCord + 25 * Math.sin(turretAngle);
 
         // Draw the laser line
         ctx.moveTo(laserStartPosX, laserStartPosY);
@@ -869,19 +863,20 @@ import apiClient from '@/api';
           // Dragging is enabled
           if (this.toggleDragging) {
 
+            // Update power value for current player
+            this.currentPlayer.power = Math.round((distance / this.aimCircleRadius) * 100);
+
             // Update the power value and angle values based on player turn
             if(this.p1Turn){
-              this.p1Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
-              this.p1Circle.angle = -(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI;
+              this.currentPlayer.angle = -(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI;
             } else {
-              this.p2Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
 
               // Update the angle for second player
               let p2Angle = 180 - (-(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI);
               if (p2Angle > 180) {
                 p2Angle -= 360;
               }
-              this.p2Circle.angle = p2Angle;
+              this.currentPlayer.angle = p2Angle;
             }
           }
 
@@ -915,19 +910,20 @@ import apiClient from '@/api';
         // If mouse is within the aim circle
         if (this.toggleHovering) {
 
+          // Update power value for current player
+          this.currentPlayer.power = Math.round((distance / this.aimCircleRadius) * 100);
+
           // Update the power value and angle values based on player turn
           if(this.p1Turn){
-            this.p1Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
-            this.p1Circle.angle = -(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI;
+            this.currentPlayer.angle = -(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI;
           } else {
-            this.p2Circle.power = Math.round((distance / this.aimCircleRadius) * 100);
 
             // Update the angle for second player
             let p2Angle = 180 - (-(Math.atan2(tankMouseY, tankMouseX) * 180) / Math.PI);
             if (p2Angle > 180) {
               p2Angle -= 360;
             }
-            this.p2Circle.angle = p2Angle;
+            this.currentPlayer.angle = p2Angle;
           }
 
           // Redraw the game with updated values

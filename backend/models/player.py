@@ -19,6 +19,8 @@ class Player(BaseModel):
   xCord: float = 0
   yCord: float = 0
   activeMissileId: int = 0
+  angle: float = 45
+  power: float = 50
 
 class PlayersData(BaseModel):
   player1: Player

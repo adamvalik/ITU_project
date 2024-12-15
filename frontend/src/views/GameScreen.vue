@@ -772,8 +772,6 @@ import apiClient from '@/api';
           key: event.key,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          power: this.currentPlayer.power,
-          angle: this.currentPlayer.angle,
         })
         .then((response) => {
           console.log(response);

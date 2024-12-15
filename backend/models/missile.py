@@ -39,8 +39,6 @@ class Movement(BaseModel):
     key: str
     canvasWidth: int
     canvasHeight: int
-    power: float
-    angle: float
 
 # Response data for movement computation
 class MovementResponse(BaseModel):

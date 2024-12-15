@@ -1,3 +1,7 @@
+# File: mapManager.py
+# Description: Class which interacts with Redis to manage the game map
+# Author: Samuel Hejnicek (xhejni00)
+
 from typing import Optional
 from redis import Redis
 from models.map import Map

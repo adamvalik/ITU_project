@@ -1,3 +1,7 @@
+# File: gameScreen.py
+# Description: API endpoints for the game screen
+# Author: Samuel Hejnicek (xhejni00)
+
 from fastapi import APIRouter, HTTPException, Depends
 from models.player import Player
 from models.player import PlayersData
@@ -14,7 +18,6 @@ import math
 from typing import List, Tuple
 
 router = APIRouter()
-
 
 # Return all missiles from the database
 @router.get("/missiles", response_model=List[Missile])
@@ -54,23 +57,30 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     if not currentPlayer:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    responseModel = MovementResponse(aimCircleXCord=movementData.aimCircleXCord, power=movementData.power, angle=movementData.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
+    responseModel = MovementResponse(aimLaserXCord=movementData.aimLaserXCord, power=movementData.power, angle=movementData.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
+    moveConstant = 5
+    if currentPlayer.speedSkill > 0:
+        moveConstant = 7
+    elif currentPlayer.speedSkill > 1:
+        moveConstant = 9
+    elif currentPlayer.speedSkill > 2:
+        moveConstant = 11
 
     if movementData.key == "d":
         if currentPlayer.fuel > 0 and currentPlayer.xCord <  movementData.canvasWidth - 25:
             currentPlayer.fuel -= 5
-            currentPlayer.xCord += 5
+            currentPlayer.xCord += moveConstant
 
-            responseModel.aimCircleXCord += 5
-            responseModel.playerXCord += 5
+            responseModel.aimLaserXCord += 5
+            responseModel.playerXCord += moveConstant
             responseModel.playerFuel -= 5
     elif movementData.key == "a":
         if currentPlayer.fuel > 0 and currentPlayer.xCord > 25:
             currentPlayer.fuel -= 5
-            currentPlayer.xCord -= 5
+            currentPlayer.xCord -= moveConstant
 
-            responseModel.aimCircleXCord -= 5
-            responseModel.playerXCord -= 5
+            responseModel.aimLaserXCord -= 5
+            responseModel.playerXCord -= moveConstant
             responseModel.playerFuel -= 5
     elif movementData.key == "ArrowRight":
         responseModel.power = min(100, responseModel.power + 1)
@@ -96,7 +106,6 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
     mapManager = MapManager(redis_client)
 
     game = gameManager.get_game()
-
 
     # Default color
     mapColor = "#0D8747"
@@ -198,12 +207,15 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         if missileData.angle > 180:
             missileData.angle -= 360
 
+
+    wind = game_manager.get_game().wind
+
     # Define missile trajectory using Bezier curve
     startX = playerShooter.xCord
     startY = playerShooter.yCord - 15
-    controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 4
+    controlX = startX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + wind * 4
     controlY = startY - math.sin(missileData.angle * (math.pi / 180)) * missileData.power * 12
-    endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + missileData.wind * 8
+    endX = controlX + math.cos(missileData.angle * (math.pi / 180)) * missileData.power * 12 + wind * 8
 
     # + 20 pixels to be able to have the y size to reach the size of canvas height
     endY = missileData.canvasHeight + 20

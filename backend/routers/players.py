@@ -74,10 +74,11 @@ async def get_tank(player_id: int, redis_client = Depends(get_redis_client)):
     modified_svg = svg_template.replace("#123456", player.color)
     return Response(content=modified_svg, media_type="image/svg+xml")
 
-@router.delete("/players/reset-health")
+@router.delete("/players/reset-values")
 async def reset_health(redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
     player_manager.reset_health()
+    player_manager.reset_fuel()
     return {"message": "Health reset"}
 
 @router.post("/player/buyAmmo")

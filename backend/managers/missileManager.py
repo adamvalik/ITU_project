@@ -1,3 +1,8 @@
+# File: missileManager.py
+# Description: Class which interacts with Redis to manage the missiles
+# Author: Samuel Hejnicek (xhejni00)
+
+
 from typing import Optional
 from redis import Redis
 from models.missile import Missile

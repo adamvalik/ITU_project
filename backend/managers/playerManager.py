@@ -108,6 +108,16 @@ class PlayerManager:
         if player2:
             player2.health = 100
             self.create_player(player2)
+    
+    def reset_fuel(self):
+        player1 = self.get_player(1)
+        player2 = self.get_player(2)
+        if player1:
+            player1.fuel = player1.fuelMax
+            self.create_player(player1)
+        if player2:
+            player2.fuel = player2.fuelMax
+            self.create_player(player2)
 
     def buy_ammo(self, player_id: int, ammo_type: int, price: int):
         player = self.get_player(player_id)

@@ -1,5 +1,8 @@
-from pydantic import BaseModel
+# File: missile.py
+# Description: Models for missile, laser and movement computation
+# Author: Samuel Hejnicek (xhejni00)
 
+from pydantic import BaseModel
 
 # Input data for missile computation
 class MissileComputationData(BaseModel):
@@ -7,7 +10,6 @@ class MissileComputationData(BaseModel):
     canvasHeight: int
     angle: float
     power: float
-    wind: int
     weaponSelected: int
 
 # Response data for missile computation
@@ -26,6 +28,7 @@ class Missile(BaseModel):
     price: int
     picture: str
 
+# Input data for laser computation
 class Laser(BaseModel):
     power: float
     angle: float
@@ -34,16 +37,18 @@ class Laser(BaseModel):
     playerYCord: float
     aimCircleRadius: int
 
+# Input data for movement computation
 class Movement(BaseModel):
     key: str
     canvasWidth: int
     canvasHeight: int
-    aimCircleXCord: float
+    aimLaserXCord: float
     power: float
     angle: float
 
+# Response data for movement computation
 class MovementResponse(BaseModel):
-    aimCircleXCord: float
+    aimLaserXCord: float
     power: float
     angle: float
     shoot: bool

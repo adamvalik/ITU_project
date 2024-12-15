@@ -187,9 +187,6 @@ import apiClient from '@/api';
         canvasWidth: this.gameWidth,
         canvasHeight: this.gameHeight - 176,
 
-        // Image canvas
-        //imageCanvas: null,
-
         // Map data for drawing
         terrainData: {
           terrain: [],
@@ -232,16 +229,6 @@ import apiClient from '@/api';
         toggleDragging: false,
         aimCircleRadius: 0,
 
-        // Laser coordinates for player circle
-        p1Circle: {
-          aimLaserXCord: 0,
-          aimLaserYCord: 0,
-        },
-        p2Circle: {
-          aimLaserXCord: 0,
-          aimLaserYCord: 0,
-        },
-
         // Missile trajectory for animation
         missileTrajectory: [],
 
@@ -262,9 +249,6 @@ import apiClient from '@/api';
         pauseGame: false,
       };
     },
-    // created() {
-    //   this.imageCanvas = document.createElement('canvas');
-    // },
     computed: {
       currentPlayer() {
         return this.p1Turn ? this.player1 : this.player2;
@@ -278,12 +262,7 @@ import apiClient from '@/api';
         return this.missiles[this.currentPlayer.activeMissileId];
       },
 
-      currentAimCircle() {
-        return this.p1Turn ? this.p1Circle : this.p2Circle;
-      },
-
       currentPlayerMissiles() {
-
         // Filter only missiles where player has ammunition
         const displayedMissiles = [];
         for (let i = 0; i < this.currentPlayer.ammunitionCount.length; i++) {
@@ -458,7 +437,7 @@ import apiClient from '@/api';
       },
 
       // Calculate ending position of the aiming laser based on the angle, power and player's position
-      async calculateLaserPos(playerAimCircle) {
+      async calculateLaserPos() {
 
         //Calculate the distance based on the power
         const distance = (this.currentPlayer.power / 100) * this.aimCircleRadius;
@@ -472,8 +451,8 @@ import apiClient from '@/api';
         }
 
         // Calculate laser's endpoint x and y coordinates based on the angle and distance
-        playerAimCircle.aimLaserXCord = this.currentPlayer.xCord + distance * Math.cos(angleInRadians);
-        playerAimCircle.aimLaserYCord = this.currentPlayer.yCord + distance * Math.sin(angleInRadians);
+        this.currentPlayer.aimLaserXCord = this.currentPlayer.xCord + distance * Math.cos(angleInRadians);
+        this.currentPlayer.aimLaserYCord = this.currentPlayer.yCord + distance * Math.sin(angleInRadians);
       },
 
       // Fire missile after clicking on the fire button or pressing spacebar
@@ -575,8 +554,8 @@ import apiClient from '@/api';
         }
       },
 
-            // Draw player names at the top of the canvas
-            drawPlayerNames(ctx) {
+      // Draw player names at the top of the canvas
+      drawPlayerNames(ctx) {
         ctx.save();
 
         // Size of rectangles for healthbars
@@ -713,7 +692,7 @@ import apiClient from '@/api';
         ctx.restore();
       },
 
-      drawAimCircle(ctx, playerAimCircle) {
+      drawAimCircle(ctx) {
         ctx.save();
 
         ctx.beginPath();
@@ -737,7 +716,7 @@ import apiClient from '@/api';
 
         // Draw the laser line
         ctx.moveTo(laserStartPosX, laserStartPosY);
-        ctx.lineTo(playerAimCircle.aimLaserXCord, playerAimCircle.aimLaserYCord);
+        ctx.lineTo(this.currentPlayer.aimLaserXCord, this.currentPlayer.aimLaserYCord);
         ctx.strokeStyle = "red";
         ctx.stroke();
 
@@ -770,13 +749,13 @@ import apiClient from '@/api';
         this.drawWind(ctx);
 
         // Calculate the laser line's endpoint based on the updated angle and power
-        this.calculateLaserPos(this.currentAimCircle);
+        this.calculateLaserPos();
 
         // Draw the angle and power values
-        this.drawAnglePower(ctx, this.currentAimCircle);
+        this.drawAnglePower(ctx);
 
         // Draw the aim circle and the aiming line
-        this.drawAimCircle(ctx, this.currentAimCircle);
+        this.drawAimCircle(ctx);
 
       },
 
@@ -793,7 +772,6 @@ import apiClient from '@/api';
           key: event.key,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          aimLaserXCord: this.currentAimCircle.aimLaserXCord,
           power: this.currentPlayer.power,
           angle: this.currentPlayer.angle,
         })
@@ -808,7 +786,7 @@ import apiClient from '@/api';
           // Update player data based on the response
           this.currentPlayer.xCord = response.data.playerXCord;
           this.currentPlayer.fuel = response.data.playerFuel;
-          this.currentAimCircle.aimLaserXCord = response.data.aimLaserXCord;
+          this.currentPlayer.aimLaserXCord = response.data.aimLaserXCord;
           this.currentPlayer.power = response.data.power;
           this.currentPlayer.angle = response.data.angle;
 
@@ -942,43 +920,3 @@ import apiClient from '@/api';
 
 <style scoped>
 </style>
-
-<!-- // Image canvas
-imageCanvas: null,
-
-created() {
-  this.imageCanvas = document.createElement('canvas');
-  this.imageCanvas.width = this.canvasWidth;
-  this.imageCanvas.height = this.canvasHeight;
-},
-
-fillImageCanvas(wind) {
-  const ctx = this.imageCanvas.getContext('2d');
-  ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-  this.drawPlayerHealth(ctx);
-  this.drawPlayerNames(ctx);
-  this.drawWind(ctx, wind);
-  this.drawTank(ctx, this.nextPlayer, this.nextPlayerCircle);
-},
-
-addItemsToImageCanvas(currentTank, activeAimCircle, terrain, anglePower) {
-  const ctx = this.imageCanvas.getContext('2d');
-  if(currentTank){
-    this.drawTank(ctx, this.currentPlayer, this.currentAimCircle);
-  }
-  if(terrain){
-    this.drawTerrain(ctx);
-  }
-  if(anglePower){
-    this.drawAnglePower(ctx, this.currentAimCircle, this.currentPlayer);
-  }
-  if(activeAimCircle){
-    this.drawAimCircle(ctx,this. currentAimCircle, this.currentPlayer);
-  }
-},
-
-const canvas = this.$refs.gameCanvas;
-const ctx = canvas.getContext('2d');
-ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-ctx.drawImage(this.imageCanvas, 0, 0); -->

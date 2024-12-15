@@ -21,6 +21,8 @@ class Player(BaseModel):
   activeMissileId: int = 0
   angle: float = 45
   power: float = 50
+  aimLaserXCord: float = 0
+  aimLaserYCord: float = 0
 
 class PlayersData(BaseModel):
   player1: Player

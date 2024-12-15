@@ -39,7 +39,6 @@ class Movement(BaseModel):
     key: str
     canvasWidth: int
     canvasHeight: int
-    aimLaserXCord: float
     power: float
     angle: float
 

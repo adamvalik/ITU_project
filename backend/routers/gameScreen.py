@@ -62,7 +62,7 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
         raise HTTPException(status_code=404, detail="Player not found")
 
     # Create response model
-    responseModel = MovementResponse(aimLaserXCord=movementData.aimLaserXCord, power=currentPlayer.power, angle=currentPlayer.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
+    responseModel = MovementResponse(aimLaserXCord=currentPlayer.aimLaserXCord, power=currentPlayer.power, angle=currentPlayer.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
     
     # Udate move constant based on speed skill
     moveConstant = 5
@@ -78,6 +78,7 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
         if currentPlayer.fuel > 0 and currentPlayer.xCord <  movementData.canvasWidth - 25:
             currentPlayer.fuel -= 5
             currentPlayer.xCord += moveConstant
+            currentPlayer.aimLaserXCord += 5
 
             responseModel.aimLaserXCord += 5
             responseModel.playerXCord += moveConstant
@@ -86,6 +87,7 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
         if currentPlayer.fuel > 0 and currentPlayer.xCord > 25:
             currentPlayer.fuel -= 5
             currentPlayer.xCord -= moveConstant
+            currentPlayer.aimLaserXCord -= 5
 
             responseModel.aimLaserXCord -= 5
             responseModel.playerXCord -= moveConstant

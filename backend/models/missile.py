@@ -10,7 +10,6 @@ class MissileComputationData(BaseModel):
     canvasHeight: int
     angle: float
     power: float
-    weaponSelected: int
 
 # Response data for missile computation
 class MissileComputationResponse(BaseModel):
@@ -54,3 +53,7 @@ class MovementResponse(BaseModel):
     shoot: bool
     playerXCord: float
     playerFuel: int
+
+# Input data for current missile
+class CurrentMissile(BaseModel):
+    id: int

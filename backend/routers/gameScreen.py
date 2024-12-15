@@ -5,7 +5,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models.player import Player
 from models.player import PlayersData
-from models.missile import Missile, MissileComputationData, MissileComputationResponse, Laser, Movement, MovementResponse
+from models.missile import Missile, MissileComputationData, MissileComputationResponse, Laser, Movement, MovementResponse, CurrentMissile
 from managers.missileManager import MissileManager
 from managers.playerManager import PlayerManager
 from managers.gameManager import GameManager
@@ -172,6 +172,23 @@ async def save_current_player_data(players: PlayersData, redis_client = Depends(
     player_manager.create_player(players.player2)
     return {"message": "Successfully saved player data"}
 
+# Save active missile id for current player
+@router.post("/save-current-active-missile")
+def save_current_player_missile(currentMissile: CurrentMissile, redis_client = Depends(get_redis_client)):
+    player_manager = PlayerManager(redis_client)
+    game_manager = GameManager(redis_client)
+    currentGame = game_manager.get_game()
+
+    currentPlayer = None
+    if currentGame.p1Turn:
+        currentPlayer = player_manager.get_player(1)
+    else:
+        currentPlayer = player_manager.get_player(2)
+    
+    currentPlayer.activeMissileId = currentMissile.id
+    player_manager.delete_player(currentPlayer.id)
+    player_manager.create_player(currentPlayer)
+    return {"message": "Active missile saved"}
 
 # Compute missile data
 @router.post("/compute-missile-data", response_model=MissileComputationResponse)
@@ -196,7 +213,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         playerTarget = player_manager.get_player(1)
 
     # Obtain active missile and current map data
-    activeMissile = missile_manager.get_missile(missileData.weaponSelected)
+    activeMissile = missile_manager.get_missile(playerShooter.activeMissileId)
     currentMap = map_manager.get_map()
     mapData = currentMap.data
 
@@ -208,10 +225,10 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     returnModel = MissileComputationResponse()
 
     # Decrement ammunition count
-    playerShooter.ammunitionCount[missileData.weaponSelected] -= 1
-    returnModel.ammunitionCount = playerShooter.ammunitionCount[missileData.weaponSelected]
+    playerShooter.ammunitionCount[playerShooter.activeMissileId] -= 1
+    returnModel.ammunitionCount = playerShooter.ammunitionCount[playerShooter.activeMissileId]
 
-    if playerShooter.ammunitionCount[missileData.weaponSelected] < 0:
+    if playerShooter.ammunitionCount[playerShooter.activeMissileId] < 0:
         returnModel.noAmmunition = True
         return returnModel
 

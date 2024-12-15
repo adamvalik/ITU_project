@@ -34,7 +34,7 @@
                 <div class="flex flex-row justify-center space-x-8">
                   <div class="text-black font-bold text-3xl">{{ activeMissile.name }}</div>
                   <div class="w-8 h-8" style="background: url('assets/small_missile_icon.png') no-repeat center center; background-size: cover;"></div>
-                  <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.activeMissileId] }}</div>
+                  <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.currentPlayer.activeMissileId] }}</div>
                 </div>
               </button>
             </div>
@@ -277,7 +277,7 @@ import apiClient from '@/api';
       },
 
       activeMissile() {
-        return this.missiles[this.activeMissileId];
+        return this.missiles[this.currentPlayer.activeMissileId];
       },
 
       currentAimCircle() {
@@ -344,8 +344,19 @@ import apiClient from '@/api';
 
       // Chamge active missile id to show current weapon under the weapon selector
       selectMissile(missileId) {
-        this.activeMissileId = missileId;
+        this.currentPlayer.activeMissileId = missileId;
         this.toggleDropDownMenu = false;
+
+        axios.post('http://localhost:8000/save-current-active-missile', {
+          id: this.currentPlayer.activeMissileId,
+        })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+        
       },
 
       // Load map data from the database using API
@@ -577,7 +588,6 @@ import apiClient from '@/api';
           canvasHeight: this.canvasHeight,
           angle: this.currentAimCircle.angle,
           power: this.currentAimCircle.power,
-          weaponSelected: this.activeMissile.id,
         })
         .then((response) => {
           console.log(response);
@@ -592,7 +602,7 @@ import apiClient from '@/api';
           this.missileTrajectory = response.data.missileTrajectory;
 
           // Update new ammunition count
-          this.currentPlayer.ammunitionCount[this.activeMissileId] = response.data.ammunitionCount;
+          this.currentPlayer.ammunitionCount[this.currentPlayer.activeMissileId] = response.data.ammunitionCount;
 
           // Update response game over flag
           this.responseGameOver = response.data.gameOver;
@@ -626,7 +636,7 @@ import apiClient from '@/api';
         const canvas = this.$refs.gameCanvas;
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
-        ctx.arc(xCord, yCord, this.missiles[this.activeMissileId].damage / 4, 0, 2 * Math.PI);
+        ctx.arc(xCord, yCord, this.missiles[this.currentPlayer.activeMissileId].damage / 4, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
 
@@ -646,7 +656,6 @@ import apiClient from '@/api';
           // Switch player turn and enable firing
           this.toggleDisableFire = false;
           this.p1Turn = !this.p1Turn;
-          this.activeMissileId = 0;
 
           // Redraw the game
           this.drawGame();

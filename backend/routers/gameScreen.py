@@ -28,6 +28,7 @@ async def get_missiles():
         raise HTTPException(status_code=404, detail="Missiles not found")
     return missiles
 
+# Calculate laser position
 @router.post("/calculate-laser-pos", response_model=Tuple[float, float])
 async def calculate_laser_pos(laserData: Laser):
 
@@ -44,11 +45,14 @@ async def calculate_laser_pos(laserData: Laser):
 
     return (aimLaserXCord, aimLaserYCord)
 
+# Decide what to update based on the key pressed
 @router.post("/keyboard-movement", response_model=MovementResponse)
 async def keyboard_movement(movementData: Movement, redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
     game_manager = GameManager(redis_client)
     currentGame = game_manager.get_game()
+
+    # Obtain current player
     currentPlayer = None
     if currentGame.p1Turn:
         currentPlayer = player_manager.get_player(1)
@@ -57,7 +61,10 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     if not currentPlayer:
         raise HTTPException(status_code=404, detail="Player not found")
 
+    # Create response model
     responseModel = MovementResponse(aimLaserXCord=movementData.aimLaserXCord, power=movementData.power, angle=movementData.angle, shoot=False, playerXCord=currentPlayer.xCord, playerFuel=currentPlayer.fuel)
+    
+    # Udate move constant based on speed skill
     moveConstant = 5
     if currentPlayer.speedSkill > 0:
         moveConstant = 7
@@ -66,6 +73,7 @@ async def keyboard_movement(movementData: Movement, redis_client = Depends(get_r
     elif currentPlayer.speedSkill > 2:
         moveConstant = 11
 
+    # Update player position based on the key pressed
     if movementData.key == "d":
         if currentPlayer.fuel > 0 and currentPlayer.xCord <  movementData.canvasWidth - 25:
             currentPlayer.fuel -= 5
@@ -109,6 +117,8 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
 
     # Default color
     mapColor = "#0D8747"
+
+    # Default background
     mapBackground = "#D5EFF4"
 
     if game.weather == "Cloudy:":
@@ -123,6 +133,8 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
     elif game.mapName =="__winter":
         mapColor = "#9EDFFA"
     else:
+
+        # Custom map was selected
         savedMap = mapCreatorManager.get_map(game.mapName)
         if savedMap:
             if savedMap.type == "forest":
@@ -132,11 +144,10 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
             else:
                 mapColor = "#9EDFFA"
                 
-    maxTerrainHeight = (canvasHeight * 2) / 3
-    
+    # Generate terrain
     terrain = []
     for x in range(canvasWidth):
-        baseHeight = maxTerrainHeight
+        baseHeight = (canvasHeight * 2) / 3
         variation = (math.sin(x * 0.06) * 15 + math.sin(x * 0.1) * 10 + math.sin(x * 0.01) * 50)
         terrain.append(baseHeight + variation)
     newMap = Map(name=game.mapName, type=mapColor, data=terrain, background=mapBackground)
@@ -144,6 +155,7 @@ async def generate_terrain(canvasWidth: int, canvasHeight: int, redis_client = D
     mapManager.create_map(newMap)
     return newMap
 
+# Obtain updated map
 @router.get("/obtain-updated-map")
 async def obtain_updated_map(redis_client = Depends(get_redis_client)):
     mapManager = MapManager(redis_client)
@@ -172,6 +184,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     game_manager = GameManager(redis_client)
     p1Turn = game_manager.get_game().p1Turn
 
+    # Obtain shooting player and target player data
     playerShooter = None
     playerTarget = None
 
@@ -182,6 +195,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
         playerShooter = player_manager.get_player(2)
         playerTarget = player_manager.get_player(1)
 
+    # Obtain active missile and current map data
     activeMissile = missile_manager.get_missile(missileData.weaponSelected)
     currentMap = map_manager.get_map()
     mapData = currentMap.data
@@ -208,6 +222,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
             missileData.angle -= 360
 
 
+    # Obtain wind
     wind = game_manager.get_game().wind
 
     # Define missile trajectory using Bezier curve
@@ -273,7 +288,7 @@ async def compute_missile_data(missileData: MissileComputationData, redis_client
     p1Turn = not p1Turn
     game_manager.update_game({"p1Turn": p1Turn})
 
-
+    # Update map data
     map_manager.delete_map()
     newMap = Map(name=currentMap.name, type=currentMap.type, data=mapData, background=currentMap.background)
     map_manager.create_map(newMap)

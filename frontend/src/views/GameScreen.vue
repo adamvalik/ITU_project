@@ -282,10 +282,12 @@ import apiClient from '@/api';
       window.addEventListener('keydown', this.onKeyPressed);
     },
     watch: {
-      // Watch for game over flag, if true, increment skill points and reset player values
+      // Watch for game over flag
       async gameOver(newValue) {
         if (newValue) {
           try {
+
+            // Increment skill points and reset health, fuel values to default
             await apiClient.post('/player/skillPointsInc', { player: 1});
             await apiClient.post('/player/skillPointsInc', { player: 2});
             await apiClient.delete('/players/reset-values');
@@ -368,7 +370,7 @@ import apiClient from '@/api';
           this.p1Turn = response.data.p1Turn;
           this.aimCircleRadius = response.data.aimCircleRadius;
 
-          // Validate timer if enabled 
+          // Check if timer is enabled
           this.validateTimer();
         })
         .catch((error) => {

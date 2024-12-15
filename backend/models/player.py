@@ -14,9 +14,11 @@ class Player(BaseModel):
   fuel: int = 250
   fuelMax: int = 250
   health: int = 100
+  healthMax: int = 100
   ammunitionCount: list[int] = [30,-1, 20]
   xCord: float = 0
   yCord: float = 0
+  activeMissileId: int = 0
 
 class PlayersData(BaseModel):
   player1: Player

@@ -10,6 +10,7 @@ class Game(BaseModel):
   mapName: str = "" # "__forest", "__beach", "__winter"
   weather: str = "Cloudy" # "Sunny", "Cloudy", "Extreme"
   p1Turn: bool = True
+  aimCircleRadius: int = 200
 
 class CustomMode(BaseModel):
   isTimer: bool

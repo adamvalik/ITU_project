@@ -230,7 +230,7 @@ import apiClient from '@/api';
         // Aim circle data
         toggleHovering: false,
         toggleDragging: false,
-        aimCircleRadius: 200,
+        aimCircleRadius: 0,
         p1Circle: {
           angle: 45,
           power: 50,
@@ -377,6 +377,7 @@ import apiClient from '@/api';
           this.wind = response.data.wind;
           this.useTimer = response.data.isTimer;
           this.p1Turn = response.data.p1Turn;
+          this.aimCircleRadius = response.data.aimCircleRadius;
 
           // Validate timer if enabled 
           this.validateTimer();
@@ -513,8 +514,8 @@ import apiClient from '@/api';
         ctx.font = '20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`${this.player1.health}/100`, 110, 70);
-        ctx.fillText(`${this.player2.health}/100`, this.canvasWidth - 110, 70);
+        ctx.fillText(`${this.player1.health}/${this.player1.healthMax}`, 110, 70);
+        ctx.fillText(`${this.player2.health}/${this.player2.healthMax}`, this.canvasWidth - 110, 70);
 
         ctx.restore();
       },
@@ -673,11 +674,11 @@ import apiClient from '@/api';
         ctx.fill();
       },
 
-            // Draw the tank based on player data
-            drawTank(ctx, player, playerAimCircle) {
+      // Draw the tank based on player data
+      drawTank(ctx, player, playerAimCircle) {
         ctx.save();
 
-        // Update the player's yCord based on the terrain so tank is on the ground
+        // Update the player's yCord based on the terrain so tank is always on the terrain
         player.yCord = this.terrainData.terrain[Math.floor(player.xCord)] - 40 / 4;
 
         // Move to player's position

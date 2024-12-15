@@ -79,7 +79,7 @@ async def reset_health(redis_client = Depends(get_redis_client)):
     player_manager = PlayerManager(redis_client)
     player_manager.reset_health()
     player_manager.reset_fuel()
-    return {"message": "Health reset"}
+    return {"message": "Player values reset"}
 
 @router.post("/player/buyAmmo")
 async def buy_ammo(data: BuyAmmo, redis_client = Depends(get_redis_client)):

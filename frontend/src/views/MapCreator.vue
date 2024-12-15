@@ -257,6 +257,7 @@ const updateBrushCircle = (event) => {
   if (!eraserActive.value) return;
 
   const brushCircle = document.querySelector('.brush-circle');
+  if (!brushCircle || !canvasRef.value) return;
   brushCircle.style.display = 'block';
 
   const rect = canvasRef.value.getBoundingClientRect();

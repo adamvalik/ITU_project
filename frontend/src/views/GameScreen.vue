@@ -1,6 +1,6 @@
 <!--
   File: GameScreen.vue
-  Author: Samue, Hejnicek (xhejni00)
+  Author: Samuel Hejnicek (xhejni00)
 -->
 
 
@@ -523,8 +523,6 @@ import apiClient from '@/api';
 
         // Obtain the x and y coordinates for the missile trajectory
         const [xCord, yCord] = this.missileTrajectory.shift();
-
-        //this.drawGame();
 
         // Draw the missile as a red circle as big as the damage
         const canvas = this.$refs.gameCanvas;

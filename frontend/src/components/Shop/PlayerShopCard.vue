@@ -112,7 +112,7 @@ watch(() => props.player, (fetchedPlayer) => {
     <!-- Player is displayed on right side -->
     <div v-else class="flex justify-between items-center">
       <TankImage :svg="svg" class="self-start flip h-24"></TankImage>    
-      <div class="text-6xl font-black ">
+      <div class="text-6xl font-black ml-2">
         {{ player ? player.name : 'Loading...' }}
       </div>
     </div>

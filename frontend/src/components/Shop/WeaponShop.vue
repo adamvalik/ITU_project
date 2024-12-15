@@ -92,6 +92,15 @@ onMounted(getMissiles);
 
       <div class="flex">
         CASH: <span class="ml-4 text-green-600" :class="{ shake: shakeCash }">{{ cash }} $</span>
+
+        <transition name="fade">
+
+          <div v-if="shakeCash" class=" bg-red-500 border-4 rounded-xl text-xl text-white border-red-600 p-2 font-bold absolute -right-6 -top-1">
+            not enough cash
+          </div>
+
+      </transition>
+      
       </div>
 
       <!-- Spent cash display -->
@@ -135,4 +144,16 @@ onMounted(getMissiles);
   75% { transform: translate(2px, 0); color: #dc2626; }
   100% { transform: translate(-2px, 0); color: red; }
 }
+</style>
+
+<style scoped>
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 </style>

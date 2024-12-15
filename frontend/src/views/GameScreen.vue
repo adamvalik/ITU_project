@@ -33,7 +33,7 @@
                 class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
                 <div class="flex flex-row justify-center space-x-8">
                   <div class="text-black font-bold text-3xl">{{ activeMissile.name }}</div>
-                  <div class="w-8 h-8" :style="{ background: `url(${activeMissile.picture}) no-repeat center center`, backgroundSize: 'cover' }"></div>
+                  <div class="w-8 h-8" :style="{ background: `url(${activeMissile.picture}) no-repeat center`, backgroundSize: 'cover' }"></div>
                   <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[this.currentPlayer.activeMissileId] }}</div>
                 </div>
               </button>
@@ -51,7 +51,7 @@
               class="h-16 w-full bg-gray-300 bg-opacity-50 rounded-lg border-4 border-black hover:bg-gray-400">
               <div class="flex flex-row justify-center space-x-8">
                 <div class="text-black font-bold text-3xl">{{ missile.name }}</div>
-                <div class="w-8 h-8" :style="{ background: `url(${missile.picture}) no-repeat center center`, backgroundSize: 'cover' }"></div>
+                <div class="w-8 h-8" :style="{ background: `url(${missile.picture}) no-repeat center`, backgroundSize: 'cover' }"></div>
                 <div class="text-black font-bold text-3xl">{{ currentPlayer.ammunitionCount[missile.id] }}</div>
               </div>
 

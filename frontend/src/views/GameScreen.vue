@@ -310,6 +310,7 @@ import apiClient from '@/api';
             await apiClient.post('/player/skillPointsInc', { player: 1});
             await apiClient.post('/player/skillPointsInc', { player: 2});
             await apiClient.delete('/players/reset-values');
+            await apiClient.delete('/game/reset-turn');
           } catch (error) {
             console.error(error);
           }
@@ -769,13 +770,13 @@ import apiClient from '@/api';
         this.drawWind(ctx);
 
         // Calculate the laser line's endpoint based on the updated angle and power
-        this.calculateLaserPos(this.currentAimCircle, this.currentPlayer);
+        this.calculateLaserPos(this.currentAimCircle);
 
         // Draw the angle and power values
-        this.drawAnglePower(ctx, this.currentAimCircle, this.currentPlayer);
+        this.drawAnglePower(ctx, this.currentAimCircle);
 
         // Draw the aim circle and the aiming line
-        this.drawAimCircle(ctx, this.currentAimCircle, this.currentPlayer);
+        this.drawAimCircle(ctx, this.currentAimCircle);
 
       },
 

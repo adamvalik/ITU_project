@@ -119,6 +119,19 @@ class PlayerManager:
             player2.fuel = player2.fuelMax
             self.create_player(player2)
 
+    def reset_aim(self):
+        player1 = self.get_player(1)
+        player2 = self.get_player(2)
+        if player1:
+            player1.angle = 45
+            player1.power = 50
+            self.create_player(player1)
+        if player2:
+            player2.angle = 45
+            player2.power = 50
+            self.create_player(player2)
+    
+ 
     def buy_ammo(self, player_id: int, ammo_type: int, price: int):
         player = self.get_player(player_id)
         if player:

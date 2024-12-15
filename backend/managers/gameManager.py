@@ -73,3 +73,11 @@ class GameManager:
             return game.mapName
         else:
             raise ValidationError("Game not found")
+        
+    def reset_turn(self):
+        game = self.get_game()
+        if game:
+            game.p1Turn = True
+            self.create_game(game)
+        else:
+            raise ValidationError("Game not found")

@@ -41,3 +41,9 @@ async def set_map_name(map_name: str, redis_client = Depends(get_redis_client)):
     if updated_game is None:
         raise HTTPException(status_code=404, detail="Game not found or invalid data")
     return {"message": "Map name updated"}
+
+@router.delete("/game/reset-turn")
+async def reset_turn(redis_client = Depends(get_redis_client)):
+    game_manager = GameManager(redis_client)
+    game_manager.reset_turn()
+    return {"message": "Player 1 turn"}

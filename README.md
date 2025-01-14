@@ -1,5 +1,8 @@
-# ITU_project
-Tanky
+# ITU_project - Tanks 1v1 (52b/55)
+Adam Valík (xvalik05) - vedoucí <br>
+Marek EffenBerger (xeffen00) <br>
+Samuel Hejníček (xhejni00) <br>
+Dominik Horut (xhorut01) <br>
 
 This project uses Docker Compose, which is included with Docker Desktop (download from [docker.com](https://www.docker.com/products/docker-desktop/))
 
